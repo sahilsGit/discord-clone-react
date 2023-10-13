@@ -1,12 +1,13 @@
 import express from "express";
 import path from "path";
-import cookieParser from "cookie-parser";
 import logger from "morgan";
 import { fileURLToPath } from "url";
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
+import proPageRouter from "./routes/proPage.js";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 export const app = express();
 
@@ -27,6 +28,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/proPage", proPageRouter);
 
 // error handler
 app.use(function (err, res, next) {

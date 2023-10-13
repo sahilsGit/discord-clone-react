@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const profileSchema = new mongoose.Schema({
   username: { type: String, unique: true, required: true },
   name: { type: String, required: true },
-  imageUrl: { type: String, unique: true, required: true },
+  imageUrl: String,
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
   servers: [
@@ -17,6 +17,14 @@ const profileSchema = new mongoose.Schema({
   ],
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
+});
+
+// Define a pre-remove hook for the Profile schema
+profileSchema.pre("remove", async function (next) {
+  // Remove all associated servers and members when a profile is deleted
+  await mongoose.model("Server").deleteMany({ profileId: this._id });
+  await mongoose.model("Member").deleteMany({ profileId: this._id });
+  next();
 });
 
 const serverSchema = new mongoose.Schema({
@@ -80,6 +88,13 @@ const memberSchema = new mongoose.Schema({
   ],
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
+});
+
+// Define a pre-remove hook for the Server schema
+serverSchema.pre("remove", async function (next) {
+  // Remove all associated members when a server is deleted
+  await mongoose.model("Member").deleteMany({ serverId: this._id });
+  next();
 });
 
 const channelSchema = new mongoose.Schema({

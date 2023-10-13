@@ -103,17 +103,23 @@ export const login = async (req, res, next) => {
     const token = jwt.sign(
       {
         id: userProfile._id,
+        username: userProfile.username,
       },
-      process.env.JWT
+      process.env.JWT,
+      {
+        expiresIn: "5h", // Token expiration time
+      }
     ); // Authorize user using the secret key
-
-    const { password, ...otherDetails } = userProfile._doc;
 
     res
       .cookie("login_token", token, {
         httpOnly: true,
       })
-      .json(otherDetails);
+      .status(200)
+      .json({
+        success: true,
+      })
+      .send("Done"); // Return JWT tokenized JWT cookie and other non-sensitive information
   } catch (err) {
     err.status = 500;
     err.message = "Internal server error!";
