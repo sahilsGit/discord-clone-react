@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useContext } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "@/context/authContext";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -25,8 +26,11 @@ const loginSchema = z.object({
 });
 
 const LoginForm = () => {
+  const navigate = useNavigate();
+  const { user, loading, error, dispatch } = useContext(AuthContext);
+
   const form = useForm({
-    resolver: zodResolver(loginSchema), //Resolving registerSchema created before
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -34,38 +38,45 @@ const LoginForm = () => {
   });
 
   function onSubmit(data) {
-    // Set headers
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append("Origin", "http://localhost:5173");
+    dispatch({
+      type: "LOGIN_START",
+    });
 
-    alert(JSON.stringify(data, null, 4));
+    try {
+      const headers = new Headers();
+      headers.append("Content-Type", "application/json");
+      headers.append("Origin", "http://localhost:5173");
 
-    const toBeSent = {
-      email: data.email,
-      password: data.password,
-    };
+      const toBeSent = {
+        email: data.email,
+        password: data.password,
+      };
 
-    // Create request options
-    const options = {
-      method: "POST",
-      headers,
-      body: JSON.stringify(toBeSent),
-    };
+      const options = {
+        method: "POST",
+        headers,
+        body: JSON.stringify(toBeSent),
+        credentials: "include",
+      };
 
-    const newOptions = {
-      method: "GET",
-      headers,
-    };
-
-    // Send request
-    fetch("http://localhost:4000/api/auth/login", options)
-      .then((response) => {
-        if (response.ok) {
-          alert("You are logged in!");
-        }
-      })
-      .then(fetch("http://localhost:4000/api/proPage/get", newOptions));
+      // Send request
+      fetch("http://localhost:4000/api/auth/login", options)
+        .then((response) => {
+          if (response.ok) {
+            alert("You are logged in!");
+            dispatch({ type: "LOGIN_SUCCESS", payload: data.email });
+            navigate("/user");
+          }
+        })
+        .catch((err) => {
+          dispatch({ type: "LOGIN_FAILURE", payload: err });
+          navigate("/login");
+        });
+    } catch (err) {
+      // Handle any other errors here
+      console.error(err);
+      dispatch({ type: "LOGIN_FAILURE", payload: "An error occurred." });
+    }
   }
 
   return (

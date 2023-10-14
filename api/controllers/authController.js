@@ -11,13 +11,13 @@ export const register = async (req, res, next) => {
 
     // Validations
     if (!username) {
-      return res.send({ error: "A unique username is required" });
+      return res.send({ message: "A unique username is required" });
     }
     if (!name) {
-      return res.send({ error: "Full name is Required" });
+      return res.send({ message: "Full name is Required" });
     }
     if (!email) {
-      return res.send({ error: "Email is Required" });
+      return res.send({ message: "Email is Required" });
     }
 
     const existingProfile = await Profile.findOne({ email });
@@ -111,15 +111,15 @@ export const login = async (req, res, next) => {
       }
     ); // Authorize user using the secret key
 
-    res
-      .cookie("login_token", token, {
-        httpOnly: true,
-      })
-      .status(200)
-      .json({
-        success: true,
-      })
-      .send("Done"); // Return JWT tokenized JWT cookie and other non-sensitive information
+    res.cookie("login_token", token, {
+      httpOnly: true,
+      path: "/",
+      sameSite: "Lax",
+    });
+
+    res.status(200).send({
+      success: true,
+    });
   } catch (err) {
     err.status = 500;
     err.message = "Internal server error!";
