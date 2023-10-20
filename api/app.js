@@ -3,14 +3,26 @@ import path from "path";
 import logger from "morgan";
 import { fileURLToPath } from "url";
 import indexRouter from "./routes/index.js";
-import usersRouter from "./routes/users.js";
+import profileRouter from "./routes/profile.js";
 import authRouter from "./routes/auth.js";
-import proPageRouter from "./routes/proPage.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { verifyToken } from "./lib/verifyToken.js";
+import multer from "multer";
 
 export const app = express();
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, "public/images"); // set the destination folder
+    },
+    filename: function (req, file, cb) {
+      // generate a unique filename
+      cb(null, Date.now() + "-" + file.originalname);
+    },
+  }),
+});
 
 // view engine setup
 const __filename = fileURLToPath(import.meta.url);
@@ -32,10 +44,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 app.use(verifyToken);
-app.use("/api/proPage", proPageRouter);
+app.use("/api/profile", profileRouter);
 
 // error handler
 app.use(function (err, res, next) {
@@ -47,5 +58,11 @@ app.use(function (err, res, next) {
     status: errorStatus,
     message: errorMessage,
     stack: err.stack,
+  });
+});
+
+app.post("/api/upload", verifyToken, upload.single("image"), (req, res) => {
+  res.send({
+    success: true,
   });
 });

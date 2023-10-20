@@ -118,7 +118,7 @@ export const login = async (req, res, next) => {
     });
 
     res.status(200).send({
-      success: true,
+      profileId: userProfile._id,
     });
   } catch (err) {
     err.status = 500;

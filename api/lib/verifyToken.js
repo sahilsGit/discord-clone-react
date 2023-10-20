@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 
 export const verifyToken = (req, res, next) => {
-  console.log("Hello");
   const token = req.cookies.login_token;
   if (!token) {
     throw "You are not authenticated!";
