@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "crypto-random-string": "^5.0.0"
+  }
+}

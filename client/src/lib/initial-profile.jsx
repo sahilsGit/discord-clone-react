@@ -1,41 +1,43 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "@/context/authContext.jsx"; // Import your AuthContext
+import InitialModal from "@/components/models/initial-modal";
 
 const InitialProfile = () => {
   const { user } = useContext(AuthContext);
-  const [userName, setUserName] = useState("");
+  const [servers, setServers] = useState([]);
+
+  const headers = new Headers();
+  headers.append("Content-Type", "application/json");
+  headers.append("Origin", "http://localhost:5173");
 
   useEffect(() => {
     if (user) {
-      // If the user is authenticated, fetch additional user data
-      fetch("your-api-endpoint-for-user-data", {
-        method: "GET",
-        headers: {
-          credentials: "include", // Include the JWT token for authentication
-        },
-      })
+      const serversOptions = {
+        method: "GET", // Use the appropriate method
+        headers, // Reuse the headers
+        credentials: "include",
+        // Add custom options for the second fetch here
+      };
+
+      fetch(
+        `http://localhost:4000/api/profile/${user.profileId}/servers`,
+        serversOptions
+      )
         .then((response) => response.json())
         .then((data) => {
-          // Update the user's name in the state
-          setUserName(data.name);
-        })
-        .catch((error) => {
-          // Handle any errors
-          console.error("Error fetching user data: ", error);
+          setServers(data); // Update the state with the fetched servers
+          alert(JSON.stringify(servers, null, 4));
         });
     }
   }, [user]);
 
   return (
     <div>
-      <h1>Welcome to the Homepage</h1>
-      {user ? (
-        <div>
-          <p>Hello, {userName}!</p> {/* Access the user's email from context */}
-          {/* Add other content for the logged-in user */}
-        </div>
+      <h1>Great, you are in!</h1>
+      {servers.length > 0 ? (
+        <div>Loading server {servers[0]}</div>
       ) : (
-        <p>Please log in to access this page.</p>
+        <InitialModal />
       )}
     </div>
   );

@@ -1,13 +1,8 @@
 import LoginForm from "@/components/loginForm";
-import Layout from "@/components/ui/layout/Layout";
 import React from "react";
 
-const Register = () => {
-  return (
-    <Layout>
-      <LoginForm />
-    </Layout>
-  );
+const Login = () => {
+  return <LoginForm />;
 };
 
-export default Register;
+export default Login;

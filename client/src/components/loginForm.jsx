@@ -28,7 +28,6 @@ const loginSchema = z.object({
 const LoginForm = () => {
   const navigate = useNavigate();
   const { user, loading, error, dispatch } = useContext(AuthContext);
-
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -36,49 +35,45 @@ const LoginForm = () => {
       password: "",
     },
   });
-
   function onSubmit(data) {
-    dispatch({
-      type: "LOGIN_START",
-    });
+    dispatch({ type: "LOGIN_START" });
 
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    headers.append("Origin", "http://localhost:5173");
+
+    const toBeSent = {
+      email: data.email,
+      password: data.password,
+    };
+    const options = {
+      method: "POST",
+      headers,
+      body: JSON.stringify(toBeSent),
+      credentials: "include",
+    };
     try {
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json");
-      headers.append("Origin", "http://localhost:5173");
-
-      const toBeSent = {
-        email: data.email,
-        password: data.password,
-      };
-
-      const options = {
-        method: "POST",
-        headers,
-        body: JSON.stringify(toBeSent),
-        credentials: "include",
-      };
-
-      // Send request
       fetch("http://localhost:4000/api/auth/login", options)
         .then((response) => {
-          if (response.ok) {
-            alert("You are logged in!");
-            dispatch({ type: "LOGIN_SUCCESS", payload: data.email });
-            navigate("/user");
+          if (!response.ok) {
+            throw new Error("Login failed");
           }
+          return response.json();
         })
-        .catch((err) => {
-          dispatch({ type: "LOGIN_FAILURE", payload: err });
-          navigate("/login");
+        .then((data) => {
+          alert("You are logged in!");
+          dispatch({
+            type: "LOGIN_SUCCESS",
+            payload: { profileId: data.profileId },
+          });
+          navigate("/");
         });
     } catch (err) {
-      // Handle any other errors here
       console.error(err);
       dispatch({ type: "LOGIN_FAILURE", payload: "An error occurred." });
+      navigate("/login");
     }
   }
-
   return (
     <div>
       <Card className="w-[400px]">
