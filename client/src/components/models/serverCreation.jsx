@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useContext, setState } from "react";
+// imports
+import React, { useState, useEffect, useContext } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,22 +25,20 @@ import { X, Plus, Image } from "lucide-react";
 import { v4 } from "uuid";
 import { AuthContext } from "@/context/authContext";
 
+// zod form schema for validation
 const formSchema = z.object({
   name: z.string().min(1, {
     message: "Server name is required!",
   }),
 });
 
-const InitialModal = () => {
+// Main component for serving the server creation dialog box
+const ServerCreationDialog = () => {
   // For setting server image
   const [avatarImage, setAvatarImage] = useState(null);
-  const [IUrl, setIUrl] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
 
-  useEffect(() => {
-    console.log("AvatarImage is being changed: ", avatarImage);
-  }, [avatarImage]);
-
-  // Validation
+  // react-hook-from setup with zod resolver
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,11 +46,28 @@ const InitialModal = () => {
     },
   });
 
+  // Use effect to display selected-image preview & trigger comppnent re-render after state change
+  useEffect(() => {
+    console.log("AvatarImage is being changed: ", avatarImage);
+    if (avatarImage) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(avatarImage);
+    } else {
+      setImagePreview(null);
+    }
+  }, [avatarImage]);
+
+  // Function for handling Multer image update | Returns image url on resolution
   const uploadImage = async () => {
     return new Promise((resolve, reject) => {
+      // extract image from avatarImage state
       const formData = new FormData();
       formData.append("image", avatarImage);
 
+      // Upload image and save it in designated place
       if (avatarImage) {
         fetch("http://localhost:4000/api/upload", {
           method: "POST",
@@ -82,23 +98,24 @@ const InitialModal = () => {
     });
   };
 
-  const isLoading = form.formState.isSubmitting;
+  const isLoading = form.formState.isSubmitting; // For disabling buttons on submission
 
-  const context = useContext(AuthContext);
-  const profileId = context.user.profileId;
+  const context = useContext(AuthContext); // Global context
+  const profileId = context.user.profileId; // Accessing profileId of the logged in user for server creation
 
   const onSubmit = async (data) => {
-    const imageUrl = await uploadImage();
+    const imageUrl = await uploadImage(); // Wait for imageURL you get upon resolution
 
+    // Request pre-requisites
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     headers.append("Origin", "http://localhost:5173");
 
     const toBeSent = {
       name: data.name,
-      imageUrl: imageUrl,
+      imageUrl: imageUrl, // Store the URL
       inviteCode: v4(),
-      profileId,
+      profileId, // profileId from global context
     };
 
     // Create request options
@@ -106,19 +123,19 @@ const InitialModal = () => {
       method: "POST",
       headers,
       body: JSON.stringify(toBeSent),
-      credentials: "include",
+      credentials: "include", // To make sure you send the login_token cookies alongwith
     };
 
     try {
       fetch("http://localhost:4000/api/profile/servers/create", options).then(
         (response) => {
           if (response.ok) {
-            console.log("Server has been created!");
+            console.log("Server has been created!"); // Basic handling
           }
         }
       );
     } catch (err) {
-      console.log(err);
+      console.log(err); // Being lazy
     }
     form.reset();
   };
@@ -126,21 +143,23 @@ const InitialModal = () => {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setAvatarImage(file);
+      setAvatarImage(file); // Set the AvatarImage state with the choose image
     } else {
-      handleDeleteImage();
+      handleDeleteImage(); // call delete image
     }
   };
 
+  // Since original input tag for uploading image is hidden, this is used to simulate click
   const handleAvatarClick = () => {
     const fileInput = document.querySelector(".imageField");
-    fileInput.click();
+    fileInput.click(); // From here onChange takes charge
   };
 
   const handleDeleteImage = () => {
-    setAvatarImage("");
+    setAvatarImage(""); // Reset avatarImage state (Important for X button implementation)
   };
 
+  // Scadcn UI's Dialog box
   return (
     <Dialog open>
       <DialogContent className="bg-white text-black p-0 max-w-sm overflow-hidden">
@@ -154,17 +173,20 @@ const InitialModal = () => {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col w-full items-center pt-1">
+          {/*Transfer click to <input> tag to initiate the image uploading process*/}
           <Avatar className="relative bg-zinc-200" onClick={handleAvatarClick}>
-            <AvatarImage src={IUrl} />
+            <AvatarImage src={imagePreview} />
             <AvatarFallback className="flex flex-col">
               <Image strokeWidth="2" color="grey" size={24} />
             </AvatarFallback>
           </Avatar>
+          {/* Conditionally render either X or Plus comp. based on avatarImage's state */}
           {avatarImage ? (
             <button
               className="bg-rose-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm"
               onClick={handleDeleteImage}
             >
+              {/* Remove image on user's request */}
               <X className="h-3 w-3" />
             </button>
           ) : (
@@ -181,26 +203,16 @@ const InitialModal = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2 px-4">
               <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="image"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="hidden uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                        Server image
-                      </FormLabel>
-                      <FormControl>
-                        <input
-                          type="file"
-                          accept=".png, .jpeg, .jpg"
-                          className="hidden imageField bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
-                          onChange={handleAvatarChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                {/* Actual input tag that does the input job while staying hidden */}
+                <input
+                  type="file"
+                  accept=".png, .jpeg, .jpg"
+                  className="hidden imageField bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
+                  onChange={handleAvatarChange}
                 />
+                {/* onChange to handle the imageChange */}
+
+                {/* Rest of the form */}
                 <FormField
                   control={form.control}
                   name="name"
@@ -251,4 +263,4 @@ const InitialModal = () => {
   );
 };
 
-export default InitialModal;
+export default ServerCreationDialog;

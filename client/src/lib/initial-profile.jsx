@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "@/context/authContext.jsx"; // Import your AuthContext
-import InitialModal from "@/components/models/initial-modal";
+import ServerCreationDialog from "@/components/models/serverCreation";
 
 const InitialProfile = () => {
   const { user } = useContext(AuthContext);
@@ -26,7 +26,6 @@ const InitialProfile = () => {
         .then((response) => response.json())
         .then((data) => {
           setServers(data); // Update the state with the fetched servers
-          alert(JSON.stringify(servers, null, 4));
         });
     }
   }, [user]);
@@ -37,7 +36,7 @@ const InitialProfile = () => {
       {servers.length > 0 ? (
         <div>Loading server {servers[0]}</div>
       ) : (
-        <InitialModal />
+        <ServerCreationDialog />
       )}
     </div>
   );
