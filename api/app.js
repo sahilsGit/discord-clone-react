@@ -15,7 +15,7 @@ export const app = express();
 const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, "public/images"); // set the destination folder
+      cb(null, "./public/images"); // set the destination folder
     },
     filename: function (req, file, cb) {
       // generate a unique filename
@@ -48,6 +48,13 @@ app.use("/api/auth", authRouter);
 app.use(verifyToken);
 app.use("/api/profile", profileRouter);
 
+app.post("/api/upload", upload.single("image"), (req, res) => {
+  const url = req.file.path;
+  res.send({
+    url,
+  });
+});
+
 // error handler
 app.use(function (err, res, next) {
   const errorStatus = err.status || 500;
@@ -58,11 +65,5 @@ app.use(function (err, res, next) {
     status: errorStatus,
     message: errorMessage,
     stack: err.stack,
-  });
-});
-
-app.post("/api/upload", verifyToken, upload.single("image"), (req, res) => {
-  res.send({
-    success: true,
   });
 });

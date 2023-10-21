@@ -2,7 +2,7 @@ import { Server } from "../models/Schema.js";
 
 export const createServer = async (req, res, next) => {
   try {
-    const { name, inviteCode, profileId } = req.body;
+    const { name, inviteCode, profileId, imageUrl } = req.body;
 
     // Validations
     if (!name) {
@@ -10,12 +10,17 @@ export const createServer = async (req, res, next) => {
     }
     if (!profileId) {
       return res.send({
-        message: "The server must be associated with a user",
+        message: "The server must be associated with a user!",
       });
     }
-    if (!profileId) {
+    if (!imageUrl) {
       return res.send({
-        message: "Please create a valid invite code or use auto generator!",
+        message: "The server must have an image!",
+      });
+    }
+    if (!inviteCode) {
+      return res.send({
+        message: "An invite code must be provided!",
       });
     }
 
@@ -23,19 +28,10 @@ export const createServer = async (req, res, next) => {
       name,
       inviteCode,
       profileId,
+      imageUrl,
     });
 
-    const server = await newServer.save();
-
-    // Upload image
-    upload.single("image")(req, res, (err) => {
-      if (err) {
-        // handle error
-      } else {
-        server.imageUrl = req.file.path;
-        server.save();
-      }
-    });
+    await newServer.save();
 
     res.status(200).send("Server has been created!");
   } catch (err) {

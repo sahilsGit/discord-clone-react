@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext, setState } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -22,42 +22,81 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X, Plus, Image } from "lucide-react";
 import { v4 } from "uuid";
+import { AuthContext } from "@/context/authContext";
 
 const formSchema = z.object({
   name: z.string().min(1, {
     message: "Server name is required!",
   }),
-  imageUrl: z.string().min(1, {
-    message: "Server icon/image is required!",
-  }),
 });
 
 const InitialModal = () => {
   // For setting server image
-  const [avatarImage, setAvatarImage] = useState("");
+  const [avatarImage, setAvatarImage] = useState(null);
+  const [IUrl, setIUrl] = useState("");
+
+  useEffect(() => {
+    console.log("AvatarImage is being changed: ", avatarImage);
+  }, [avatarImage]);
 
   // Validation
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      imageUrl: "",
     },
   });
 
+  const uploadImage = async () => {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append("image", avatarImage);
+
+      if (avatarImage) {
+        fetch("http://localhost:4000/api/upload", {
+          method: "POST",
+          headers: {
+            Origin: "http://localhost:5173",
+          },
+          body: formData,
+          credentials: "include",
+        })
+          .then((response) => {
+            if (response.ok) {
+              console.log("Image uploaded successfully");
+              return response.json();
+            } else {
+              throw new Error("Upload failed");
+            }
+          })
+          .then((data) => {
+            resolve(data.url); // Resolve the promise with the image URL
+          })
+          .catch((error) => {
+            reject(error); // Reject the promise with an error if something goes wrong
+          });
+      } else {
+        console.log("Avatar image not found!");
+        reject(new Error("Avatar image not found")); // Reject the promise if avatarImage is not available
+      }
+    });
+  };
+
   const isLoading = form.formState.isSubmitting;
 
+  const context = useContext(AuthContext);
+  const profileId = context.user.profileId;
+
   const onSubmit = async (data) => {
-    // Set headers
+    const imageUrl = await uploadImage();
+
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     headers.append("Origin", "http://localhost:5173");
 
-    const profileId = v4();
-
     const toBeSent = {
       name: data.name,
-      imageUrl: avatarImage,
+      imageUrl: imageUrl,
       inviteCode: v4(),
       profileId,
     };
@@ -74,39 +113,31 @@ const InitialModal = () => {
       fetch("http://localhost:4000/api/profile/servers/create", options).then(
         (response) => {
           if (response.ok) {
-            alert("Server has been created!");
+            console.log("Server has been created!");
           }
         }
       );
     } catch (err) {
       console.log(err);
     }
+    form.reset();
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarImage(file);
+    } else {
+      handleDeleteImage();
+    }
   };
 
   const handleAvatarClick = () => {
     const fileInput = document.querySelector(".imageField");
-
-    fileInput.addEventListener("change", (e) => {
-      const selectedFile = e.target.files[0];
-
-      if (selectedFile) {
-        const reader = new FileReader();
-        reader.readAsDataURL(selectedFile);
-
-        reader.onload = () => {
-          setAvatarImage(reader.result);
-        };
-        reader.onerror = (error) => {
-          console.log("Error: ", error);
-        };
-      }
-    });
     fileInput.click();
-    fileInput.value = avatarImage;
   };
 
   const handleDeleteImage = () => {
-    // Set the avatarImage back to the default value
     setAvatarImage("");
   };
 
@@ -124,12 +155,12 @@ const InitialModal = () => {
         </DialogHeader>
         <div className="flex flex-col w-full items-center pt-1">
           <Avatar className="relative bg-zinc-200" onClick={handleAvatarClick}>
-            <AvatarImage src={avatarImage} />
+            <AvatarImage src={IUrl} />
             <AvatarFallback className="flex flex-col">
               <Image strokeWidth="2" color="grey" size={24} />
             </AvatarFallback>
           </Avatar>
-          {avatarImage !== "" ? (
+          {avatarImage ? (
             <button
               className="bg-rose-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm"
               onClick={handleDeleteImage}
@@ -145,26 +176,25 @@ const InitialModal = () => {
             </button>
           )}
         </div>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2 px-4">
               <div className="space-y-2">
                 <FormField
                   control={form.control}
-                  name="imageUrl"
+                  name="image"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="hidden uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                        Server name
+                        Server image
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          disabled={isLoading}
+                        <input
                           type="file"
                           accept=".png, .jpeg, .jpg"
-                          className="imageField hidden bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
-                          placeholder="Enter server name"
-                          {...field}
+                          className="hidden imageField bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
+                          onChange={handleAvatarChange}
                         />
                       </FormControl>
                       <FormMessage />
