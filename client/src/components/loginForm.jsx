@@ -1,4 +1,3 @@
-"use client";
 import React, { useContext } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/authContext";
+import { post } from "@/service/apiService";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -38,36 +38,26 @@ const LoginForm = () => {
   function onSubmit(data) {
     dispatch({ type: "LOGIN_START" });
 
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append("Origin", "http://localhost:5173");
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: "http://localhost:5173",
+    };
 
     const toBeSent = {
       email: data.email,
       password: data.password,
     };
-    const options = {
-      method: "POST",
-      headers,
-      body: JSON.stringify(toBeSent),
-      credentials: "include",
-    };
     try {
-      fetch("http://localhost:4000/api/auth/login", options)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Login failed");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          alert("You are logged in!");
-          dispatch({
-            type: "LOGIN_SUCCESS",
-            payload: { profileId: data.profileId },
-          });
-          navigate("/");
+      post("/auth/login", JSON.stringify(toBeSent), headers, {
+        credentials: "include",
+      }).then((data) => {
+        alert("You are logged in!");
+        dispatch({
+          type: "LOGIN_SUCCESS",
+          payload: { profileId: data.profileId },
         });
+        navigate("/");
+      });
     } catch (err) {
       console.error(err);
       dispatch({ type: "LOGIN_FAILURE", payload: "An error occurred." });

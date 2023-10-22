@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X, Plus, Image } from "lucide-react";
 import { v4 } from "uuid";
 import { AuthContext } from "@/context/authContext";
+import { post } from "@/service/apiService";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -37,6 +38,8 @@ const ServerCreationDialog = () => {
   // For setting server image
   const [avatarImage, setAvatarImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const context = useContext(AuthContext); // Global context
+  const profileId = context.user.profileId; // Accessing profileId of the logged in user for server creation
 
   // react-hook-from setup with zod resolver
   const form = useForm({
@@ -45,6 +48,8 @@ const ServerCreationDialog = () => {
       name: "",
     },
   });
+
+  const isLoading = form.formState.isSubmitting; // For disabling buttons on submission
 
   // Use effect to display selected-image preview & trigger comppnent re-render after state change
   useEffect(() => {
@@ -69,22 +74,14 @@ const ServerCreationDialog = () => {
 
       // Upload image and save it in designated place
       if (avatarImage) {
-        fetch("http://localhost:4000/api/upload", {
-          method: "POST",
-          headers: {
+        post(
+          "/upload",
+          formData,
+          {
             Origin: "http://localhost:5173",
           },
-          body: formData,
-          credentials: "include",
-        })
-          .then((response) => {
-            if (response.ok) {
-              console.log("Image uploaded successfully");
-              return response.json();
-            } else {
-              throw new Error("Upload failed");
-            }
-          })
+          { credentials: "include" }
+        )
           .then((data) => {
             resolve(data.url); // Resolve the promise with the image URL
           })
@@ -98,46 +95,14 @@ const ServerCreationDialog = () => {
     });
   };
 
-  const isLoading = form.formState.isSubmitting; // For disabling buttons on submission
+  // Since original input tag for uploading image is hidden, this is used to simulate click
+  const handleAvatarClick = () => {
+    const fileInput = document.querySelector(".imageField");
+    fileInput.click(); // From here onChange takes charge
+  };
 
-  const context = useContext(AuthContext); // Global context
-  const profileId = context.user.profileId; // Accessing profileId of the logged in user for server creation
-
-  const onSubmit = async (data) => {
-    const imageUrl = await uploadImage(); // Wait for imageURL you get upon resolution
-
-    // Request pre-requisites
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append("Origin", "http://localhost:5173");
-
-    const toBeSent = {
-      name: data.name,
-      imageUrl: imageUrl, // Store the URL
-      inviteCode: v4(),
-      profileId, // profileId from global context
-    };
-
-    // Create request options
-    const options = {
-      method: "POST",
-      headers,
-      body: JSON.stringify(toBeSent),
-      credentials: "include", // To make sure you send the login_token cookies alongwith
-    };
-
-    try {
-      fetch("http://localhost:4000/api/profile/servers/create", options).then(
-        (response) => {
-          if (response.ok) {
-            console.log("Server has been created!"); // Basic handling
-          }
-        }
-      );
-    } catch (err) {
-      console.log(err); // Being lazy
-    }
-    form.reset();
+  const handleDeleteImage = () => {
+    setAvatarImage(""); // Reset avatarImage state (Important for X button implementation)
   };
 
   const handleAvatarChange = (e) => {
@@ -149,14 +114,30 @@ const ServerCreationDialog = () => {
     }
   };
 
-  // Since original input tag for uploading image is hidden, this is used to simulate click
-  const handleAvatarClick = () => {
-    const fileInput = document.querySelector(".imageField");
-    fileInput.click(); // From here onChange takes charge
-  };
+  const onSubmit = async (data) => {
+    const imageUrl = await uploadImage(); // Wait for imageURL you get upon resolution
 
-  const handleDeleteImage = () => {
-    setAvatarImage(""); // Reset avatarImage state (Important for X button implementation)
+    // Request pre-requisites
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: "http://localhost:5173",
+    };
+
+    const toBeSent = {
+      name: data.name,
+      imageUrl: imageUrl, // Store the URL
+      inviteCode: v4(),
+      profileId, // profileId from global context
+    };
+
+    try {
+      post("/profile/servers/create", JSON.stringify(toBeSent), headers, {
+        credentials: "include",
+      });
+    } catch (err) {
+      console.log(err); // Being lazy
+    }
+    form.reset();
   };
 
   // Scadcn UI's Dialog box

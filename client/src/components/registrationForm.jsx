@@ -1,6 +1,4 @@
-"use client";
-import React from "react";
-
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,6 +24,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { registerSchema } from "@/validators/auth";
+import { post } from "@/service/apiService";
 
 const DaysDropdown = () => {
   const days = [];
@@ -65,7 +64,6 @@ const YearDropdown = () => {
 };
 
 const RegistrationForm = () => {
-  const [registrationStatus, setRegistrationStatus] = React.useState("");
   const form = useForm({
     resolver: zodResolver(registerSchema), //Resolving registerSchema created before
     defaultValues: {
@@ -79,7 +77,7 @@ const RegistrationForm = () => {
     },
   });
 
-  const [dobError, setDobError] = React.useState("");
+  const [dobError, setDobError] = useState("");
 
   function onSubmit(data) {
     const validateDob = () => {
@@ -128,9 +126,10 @@ const RegistrationForm = () => {
       return;
     } else {
       // Set headers
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json");
-      headers.append("Origin", "http://localhost:5173");
+      const headers = {
+        "Content-Type": "application/json",
+        Origin: "http://localhost:5173",
+      };
 
       const toBeSent = {
         username: data.username,
@@ -139,22 +138,8 @@ const RegistrationForm = () => {
         password: data.password,
       };
 
-      // Create request options
-      const options = {
-        method: "POST",
-        headers,
-        body: JSON.stringify(toBeSent),
-      };
-
       // Send request
-      fetch("http://localhost:4000/api/auth/register", options).then(
-        (response) => {
-          if (response.ok) {
-            alert("User has been created!");
-          }
-          setRegistrationStatus("User has been created!");
-        }
-      );
+      post("/auth/register", JSON.stringify(toBeSent), headers);
     }
   }
 
@@ -307,7 +292,6 @@ const RegistrationForm = () => {
               </div>
               <FormMessage>{dobError}</FormMessage>
               <Button type="submit">Submit</Button>
-              <FormMessage>{registrationStatus}</FormMessage>
             </form>
           </Form>
         </CardContent>

@@ -46,6 +46,50 @@ const serverSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now, required: true },
 });
 
+// Add a pre-save hook to update the user's servers array
+serverSchema.pre("save", async function (next) {
+  // Find the user (profile) by their profileId and update their servers array
+  const Profile = mongoose.model("Profile");
+  try {
+    const user = await Profile.findById(this.profileId); // Find profile with server's profileId argument
+    if (user) {
+      user.servers.push(this._id); // Push this server's id to profile's "servers" array
+
+      // Create member
+      const member = new Member({
+        role: "ADMIN", // Set the default role here if needed
+        profileId: user._id, // user's id
+        serverId: this._id, // server's id
+      });
+
+      await member.save();
+      user.members.push(member._id);
+      this.members.push(member._id);
+      await user.save(); // save user
+    }
+  } catch (err) {
+    return next(err);
+  }
+
+  next();
+});
+
+// Add a pre-remove hook to remove the server's ID from the user's servers array
+serverSchema.pre("remove", async function (next) {
+  // Find the user (profile) by their profileId and remove the server's ID
+  const Profile = mongoose.model("Profile");
+  try {
+    const user = await Profile.findById(this.profileId);
+    if (user) {
+      user.servers.pull(this._id); // Remove the server's ID from the array
+      await user.save();
+    }
+  } catch (err) {
+    return next(err);
+  }
+  next();
+});
+
 const memberSchema = new mongoose.Schema({
   role: {
     type: String,
