@@ -18,8 +18,10 @@ const connect = async () => {
 // Start the Express server and listen on port 4000
 app.listen(process.env.PORT || 4000, () => {
   try {
-    connect(); // calling the connect async function
-    console.log("Server is listening on port 4000!"); // Log a message when the server is successfully started
+    connect().then(() => {
+      console.log("Server is listening on port 4000!");
+      // calling the connect async function
+    });
   } catch (err) {
     console.error("Port Error: ", err);
   }

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const profileSchema = new mongoose.Schema({
   username: { type: String, unique: true, required: true },
   name: { type: String, required: true },
-  imageUrl: String,
+  image: String,
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
   servers: [
@@ -19,6 +19,22 @@ const profileSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now, required: true },
 });
 
+const sessionSchema = new mongoose.Schema({
+  token: { type: String, required: true, unique: true },
+  profileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Profile",
+    required: true,
+  },
+  createdAt: { type: Date, default: Date.now, required: true },
+  expireAt: { type: Date, required: true },
+});
+
+// Remove `expireAfterSeconds` from index
+sessionSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
+sessionSchema.index({ token: 1 });
+sessionSchema.index({ profileId: 1 });
+
 // Define a pre-remove hook for the Profile schema
 profileSchema.pre("remove", async function (next) {
   // Remove all associated servers and members when a profile is deleted
@@ -29,7 +45,7 @@ profileSchema.pre("remove", async function (next) {
 
 const serverSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  imageUrl: String,
+  image: String,
   inviteCode: { type: String, unique: true, required: true },
   profileId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -229,6 +245,7 @@ const Channel = mongoose.model("Channel", channelSchema);
 const Message = mongoose.model("Message", messageSchema);
 const Conversation = mongoose.model("Conversation", conversationSchema);
 const DirectMessage = mongoose.model("DirectMessage", directMessageSchema);
+const Session = mongoose.model("Session", sessionSchema);
 
 export {
   Profile,
@@ -238,4 +255,5 @@ export {
   Message,
   Conversation,
   DirectMessage,
+  Session,
 };

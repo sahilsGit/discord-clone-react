@@ -1,5 +1,3 @@
-import React, { useContext } from "react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,9 +14,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "@/context/authContext";
-import { post } from "@/service/apiService";
+import { useNavigate, useLocation } from "react-router-dom";
+import { post } from "@/services/apiService";
+import { handleResponse, handleError } from "@/services/responseHandler";
+import useAuth from "@/hooks/useAuth";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -27,7 +26,10 @@ const loginSchema = z.object({
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const { user, loading, error, dispatch } = useContext(AuthContext);
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
+  const dispatch = useAuth("dispatch");
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -35,7 +37,7 @@ const LoginForm = () => {
       password: "",
     },
   });
-  function onSubmit(data) {
+  const onSubmit = async (data) => {
     dispatch({ type: "LOGIN_START" });
 
     const headers = {
@@ -48,22 +50,36 @@ const LoginForm = () => {
       password: data.password,
     };
     try {
-      post("/auth/login", JSON.stringify(toBeSent), headers, {
-        credentials: "include",
-      }).then((data) => {
-        alert("You are logged in!");
-        dispatch({
-          type: "LOGIN_SUCCESS",
-          payload: { profileId: data.profileId },
-        });
-        navigate("/");
+      const response = await post(
+        "/auth/login",
+        JSON.stringify(toBeSent),
+        headers,
+        {
+          credentials: "include",
+        }
+      );
+
+      const data = await handleResponse(response, dispatch);
+
+      console.log(data);
+
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: {
+          access_token: data.access_token,
+          user: data.username, // Set the authenticated user
+          loading: false, // Set loading to false
+          error: null, // Clear any previous errors
+        },
       });
+
+      navigate(from);
     } catch (err) {
-      console.error(err);
+      handleError(err);
       dispatch({ type: "LOGIN_FAILURE", payload: "An error occurred." });
       navigate("/login");
     }
-  }
+  };
   return (
     <div>
       <Card className="w-[400px]">

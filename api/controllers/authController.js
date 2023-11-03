@@ -1,4 +1,4 @@
-import { Profile } from "../models/Schema.js";
+import { Profile, Session } from "../models/Schema.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -46,8 +46,8 @@ export const register = async (req, res, next) => {
     });
 
     // Checking if optional data given
-    if (req.body.imageUrl) {
-      newProfile.imageUrl = req.body.imageUrl;
+    if (req.body.image) {
+      newProfile.image = req.body.image;
     }
 
     await newProfile.save();
@@ -100,25 +100,46 @@ export const login = async (req, res, next) => {
     }
 
     // Create a session equivalent JWT token
-    const token = jwt.sign(
+    const access_token = jwt.sign(
       {
-        id: userProfile._id,
         username: userProfile.username,
+        profileId: userProfile._id,
       },
       process.env.JWT,
       {
-        expiresIn: "5h", // Token expiration time
+        expiresIn: "30s", // Token expiration time
       }
     ); // Authorize user using the secret key
 
-    res.cookie("login_token", token, {
+    const refresh = jwt.sign(
+      {
+        username: userProfile.username,
+        profileId: userProfile._id,
+      },
+      process.env.REFRESH,
+      {
+        expiresIn: "20m", // Token expiration time
+      }
+    ); // Authorize user using the secret key
+
+    const newSession = new Session({
+      token: refresh,
+      profileId: userProfile._id,
+      expireAt: new Date(Date.now() + 20 * 60 * 1000),
+    });
+
+    await newSession.save();
+
+    res.cookie("refresh_token", refresh, {
       httpOnly: true,
       path: "/",
       sameSite: "Lax",
+      maxAge: 20 * 60 * 1000,
     });
 
     res.status(200).send({
-      profileId: userProfile._id,
+      username: userProfile.username,
+      access_token,
     });
   } catch (err) {
     err.status = 500;

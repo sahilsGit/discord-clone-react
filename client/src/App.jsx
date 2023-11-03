@@ -6,8 +6,10 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { cn } from "./lib/utils";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import ProtectedPage from "./pages/ProtectedPage";
 import InitialProfile from "./lib/initial-profile";
+import ServerPage from "@/pages/ServerPage";
+import RequireAuth from "@/lib/requireAuth";
+import ServerCreationDialog from "@/components/models/serverCreation";
 
 function App() {
   return (
@@ -25,8 +27,30 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="*" element={<PageNotFound />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/protectedPage" element={<ProtectedPage />} />
-            <Route path="/user" element={<InitialProfile />} />
+            <Route
+              path="/user"
+              element={
+                <RequireAuth>
+                  <InitialProfile />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/servers/create"
+              element={
+                <RequireAuth>
+                  <ServerCreationDialog />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/servers/:id"
+              element={
+                <RequireAuth>
+                  <ServerPage />
+                </RequireAuth>
+              }
+            />
           </Routes>
         </ThemeProvider>
       </div>

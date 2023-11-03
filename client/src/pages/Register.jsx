@@ -1,4 +1,4 @@
-import RegistrationForm from "@/components/registrationForm";
+import RegistrationForm from "@/components/models/registration.jsx";
 import React from "react";
 
 const Register = () => {

@@ -5,7 +5,7 @@ import { createServer } from "../controllers/serverController.js";
 const router = express.Router();
 
 /* GET users listing. */
-router.get("/:id/servers", findServers);
+router.get("/:username/servers", findServers);
 router.post("/servers/create", createServer);
 
 export default router;

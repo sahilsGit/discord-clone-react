@@ -1,5 +1,5 @@
 // imports
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -23,8 +23,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X, Plus, Image } from "lucide-react";
 import { v4 } from "uuid";
-import { AuthContext } from "@/context/authContext";
-import { post } from "@/service/apiService";
+import { post } from "@/services/apiService";
+import useAuth from "@/hooks/useAuth";
+import { handleError, handleResponse } from "@/services/responseHandler";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -36,10 +37,11 @@ const formSchema = z.object({
 // Main component for serving the server creation dialog box
 const ServerCreationDialog = () => {
   // For setting server image
+  const dispatch = useAuth("dispatch");
   const [avatarImage, setAvatarImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const context = useContext(AuthContext); // Global context
-  const profileId = context.user.profileId; // Accessing profileId of the logged in user for server creation
+  const access_token = useAuth("token");
+  const username = useAuth("user");
 
   // react-hook-from setup with zod resolver
   const form = useForm({
@@ -67,32 +69,36 @@ const ServerCreationDialog = () => {
 
   // Function for handling Multer image update | Returns image url on resolution
   const uploadImage = async () => {
-    return new Promise((resolve, reject) => {
-      // extract image from avatarImage state
-      const formData = new FormData();
-      formData.append("image", avatarImage);
+    const formData = new FormData();
+    formData.append("image", avatarImage);
 
-      // Upload image and save it in designated place
-      if (avatarImage) {
-        post(
+    // Upload image and save it in designated place
+    if (avatarImage) {
+      try {
+        const response = await post(
           "/upload",
           formData,
           {
+            Authorization: `Bearer ${access_token}`,
             Origin: "http://localhost:5173",
           },
           { credentials: "include" }
-        )
-          .then((data) => {
-            resolve(data.url); // Resolve the promise with the image URL
-          })
-          .catch((error) => {
-            reject(error); // Reject the promise with an error if something goes wrong
-          });
-      } else {
-        console.log("Avatar image not found!");
-        reject(new Error("Avatar image not found")); // Reject the promise if avatarImage is not available
+        );
+
+        // Ensure that the response is parsed as JSON
+        const data = await handleResponse(response, dispatch);
+
+        // Access the newFilename property from the parsed JSON
+        const { newFilename } = data;
+
+        return newFilename;
+      } catch (err) {
+        handleError(err);
       }
-    });
+    } else {
+      console.log("Avatar image not found!");
+      throw new Error("Avatar image not found"); // Reject the promise if avatarImage is not available
+    }
   };
 
   // Since original input tag for uploading image is hidden, this is used to simulate click
@@ -115,19 +121,22 @@ const ServerCreationDialog = () => {
   };
 
   const onSubmit = async (data) => {
-    const imageUrl = await uploadImage(); // Wait for imageURL you get upon resolution
+    const image = await uploadImage(); // Wait for image you get upon resolution
+
+    console.log("Image uploaded: ", image);
 
     // Request pre-requisites
     const headers = {
+      Authorization: `Bearer ${access_token}`,
       "Content-Type": "application/json",
       Origin: "http://localhost:5173",
     };
 
     const toBeSent = {
       name: data.name,
-      imageUrl: imageUrl, // Store the URL
+      image: image, // Store the URL
       inviteCode: v4(),
-      profileId, // profileId from global context
+      username, // profileId from global context
     };
 
     try {

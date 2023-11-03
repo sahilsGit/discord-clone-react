@@ -1,21 +1,22 @@
-import { AuthContext } from "@/context/authContext";
+import useAuth from "@/hooks/useAuth";
 import InitialProfile from "@/lib/initial-profile";
-import { React, useContext } from "react";
+import { React } from "react";
 import { Link } from "react-router-dom"; // Import Link from react-router-dom for navigation
 
 const Homepage = () => {
-  const { user } = useContext(AuthContext);
+  const user = useAuth("user");
+  const access_token = useAuth("token");
+
   return (
     <>
-      <h1>Homepage</h1>
-      {user ? (
-        <InitialProfile />
-      ) : (
+      {!user || !access_token ? (
         <div>
           <p>Please log in or register to access this page.</p>
           <Link to="/login">Login</Link>
           <Link to="/register">Register</Link>
         </div>
+      ) : (
+        <InitialProfile />
       )}
     </>
   );

@@ -24,7 +24,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { registerSchema } from "@/validators/auth";
-import { post } from "@/service/apiService";
+import { post } from "@/services/apiService";
 
 const DaysDropdown = () => {
   const days = [];

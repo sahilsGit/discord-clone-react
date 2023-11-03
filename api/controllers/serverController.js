@@ -2,18 +2,18 @@ import { Server } from "../models/Schema.js";
 
 export const createServer = async (req, res, next) => {
   try {
-    const { name, inviteCode, profileId, imageUrl } = req.body;
+    const { name, inviteCode, username, image } = req.body;
 
     // Validations
     if (!name) {
       return res.send({ message: "Server must have a name!" });
     }
-    if (!profileId) {
+    if (!username) {
       return res.send({
         message: "The server must be associated with a user!",
       });
     }
-    if (!imageUrl) {
+    if (!image) {
       return res.send({
         message: "The server must have an image!",
       });
@@ -24,16 +24,26 @@ export const createServer = async (req, res, next) => {
       });
     }
 
+    const profileId = req.user.profileId;
+
+    if (req.user.username != username) {
+      res.status(401).send("Token does not match the given user");
+    }
+
     const newServer = new Server({
       name,
       inviteCode,
       profileId,
-      imageUrl,
+      image,
     });
 
     await newServer.save();
 
-    res.status(200).send("Server has been created!");
+    if (res.body) {
+      res.status(200).send(res.body);
+    } else {
+      res.status(200).send("Server has been created!");
+    }
   } catch (err) {
     err.status = 500;
     err.message = "Internal server error!";

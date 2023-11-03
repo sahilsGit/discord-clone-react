@@ -7,8 +7,10 @@ import profileRouter from "./routes/profile.js";
 import authRouter from "./routes/auth.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { verifyToken } from "./lib/verifyToken.js";
 import multer from "multer";
+import verifyToken from "./controllers/tokensController.js";
+import logoutRouter from "./routes/logout.js";
+import fs from "fs";
 
 export const app = express();
 
@@ -46,13 +48,35 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/api/auth", authRouter);
 app.use(verifyToken);
+app.use("/api/logout", logoutRouter);
 app.use("/api/profile", profileRouter);
 
+///// Temp
+
+app.get("/api/getImage/:imageName", (req, res) => {
+  const imageName = req.params.imageName;
+  const imagePath = path.join(__dirname, "public/images", imageName);
+
+  if (fs.existsSync(imagePath)) {
+    // Set appropriate headers (e.g., for a JPEG image)
+    res.setHeader("Content-Type", "image/jpeg");
+    // Send the image file as a response
+    res.sendFile(imagePath);
+  } else {
+    // Handle the case where the image doesn't exist
+    res.status(404).send("Image not found");
+  }
+
+  // res.sendFile(imagePath);
+});
+
+/////
+
 app.post("/api/upload", upload.single("image"), (req, res) => {
-  const url = req.file.path;
-  res.send({
-    url,
-  });
+  const newFilename = req.file.filename;
+
+  // Send the new filename as a response
+  res.json({ newFilename });
 });
 
 // error handler

@@ -1,15 +1,5 @@
 const BASE_URL = "http://localhost:4000/api";
 
-// Helper function to handle response data and errors
-async function handleResponse(response) {
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Request failed");
-  }
-
-  return response.json();
-}
-
 // Your main stream GET request
 export async function get(endpoint, headers, options) {
   const url = `${BASE_URL}${endpoint}`;
@@ -21,7 +11,7 @@ export async function get(endpoint, headers, options) {
       ...options,
     });
 
-    return handleResponse(response);
+    return response;
   } catch (error) {
     throw error;
   }
@@ -39,7 +29,7 @@ export async function post(endpoint, body, headers, options) {
       ...options,
     });
 
-    return handleResponse(response);
+    return response;
   } catch (error) {
     throw error;
   }
@@ -55,7 +45,7 @@ export async function del(endpoint) {
       headers,
     });
 
-    return handleResponse(response);
+    return response;
   } catch (error) {
     throw error;
   }

@@ -1,49 +1,54 @@
-import React, { useState, useEffect, useContext } from "react";
-import { AuthContext } from "@/context/authContext.jsx"; // Import your AuthContext
+import React, { useState, useEffect } from "react";
 import ServerCreationDialog from "@/components/models/serverCreation";
-import { get } from "@/service/apiService";
+import { get } from "@/services/apiService";
+import { useNavigate } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
+import { handleResponse, handleError } from "@/services/responseHandler";
 
 const InitialProfile = () => {
-  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const user = useAuth("user");
+  const access_token = useAuth("token");
   const [servers, setServers] = useState([]);
-
-  const headers = {
-    "Content-Type": "application/json",
-    Origin: "http://localhost:5173",
-  };
+  const [isServerCreationDialogOpen, setServerCreationDialogOpen] =
+    useState(false);
+  const dispatch = useAuth("dispatch");
 
   useEffect(() => {
-    if (user) {
-      // const serversOptions = {
-      //   method: "GET", // Use the appropriate method
-      //   headers, // Reuse the headers
-      //   credentials: "include",
-      //   // Add custom options for the second fetch here
-      // };
+    const handlePopulation = async () => {
+      const headers = {
+        Authorization: `Bearer ${access_token}`,
+        "Content-Type": "application/json",
+        Origin: "http://localhost:5173",
+      };
 
-      // fetch(
-      //   `http://localhost:4000/api/profile/${user.profileId}/servers`,
-      //   serversOptions
-      // ).then((response) => response.json());
+      try {
+        const response = await get(`/profile/${user}/servers`, headers, {
+          credentials: "include",
+        });
 
-      get(`/profile/${user.profileId}/servers`, headers, {
-        credentials: "include",
-      }).then((data) => {
-        setServers(data); // Update the state with the fetched servers
-      });
+        const data = await handleResponse(response, dispatch);
+        setServers(data.servers); // Update the state with the fetched servers
+        console.log(data.servers);
+        if (data.servers.length === 0) {
+          // If no servers are available, open the dialog
+          setServerCreationDialogOpen(true);
+        }
+      } catch (err) {
+        handleError(err);
+      }
+    };
+
+    handlePopulation();
+  }, []);
+
+  useEffect(() => {
+    if (servers.length > 0) {
+      navigate(`/servers/${servers[0].id}`);
     }
-  }, [user]);
+  }, [servers, navigate]);
 
-  return (
-    <div>
-      <h1>Great, you are in!</h1>
-      {servers.length > 0 ? (
-        <div>Loading server {servers[0]}</div>
-      ) : (
-        <ServerCreationDialog />
-      )}
-    </div>
-  );
+  return <div>{isServerCreationDialogOpen && <ServerCreationDialog />}</div>;
 };
 
 export default InitialProfile;

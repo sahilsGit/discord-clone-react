@@ -1,21 +1,33 @@
-import { Profile } from "../models/Schema.js";
+import { Profile, Server } from "../models/Schema.js";
 
 export const findServers = async (req, res, next) => {
   try {
-    // Get the profile ID from the request parameters
-    const profileId = req.params.id;
-
-    // Query the database to find the profile by _id
-    const profile = await Profile.findById(profileId);
+    const profile = await Profile.findById(req.user.profileId); // Use the id from JWT token
 
     if (!profile) {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    // Access the profile's list of servers (assuming it's an array property on the profile document)
-    const profileServers = profile.servers;
+    // Find all servers with ids in profile's servers array
+    const servers = await Server.find({
+      _id: { $in: profile.servers },
+    });
 
-    res.send({ servers: profileServers });
+    // Map servers to only return necessary fields
+
+    const serverData = servers.map((server) => ({
+      name: server.name,
+      id: server._id,
+      image: server.image,
+    }));
+
+    if (res.body) {
+      res.body = { ...res.body, servers: serverData };
+    } else {
+      res.body = { servers: serverData };
+    }
+
+    res.status(200).send(res.body);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });
