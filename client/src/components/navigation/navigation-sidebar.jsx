@@ -42,11 +42,11 @@ const NavigationSidebar = () => {
   }, [access_token, profile.profileId, dispatch]);
 
   return (
-    <div className="flex flex-col items-center h-full text-primary space-y-1.5">
+    <div className="flex flex-col items-center h-full text-primary gap-1.5 pt-[5px]">
       <DirectMessages />
-      <Separator className="py-0 h-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-7" />
-      <ScrollArea className="w-full flex">
-        <div className="flex flex-col items-center">
+      <Separator className="h-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-7" />
+      <ScrollArea className="w-full flex pt-[2px]">
+        <div className="flex flex-col items-center justify-center space-y-1.5">
           {servers.map((server) => (
             <NavigationItem
               key={server.id}
