@@ -3,13 +3,15 @@ import PageNotFound from "./pages/PageNotFound";
 import Homepage from "./pages/Homepage";
 import About from "./pages/About";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ModalProvider } from "@/components/providers/modal-provider";
+
 import { cn } from "./lib/utils";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import InitialProfile from "./lib/initial-profile";
 import ServerPage from "@/pages/ServerPage";
 import RequireAuth from "@/lib/requireAuth";
-import ServerCreationDialog from "@/components/models/serverCreation";
+import InitialModal from "@/components/modals/initialModal";
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
           defaultTheme="dark"
           storageKey="discord-theme"
         >
+          <ModalProvider />
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/about" element={<About />} />
@@ -39,7 +42,7 @@ function App() {
               path="/servers/create"
               element={
                 <RequireAuth>
-                  <ServerCreationDialog />
+                  <InitialModal />
                 </RequireAuth>
               }
             />

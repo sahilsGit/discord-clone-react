@@ -1,4 +1,4 @@
-import { Profile, Server } from "../models/Schema.js";
+import { Profile, Server } from "../modals/Schema.js";
 
 export const findServers = async (req, res, next) => {
   try {

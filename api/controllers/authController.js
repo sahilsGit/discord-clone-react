@@ -1,4 +1,4 @@
-import { Profile, Session } from "../models/Schema.js";
+import { Profile, Session } from "../modals/Schema.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 

@@ -1,37 +1,43 @@
 import { Moon, Sun } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/providers/theme-provider";
+import { ActionTooltip } from "./action-tooltip";
 
 export function ModeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme("system");
+
+  const toggleTheme = () => {
+    if (theme === "light" || theme === "system") {
+      setTheme("dark");
+    } else if (theme === "dark") {
+      setTheme("light");
+    } else {
+      setTheme("system");
+    }
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <button
+      onClick={toggleTheme}
+      className="w-full flex items-center justify-center group relative"
+    >
+      <div className="absolute h-[8px] w-[4px] opacity-0 left-0 bg-primary rounded-r-full transition-all group-hover:opacity-100 group-hover:h-[20px]"></div>
+      <ActionTooltip side="right" align="center" label="Switch Mode">
+        <div className="flex items-center justify-center h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all ">
+          {theme === "dark" ? (
+            <Sun
+              size={25}
+              strokeWidth={1.5}
+              className="transition-all group-hover:text-white text-emerald-500"
+            />
+          ) : (
+            <Moon
+              size={25}
+              strokeWidth={1.5}
+              className="transition-all group-hover:text-black text-emerald-600"
+            />
+          )}
+        </div>
+      </ActionTooltip>
+    </button>
   );
 }

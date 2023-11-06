@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Session } from "../models/Schema.js";
+import { Session } from "../modals/Schema.js";
 
 const verifyToken = async (req, res, next) => {
   // Extract tokens from cookies and headers

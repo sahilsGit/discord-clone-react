@@ -7,6 +7,7 @@ import { DirectMessages } from "@/components/navigation/navigation-messages";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NavigationItem } from "./navigation-item";
+import { ModeToggle } from "../mode-toggle";
 
 const NavigationSidebar = () => {
   const profile = useAuth("user");
@@ -42,23 +43,26 @@ const NavigationSidebar = () => {
   }, [access_token, profile.profileId, dispatch]);
 
   return (
-    <div className="flex flex-col items-center h-full text-primary gap-1.5 pt-[5px]">
-      <DirectMessages />
-      <Separator className="h-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-7" />
-      <ScrollArea className="w-full flex pt-[2px]">
-        <div className="flex flex-col items-center justify-center space-y-1.5">
-          {servers.map((server) => (
-            <NavigationItem
-              key={server.id}
-              // className="items-center" for button inside button
-              id={server.id}
-              name={server.name}
-              image={server.image}
-            />
-          ))}
-        </div>
-      </ScrollArea>
-      <NavigationAction />
+    <div className="flex flex-col h-full justify-between pt-[14px] pb-[14px]">
+      <div className="flex flex-col items-center h-full text-primary gap-1.5">
+        <DirectMessages />
+        <Separator className="h-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-7" />
+        <ScrollArea className="w-full flex pt-[2px]">
+          <div className="flex flex-col items-center justify-center space-y-1.5">
+            {servers.map((server) => (
+              <NavigationItem
+                key={server.id}
+                id={server.id}
+                name={server.name}
+                image={server.image}
+              />
+            ))}
+          </div>
+        </ScrollArea>
+        <Separator className="mt-[1px] h-[1px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-7" />
+        <NavigationAction />
+      </div>
+      <ModeToggle />
     </div>
   );
 };

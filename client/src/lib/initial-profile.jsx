@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ServerCreationDialog from "@/components/models/serverCreation";
+import InitialModal from "@/components/modals/initialModal";
 import { get } from "@/services/apiService";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
@@ -10,8 +10,7 @@ const InitialProfile = () => {
   const user = useAuth("user");
   const access_token = useAuth("token");
   const [servers, setServers] = useState([]);
-  const [isServerCreationDialogOpen, setServerCreationDialogOpen] =
-    useState(false);
+  const [isInitialModalOpen, setInitialModalOpen] = useState(false);
   const dispatch = useAuth("dispatch");
 
   useEffect(() => {
@@ -32,7 +31,7 @@ const InitialProfile = () => {
         console.log(data.servers);
         if (data.servers.length === 0) {
           // If no servers are available, open the dialog
-          setServerCreationDialogOpen(true);
+          setInitialModalOpen(true);
         }
       } catch (err) {
         handleError(err);
@@ -48,7 +47,7 @@ const InitialProfile = () => {
     }
   }, [servers, navigate]);
 
-  return <div>{isServerCreationDialogOpen && <ServerCreationDialog />}</div>;
+  return <div>{isInitialModalOpen && <InitialModal />}</div>;
 };
 
 export default InitialProfile;

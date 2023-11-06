@@ -1,4 +1,4 @@
-import { Session } from "../models/Schema.js";
+import { Session } from "../modals/Schema.js";
 
 const handleLogout = async (req, res, next) => {
   try {

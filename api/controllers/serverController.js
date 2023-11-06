@@ -1,4 +1,4 @@
-import { Server } from "../models/Schema.js";
+import { Server } from "../modals/Schema.js";
 
 export const createServer = async (req, res, next) => {
   try {

@@ -26,6 +26,7 @@ import { v4 } from "uuid";
 import { post } from "@/services/apiService";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/services/responseHandler";
+import { useModal } from "@/hooks/useModals";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -35,13 +36,20 @@ const formSchema = z.object({
 });
 
 // Main component for serving the server creation dialog box
-const ServerCreationDialog = () => {
+const ServerCreationModal = () => {
+  // For conditionally rendering the dialog
+  const { isOpen, onClose } = useModal();
+  const isModalOpen = isOpen;
+
   // For setting server image
-  const dispatch = useAuth("dispatch");
-  const [avatarImage, setAvatarImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const access_token = useAuth("token");
-  const username = useAuth("user");
+  const dispatch = useAuth("dispatch"); //authContext if response brings in a new access_token
+
+  const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
+
+  const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
+  const access_token = useAuth("token"); // For authorization
+
+  const username = useAuth("user"); // For Server creation
 
   // react-hook-from setup with zod resolver
   const form = useForm({
@@ -53,13 +61,13 @@ const ServerCreationDialog = () => {
 
   const isLoading = form.formState.isSubmitting; // For disabling buttons on submission
 
-  // Use effect to display selected-image preview & trigger comppnent re-render after state change
+  // Use effect to display selected-image preview
   useEffect(() => {
     console.log("AvatarImage is being changed: ", avatarImage);
     if (avatarImage) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target.result);
+        setImagePreview(e.target.result); // Set avatar preview
       };
       reader.readAsDataURL(avatarImage);
     } else {
@@ -85,13 +93,13 @@ const ServerCreationDialog = () => {
           { credentials: "include" }
         );
 
-        // Ensure that the response is parsed as JSON
+        // Parse the response as JSON
         const data = await handleResponse(response, dispatch);
 
         // Access the newFilename property from the parsed JSON
         const { newFilename } = data;
 
-        return newFilename;
+        return newFilename; // For DB storage
       } catch (err) {
         handleError(err);
       }
@@ -123,8 +131,6 @@ const ServerCreationDialog = () => {
   const onSubmit = async (data) => {
     const image = await uploadImage(); // Wait for image you get upon resolution
 
-    console.log("Image uploaded: ", image);
-
     // Request pre-requisites
     const headers = {
       Authorization: `Bearer ${access_token}`,
@@ -134,7 +140,7 @@ const ServerCreationDialog = () => {
 
     const toBeSent = {
       name: data.name,
-      image: image, // Store the URL
+      image: image, // Store the name
       inviteCode: v4(),
       username, // profileId from global context
     };
@@ -148,10 +154,17 @@ const ServerCreationDialog = () => {
     }
     form.reset();
   };
+  {
+  }
+
+  const handleClose = () => {
+    form.reset();
+    onClose();
+  };
 
   // Scadcn UI's Dialog box
   return (
-    <Dialog open>
+    <Dialog open={isModalOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white text-black p-0 max-w-sm overflow-hidden">
         <DialogHeader className="pt-6 px-7 space-y-2">
           <DialogTitle className="text-2xl text-center font-bold">
@@ -253,4 +266,4 @@ const ServerCreationDialog = () => {
   );
 };
 
-export default ServerCreationDialog;
+export default ServerCreationModal;
