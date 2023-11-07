@@ -25,13 +25,13 @@ export function ModeToggle() {
         <div className="flex items-center justify-center h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all ">
           {theme === "dark" ? (
             <Sun
-              size={25}
+              size={22}
               strokeWidth={1.5}
               className="transition-all group-hover:text-white text-emerald-500"
             />
           ) : (
             <Moon
-              size={25}
+              size={22}
               strokeWidth={1.5}
               className="transition-all group-hover:text-black text-emerald-600"
             />

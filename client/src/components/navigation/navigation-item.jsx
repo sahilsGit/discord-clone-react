@@ -4,11 +4,12 @@ import { get } from "@/services/apiService";
 import { handleError } from "@/services/responseHandler";
 import useAuth from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const NavigationItem = ({ name, id, image }) => {
   const [imageSrc, setImageSrc] = useState(null);
   const params = useParams();
+  const navigate = useNavigate();
   // make request here
 
   const dispatch = useAuth("dispatch");
@@ -41,7 +42,9 @@ export const NavigationItem = ({ name, id, image }) => {
 
   return (
     <button
-      onClick={() => {}}
+      onClick={() => {
+        navigate(`/servers/${id}`);
+      }}
       className="w-full flex items-center justify-center group relative"
     >
       <div

@@ -21,6 +21,8 @@ const InitialProfile = () => {
         Origin: "http://localhost:5173",
       };
 
+      console.log(user);
+
       try {
         const response = await get(`/profile/${user}/servers`, headers, {
           credentials: "include",

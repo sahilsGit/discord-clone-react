@@ -19,6 +19,8 @@ const profileSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now, required: true },
 });
 
+profileSchema.index({ servers: 1 });
+
 const sessionSchema = new mongoose.Schema({
   token: { type: String, required: true, unique: true },
   profileId: {
@@ -62,6 +64,8 @@ const serverSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now, required: true },
 });
 
+serverSchema.index({ profileId: 1 });
+
 // Add a pre-save hook to update the user's servers array
 serverSchema.pre("save", async function (next) {
   // Find the user (profile) by their profileId and update their servers array
@@ -93,6 +97,7 @@ serverSchema.pre("save", async function (next) {
 // Add a pre-remove hook to remove the server's ID from the user's servers array
 serverSchema.pre("remove", async function (next) {
   // Find the user (profile) by their profileId and remove the server's ID
+  await mongoose.model("Member").deleteMany({ serverId: this._id });
   const Profile = mongoose.model("Profile");
   try {
     const user = await Profile.findById(this.profileId);
@@ -148,13 +153,6 @@ const memberSchema = new mongoose.Schema({
   ],
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
-});
-
-// Define a pre-remove hook for the Server schema
-serverSchema.pre("remove", async function (next) {
-  // Remove all associated members when a server is deleted
-  await mongoose.model("Member").deleteMany({ serverId: this._id });
-  next();
 });
 
 const channelSchema = new mongoose.Schema({
