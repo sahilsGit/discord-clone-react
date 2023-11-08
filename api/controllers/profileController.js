@@ -4,7 +4,8 @@ export const findServers = async (req, res, next) => {
   try {
     // TODO : Possiblity for reducing db look for optimisation
 
-    const profile = await Profile.findById(req.user.profileId); // Use the id from JWT token
+    const profileId = req.user.profileId;
+    const profile = await Profile.findById(profileId); // Use the id from JWT token
 
     if (!profile) {
       return res.status(404).json({ message: "Profile not found" });
@@ -26,9 +27,13 @@ export const findServers = async (req, res, next) => {
     }));
 
     if (res.body) {
-      res.body = { ...res.body, servers: serverData };
+      res.body = {
+        ...res.body,
+        servers: serverData,
+        profileId: profileId,
+      };
     } else {
-      res.body = { servers: serverData };
+      res.body = { servers: serverData, profileId: profileId };
     }
 
     res.status(200).send(res.body);
@@ -51,12 +56,11 @@ export const getServer = async (req, res, next) => {
     //   _id: req.params.server,
     // });
 
-    console.log(req.params.server);
-    console.log(req.user.profileId);
+    const profileId = req.user.profileId;
 
     const server = await Server.findOne({
       _id: req.params.server,
-      profileId: req.user.profileId,
+      profileId,
     });
 
     console.log("Here's server", server);
@@ -74,9 +78,9 @@ export const getServer = async (req, res, next) => {
     };
 
     if (res.body) {
-      res.body = { ...res.body, server: serverData };
+      res.body = { ...res.body, server: serverData, profileId: profileId };
     } else {
-      res.body = { server: serverData };
+      res.body = { server: serverData, profileId: profileId };
     }
 
     res.status(200).send(res.body);

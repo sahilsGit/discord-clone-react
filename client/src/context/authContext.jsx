@@ -36,11 +36,6 @@ const AuthReducer = (state, action) => {
         error: action.payload, // Set the error message
       };
     case "TOKEN_REFRESHED":
-      console.log(
-        "Updating states, ",
-        action.payload.access_token,
-        action.payload.user
-      );
       return {
         access_token: action.payload.access_token,
         user: action.payload.user,

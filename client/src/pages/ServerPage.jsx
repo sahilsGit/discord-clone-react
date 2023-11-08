@@ -7,13 +7,14 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "@/components/server/sidebar/sidebar";
 
 const ServerPage = () => {
-  const profile = useAuth("user");
+  const user = useAuth("user");
   const access_token = useAuth("token");
   const dispatch = useAuth("dispatch");
   const navigate = useNavigate();
 
   const [servers, setServers] = useState([]);
   const [serversFetched, setServersFetched] = useState(false);
+  const [profileId, setProfileId] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,12 +25,14 @@ const ServerPage = () => {
           Origin: "http://localhost:5173",
         };
 
-        const response = await get(`/profile/${profile}/servers`, headers, {
+        const response = await get(`/servers/${user}/servers`, headers, {
           credentials: "include",
         });
 
         const data = await handleResponse(response, dispatch);
         setServers(data.servers);
+        setProfileId(data.profileId);
+        console.log("profile id is set", profileId);
         setServersFetched(true);
       } catch (err) {
         handleError(err);
@@ -38,9 +41,9 @@ const ServerPage = () => {
     };
 
     fetchData();
-  }, [access_token, profile.profileId, dispatch]);
+  }, [access_token, user, profileId, dispatch]);
 
-  if (!profile || !access_token) {
+  if (!user || !access_token) {
     return navigate("/login");
   }
 
@@ -53,7 +56,9 @@ const ServerPage = () => {
         <NavigationSidebar servers={servers} />
       </div>
       <div className="h-full w-[240px] bg-main08">
-        {serversFetched && <Sidebar alreadyFetched={servers[0]} />}
+        {serversFetched && (
+          <Sidebar profileId={profileId} alreadyFetched={servers[0]} />
+        )}
       </div>
     </main>
   );

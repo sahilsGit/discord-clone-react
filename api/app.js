@@ -3,7 +3,7 @@ import path from "path";
 import logger from "morgan";
 import { fileURLToPath } from "url";
 import indexRouter from "./routes/index.js";
-import profileRouter from "./routes/profile.js";
+import serverRouter from "./routes/servers.js";
 import authRouter from "./routes/auth.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -49,7 +49,7 @@ app.use("/", indexRouter);
 app.use("/api/auth", authRouter);
 app.use(verifyToken);
 app.use("/api/logout", logoutRouter);
-app.use("/api/profile", profileRouter);
+app.use("/api/servers", serverRouter);
 
 ///// Temp
 

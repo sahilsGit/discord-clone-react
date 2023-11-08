@@ -8,7 +8,7 @@ export const NavigationAction = () => {
   return (
     <button
       className="w-full flex items-center justify-center group relative"
-      onClick={() => onOpen()}
+      onClick={() => onOpen({ type: "createServer" })}
     >
       <ActionTooltip side="right" align="center" label="Add a server">
         <div className="flex items-center justify-center h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all bg-main07 group-hover:bg-emerald-500">

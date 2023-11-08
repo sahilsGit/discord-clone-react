@@ -24,7 +24,7 @@ const InitialProfile = () => {
       console.log(user);
 
       try {
-        const response = await get(`/profile/${user}/servers`, headers, {
+        const response = await get(`/servers/${user}/servers`, headers, {
           credentials: "include",
         });
 

@@ -38,8 +38,8 @@ const formSchema = z.object({
 // Main component for serving the server creation dialog box
 const ServerCreationModal = () => {
   // For conditionally rendering the dialog
-  const { isOpen, onClose } = useModal();
-  const isModalOpen = isOpen;
+  const { isOpen, onClose, type } = useModal();
+  const isModalOpen = isOpen && type === "createServer";
 
   // For setting server image
   const dispatch = useAuth("dispatch"); //authContext if response brings in a new access_token

@@ -5,17 +5,17 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ServerHeader } from "./serverHeader";
 
-const Sidebar = ({ alreadyFetched }) => {
+const Sidebar = ({ alreadyFetched, profileId }) => {
   const [hasFetched, setHasFetched] = useState(false);
   const params = useParams();
-  const profile = useAuth("user");
+  const user = useAuth("user");
   const access_token = useAuth("token");
   const dispatch = useAuth("dispatch");
   const navigate = useNavigate();
 
   const [server, setServer] = useState({});
 
-  if (!profile || !access_token) {
+  if (!user || !access_token) {
     return navigate("/login");
   }
 
@@ -28,6 +28,7 @@ const Sidebar = ({ alreadyFetched }) => {
       setServer({
         name: alreadyFetched.name,
         id: alreadyFetched.id,
+        inviteCode: alreadyFetched.inviteCode,
         channels: alreadyFetched.channels,
         members: alreadyFetched.members,
       });
@@ -43,17 +44,12 @@ const Sidebar = ({ alreadyFetched }) => {
           Origin: "http://localhost:5173",
         };
 
-        const response = await get(
-          `/profile/${profile}/${params.id}`,
-          headers,
-          {
-            credentials: "include",
-          }
-        );
+        const response = await get(`/servers/${user}/${params.id}`, headers, {
+          credentials: "include",
+        });
 
         const data = await handleResponse(response, dispatch);
         setServer(data.server);
-        console.log("Here's servers, check if channels are there", server);
         setHasFetched(true);
       } catch (err) {
         handleError(err);
@@ -62,7 +58,7 @@ const Sidebar = ({ alreadyFetched }) => {
     };
 
     fetchData();
-  }, [access_token, profile.profileId, dispatch, params.id, navigate]);
+  }, [access_token, user, dispatch, params.id, navigate]);
 
   if (!hasFetched) {
     // You can return a loading indicator or any UI element to indicate that data is being fetched.
@@ -82,23 +78,26 @@ const Sidebar = ({ alreadyFetched }) => {
   );
 
   const members = server?.members.filter(
-    (member) => member.profileId !== profile.profileId
+    (member) => member.profileId !== profileId
   );
 
   if (!server) {
     return navigate("/");
   }
 
-  const role = server.members.find(
-    (member) => member.profileId === profile.profileId
-  )?.role;
+  const role = server.members.find((member) => {
+    return member.profileId === profileId;
+  })?.role;
 
   return (
     <div>
       <ServerHeader server={server} role={role} />
-      <div>{server.members[0]}</div>
     </div>
   );
 };
 
 export default Sidebar;
+
+{
+  /* <ServerHeader server={server} role={role} /> */
+}
