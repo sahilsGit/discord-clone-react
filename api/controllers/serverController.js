@@ -1,4 +1,5 @@
 import { Server, Profile } from "../modals/Schema.js";
+import fs from "fs/promises";
 
 export const createServer = async (req, res, next) => {
   try {
@@ -45,8 +46,7 @@ export const createServer = async (req, res, next) => {
       res.status(200).send("Server has been created!");
     }
   } catch (err) {
-    err.status = 500;
-    err.message = "Internal server error!";
+    res.status(500).send(err.message);
 
     next(err);
   }
@@ -137,7 +137,7 @@ export const getServer = async (req, res, next) => {
     console.log("Here's server", server);
 
     if (!server) {
-      res.status(404).json({ message: "Server not found" });
+      res.status(404).send({ message: "Server not found" });
     }
 
     const serverData = {
@@ -158,6 +158,52 @@ export const getServer = async (req, res, next) => {
     res.status(200).send(res.body);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).send(err.message);
+  }
+};
+
+export const updateServerBasics = async (req, res, next) => {
+  let oldImage;
+
+  try {
+    const { name, image } = req.body;
+
+    // Validate if required fields are present
+    if (!name && !image) {
+      return res
+        .status(400)
+        .json({ message: "ServerName or image is required for update." });
+    }
+
+    const server = await Server.findById(req.params.serverId); // Find the server by ID
+
+    if (!server) {
+      return res.status(404).send(err.message);
+    } // Check if the server exists
+
+    if (name) {
+      server.name = name;
+    } // Set the updated value
+
+    if (image) {
+      oldImage = server.image;
+      server.image = image;
+    } // Update values
+
+    const updatedServer = await server.save(); // Save the updated server
+
+    console.log(process.cwd());
+    if (oldImage) {
+      const imagePath = `./public/images/${oldImage}`;
+      await fs.unlink(imagePath);
+    }
+
+    res.status(200).json({
+      message: "Server details updated successfully.",
+      server: updatedServer,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
   }
 };

@@ -139,7 +139,7 @@ export const login = async (req, res, next) => {
 
     res.status(200).send({
       username: userProfile.username,
-      access_token,
+      newAccessToken: access_token,
     });
   } catch (err) {
     err.status = 500;

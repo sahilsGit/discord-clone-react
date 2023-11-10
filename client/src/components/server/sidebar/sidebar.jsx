@@ -28,6 +28,7 @@ const Sidebar = ({ alreadyFetched, profileId }) => {
       setServer({
         name: alreadyFetched.name,
         id: alreadyFetched.id,
+        image: alreadyFetched.image,
         inviteCode: alreadyFetched.inviteCode,
         channels: alreadyFetched.channels,
         members: alreadyFetched.members,
@@ -38,17 +39,12 @@ const Sidebar = ({ alreadyFetched, profileId }) => {
     }
     const fetchData = async () => {
       try {
-        const headers = {
-          Authorization: `Bearer ${access_token}`,
-          "Content-Type": "application/json",
-          Origin: "http://localhost:5173",
-        };
-
-        const response = await get(`/servers/${user}/${params.id}`, headers, {
-          credentials: "include",
-        });
-
+        const response = await get(
+          `/servers/${user}/${params.id}`,
+          access_token
+        );
         const data = await handleResponse(response, dispatch);
+
         setServer(data.server);
         setHasFetched(true);
       } catch (err) {

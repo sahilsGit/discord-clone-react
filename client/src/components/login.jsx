@@ -27,9 +27,10 @@ const loginSchema = z.object({
 const LoginForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAuth("dispatch");
+
   const from = location.state?.from?.pathname || "/";
 
-  const dispatch = useAuth("dispatch");
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -40,43 +41,17 @@ const LoginForm = () => {
   const onSubmit = async (data) => {
     dispatch({ type: "LOGIN_START" });
 
-    const headers = {
-      "Content-Type": "application/json",
-      Origin: "http://localhost:5173",
-    };
-
-    const toBeSent = {
+    const body = {
       email: data.email,
       password: data.password,
     };
+
     try {
-      const response = await post(
-        "/auth/login",
-        JSON.stringify(toBeSent),
-        headers,
-        {
-          credentials: "include",
-        }
-      );
-
-      const data = await handleResponse(response, dispatch);
-
-      console.log(data);
-
-      dispatch({
-        type: "LOGIN_SUCCESS",
-        payload: {
-          access_token: data.access_token,
-          user: data.username, // Set the authenticated user
-          loading: false, // Set loading to false
-          error: null, // Clear any previous errors
-        },
-      });
-
+      const response = await post("/auth/login", JSON.stringify(body));
+      await handleResponse(response, dispatch);
       navigate(from);
     } catch (err) {
       handleError(err);
-      dispatch({ type: "LOGIN_FAILURE", payload: "An error occurred." });
       navigate("/login");
     }
   };

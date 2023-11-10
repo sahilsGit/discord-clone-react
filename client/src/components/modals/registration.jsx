@@ -125,13 +125,7 @@ const RegistrationForm = () => {
     if (!validateDob()) {
       return;
     } else {
-      // Set headers
-      const headers = {
-        "Content-Type": "application/json",
-        Origin: "http://localhost:5173",
-      };
-
-      const toBeSent = {
+      const body = {
         username: data.username,
         email: data.email,
         name: data.name,
@@ -139,7 +133,7 @@ const RegistrationForm = () => {
       };
 
       // Send request
-      post("/auth/register", JSON.stringify(toBeSent), headers);
+      post("/auth/register", JSON.stringify(body));
     }
   }
 

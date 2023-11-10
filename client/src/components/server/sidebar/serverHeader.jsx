@@ -21,8 +21,6 @@ export const ServerHeader = ({ server, role }) => {
   const isAdmin = role === "ADMIN";
   const isModerator = isAdmin || role === "MODERATOR";
 
-  console.log(isAdmin);
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none" asChild>
@@ -35,10 +33,7 @@ export const ServerHeader = ({ server, role }) => {
         {isModerator && (
           <DropdownMenuItem
             onClick={() => {
-              onOpen({
-                type: "invite",
-                data: { inviteCode: server.inviteCode },
-              });
+              onOpen("invite", { inviteCode: server.inviteCode });
             }}
             className="text-indigo-600 dark:text-indigo-400 px-3 py-2 text-xs cursor-pointer"
           >
@@ -47,7 +42,12 @@ export const ServerHeader = ({ server, role }) => {
           </DropdownMenuItem>
         )}
         {isAdmin && (
-          <DropdownMenuItem className="px-3 py-2 text-xs cursor-pointer">
+          <DropdownMenuItem
+            onClick={() => {
+              onOpen("editServer", { server: server });
+            }}
+            className="px-3 py-2 text-xs cursor-pointer"
+          >
             Server Settings
             <Settings className="h-4 w-4 ml-auto" />
           </DropdownMenuItem>

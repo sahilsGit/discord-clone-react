@@ -83,15 +83,9 @@ const ServerCreationModal = () => {
     // Upload image and save it in designated place
     if (avatarImage) {
       try {
-        const response = await post(
-          "/upload",
-          formData,
-          {
-            Authorization: `Bearer ${access_token}`,
-            Origin: "http://localhost:5173",
-          },
-          { credentials: "include" }
-        );
+        const response = await post("/upload", formData, access_token, {
+          Origin: "http://localhost:5173",
+        });
 
         // Parse the response as JSON
         const data = await handleResponse(response, dispatch);
@@ -132,11 +126,6 @@ const ServerCreationModal = () => {
     const image = await uploadImage(); // Wait for image you get upon resolution
 
     // Request pre-requisites
-    const headers = {
-      Authorization: `Bearer ${access_token}`,
-      "Content-Type": "application/json",
-      Origin: "http://localhost:5173",
-    };
 
     const toBeSent = {
       name: data.name,
@@ -146,16 +135,12 @@ const ServerCreationModal = () => {
     };
 
     try {
-      post("/profile/servers/create", JSON.stringify(toBeSent), headers, {
-        credentials: "include",
-      });
+      post("/servers/create", JSON.stringify(toBeSent), access_token);
     } catch (err) {
       console.log(err); // Being lazy
     }
     form.reset();
   };
-  {
-  }
 
   const handleClose = () => {
     form.reset();

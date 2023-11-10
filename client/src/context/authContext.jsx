@@ -35,7 +35,7 @@ const AuthReducer = (state, action) => {
         loading: false, // Set loading to false
         error: action.payload, // Set the error message
       };
-    case "TOKEN_REFRESHED":
+    case "TOKEN_RECIEVED":
       return {
         access_token: action.payload.access_token,
         user: action.payload.user,

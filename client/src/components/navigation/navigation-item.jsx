@@ -15,22 +15,15 @@ export const NavigationItem = ({ name, id, image }) => {
   const dispatch = useAuth("dispatch");
   const access_token = useAuth("token");
 
-  const headers = {
-    Authorization: `Bearer ${access_token}`,
-    "Content-Type": "application/json",
-    Origin: "http://localhost:5173",
-  };
-
   useEffect(() => {
     const getImage = async () => {
       try {
-        const response = await get(`/getImage/${image}`, headers, {
-          credentials: "include",
-        });
-
+        const response = await get(`/getImage/${image}`, access_token);
         const responseClone = response.clone();
+
         const imageData = await responseClone.blob();
         const imageUrl = URL.createObjectURL(imageData);
+
         setImageSrc(imageUrl);
       } catch (err) {
         handleError(err);

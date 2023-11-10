@@ -15,22 +15,13 @@ const InitialProfile = () => {
 
   useEffect(() => {
     const handlePopulation = async () => {
-      const headers = {
-        Authorization: `Bearer ${access_token}`,
-        "Content-Type": "application/json",
-        Origin: "http://localhost:5173",
-      };
-
-      console.log(user);
-
       try {
-        const response = await get(`/servers/${user}/servers`, headers, {
-          credentials: "include",
-        });
-
+        const response = await get(`/servers/${user}/servers`, access_token);
         const data = await handleResponse(response, dispatch);
+
         setServers(data.servers); // Update the state with the fetched servers
         console.log(data.servers);
+
         if (data.servers.length === 0) {
           // If no servers are available, open the dialog
           setInitialModalOpen(true);

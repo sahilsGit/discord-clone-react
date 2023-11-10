@@ -1,8 +1,19 @@
 const BASE_URL = "http://localhost:4000/api";
 
 // Your main stream GET request
-export async function get(endpoint, headers, options) {
+export async function get(
+  endpoint,
+  token = null,
+  headers = {
+    "Content-Type": "application/json",
+    Origin: "http://localhost:5173",
+  },
+  options = { credentials: "include" }
+) {
   const url = `${BASE_URL}${endpoint}`;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
   try {
     const response = await fetch(url, {
@@ -17,9 +28,21 @@ export async function get(endpoint, headers, options) {
   }
 }
 
-// POST
-export async function post(endpoint, body, headers, options) {
+// POST Request
+export async function post(
+  endpoint,
+  body,
+  token = null,
+  headers = {
+    "Content-Type": "application/json",
+    Origin: "http://localhost:5173",
+  },
+  options = { credentials: "include" }
+) {
   const url = `${BASE_URL}${endpoint}`;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
   try {
     const response = await fetch(url, {
@@ -35,14 +58,56 @@ export async function post(endpoint, body, headers, options) {
   }
 }
 
-// DELETE
-export async function del(endpoint) {
+// UPDATE Request
+export async function update(
+  endpoint,
+  body,
+  token = null,
+  headers = {
+    "Content-Type": "application/json",
+    Origin: "http://localhost:5173",
+  },
+  options = { credentials: "include" }
+) {
   const url = `${BASE_URL}${endpoint}`;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT", // or "PATCH" depending on your API
+      headers,
+      body: JSON.stringify(body),
+      ...options,
+    });
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// DELETE Request
+export async function remove(
+  endpoint,
+  token = null,
+  headers = {
+    "Content-Type": "application/json",
+    Origin: "http://localhost:5173",
+  },
+  options = { credentials: "include" }
+) {
+  const url = `${BASE_URL}${endpoint}`;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
   try {
     const response = await fetch(url, {
       method: "DELETE",
       headers,
+      ...options,
     });
 
     return response;

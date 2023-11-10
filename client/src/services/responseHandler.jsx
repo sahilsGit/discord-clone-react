@@ -5,7 +5,7 @@ const handleResponse = async (response, dispatch) => {
 
     if (data.newAccessToken) {
       dispatch({
-        type: "TOKEN_REFRESHED",
+        type: "TOKEN_RECIEVED",
         payload: {
           access_token: data.newAccessToken,
           user: data.username,
@@ -17,7 +17,7 @@ const handleResponse = async (response, dispatch) => {
     // Handle errors
     const error = {
       status: response.status,
-      message: response.statusText,
+      message: response.message,
     };
 
     return Promise.reject(error);

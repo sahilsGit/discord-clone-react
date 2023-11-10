@@ -1,16 +1,8 @@
 // imports
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import useAuth from "@/hooks/useAuth";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useModal } from "@/hooks/useModals";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, Copy, RefreshCw } from "lucide-react";
 import { useOrigin } from "@/hooks/useOrigin";
 import { useState } from "react";
 
@@ -19,7 +11,6 @@ const InviteModal = () => {
   const origin = useOrigin();
 
   const { isOpen, onClose, type, data } = useModal();
-  const [isLoading, setIsLoading] = useState(false);
   const isModalOpen = isOpen && type === "invite";
   const inviteUrl = `${origin}/invite/${data.inviteCode}`;
 
@@ -31,43 +22,41 @@ const InviteModal = () => {
 
     setTimeout(() => {
       setCopied(false);
-    }, 2000);
+    }, 1000);
   };
 
   // Scadcn UI's Dialog box
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-white text-black p-0 max-w-sm overflow-hidden">
-        <DialogHeader className="pt-6 px-7 space-y-2">
-          <DialogTitle className="text-2xl text-center font-bold">
-            Invite Friends
-          </DialogTitle>
-        </DialogHeader>
-        <div className="p-6">
-          <Label className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-            Server invite link
-          </Label>
-          <div className="flex items-center mt-2 gap-x-2">
+      <DialogContent className="flex flex-col bg-white text-black w-[435px] max-w-[430px] gap-3 pt-2 pb-4 pl-4 pr-4">
+        <p className="text-md font-semibold">Invite Friends</p>
+        <div className="flex flex-col gap-[10px] w-full">
+          <p className="text-xs text-zinc-500 dark:text-secondary/70">
+            Share this link with others to grant access to this server
+          </p>
+          <div className="flex h-[40px]">
             <Input
-              className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
+              className="pl-[8px] pr-[4px] bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0 h-full rounded-l-sm rounded-r-none rounded-l-sm rounded-r-none"
               value={inviteUrl}
             />
-            <Button onClick={onCopy} size="icon">
+            <div className="group flex p-1 bg-zinc-300/50 rounded-r-sm">
               {copied ? (
-                <Check className="w-4 h-4" />
+                <Button
+                  className="bg-emerald-600 text-white text-xs m-0 w-full h-full rounded-[2px] group-hover:bg-emerald-600"
+                  onClick={onCopy}
+                >
+                  Cop..
+                </Button>
               ) : (
-                <Copy className="w-4 h-4" />
+                <Button
+                  className="bg-indigo-500 text-white text-xs m-0 w-full h-full rounded-[2px] group-hover:bg-indigo-600"
+                  onClick={onCopy}
+                >
+                  Copy
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
-          <Button
-            variant="link"
-            size="sm"
-            className="text-xs text-zinc-500 mt-4"
-          >
-            Generate a new link
-            <RefreshCw strokeWidth="2.5" className="w-4 h-4 ml-2"></RefreshCw>
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -19,20 +19,12 @@ const ServerPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const headers = {
-          Authorization: `Bearer ${access_token}`,
-          "Content-Type": "application/json",
-          Origin: "http://localhost:5173",
-        };
-
-        const response = await get(`/servers/${user}/servers`, headers, {
-          credentials: "include",
-        });
-
+        const response = await get(`/servers/${user}/servers`, access_token);
         const data = await handleResponse(response, dispatch);
+
         setServers(data.servers);
         setProfileId(data.profileId);
-        console.log("profile id is set", profileId);
+
         setServersFetched(true);
       } catch (err) {
         handleError(err);
@@ -46,9 +38,6 @@ const ServerPage = () => {
   if (!user || !access_token) {
     return navigate("/login");
   }
-
-  // Extract messages for the first server if available
-  // const messagesForFirstServer = servers.length > 0 ? servers[0].messages : [];
 
   return (
     <main className="h-screen flex">
