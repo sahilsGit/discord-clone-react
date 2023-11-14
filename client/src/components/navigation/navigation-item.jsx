@@ -10,8 +10,9 @@ export const NavigationItem = ({ name, id, image }) => {
   const [imageSrc, setImageSrc] = useState(null);
   const params = useParams();
   const navigate = useNavigate();
+  // make request here
 
-  const authDispatch = useAuth("authDispatch");
+  const dispatch = useAuth("dispatch");
   const access_token = useAuth("token");
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export const NavigationItem = ({ name, id, image }) => {
     };
 
     getImage();
-  }, [image, authDispatch]);
+  }, [image, dispatch]);
 
   return (
     <button

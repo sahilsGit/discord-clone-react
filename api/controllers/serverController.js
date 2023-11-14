@@ -4,6 +4,7 @@ import fs from "fs/promises";
 export const createServer = async (req, res, next) => {
   try {
     const { name, inviteCode, username, image } = req.body;
+
     // Validations
     if (!name) {
       return res.send({ message: "Server must have a name!" });
@@ -37,15 +38,12 @@ export const createServer = async (req, res, next) => {
       image,
     });
 
-    const server = await newServer.save();
+    await newServer.save();
 
     if (res.body) {
-      res.body = {
-        ...res.body,
-        server: server,
-      };
+      res.status(200).send(res.body);
     } else {
-      res.body = { server: server };
+      res.status(200).send("Server has been created!");
     }
   } catch (err) {
     res.status(500).send(err.message);
@@ -54,9 +52,10 @@ export const createServer = async (req, res, next) => {
   }
 };
 
-export const getAll = async (req, res, next) => {
+export const findServers = async (req, res, next) => {
   try {
     // TODO : Possiblity for reducing db look for optimisation
+
     const profileId = req.user.profileId;
     const profile = await Profile.findById(profileId); // Use the id from JWT token
 
@@ -67,22 +66,37 @@ export const getAll = async (req, res, next) => {
     // Find all servers with ids in profile's servers array
     const servers = await Server.find({
       _id: { $in: profile.servers },
-    });
+    })
+      .populate({
+        path: "members",
+        select: "_id profileId role",
+        options: { limit: 1 },
+      })
+      .populate({
+        path: "channels",
+        select: "_id type ",
+        options: { limit: 1 },
+      });
 
-    const serverData = servers.map((server) => ({
+    // Map servers to only return necessary fields
+
+    const serverData = servers.map((server, index) => ({
       name: server.name,
       inviteCode: server.inviteCode,
       id: server._id,
       image: server.image,
+      channels: index === 0 ? server.channels : undefined, // Additional data for 1st server
+      members: index === 0 ? server.members : undefined,
     }));
 
     if (res.body) {
       res.body = {
         ...res.body,
         servers: serverData,
+        profileId: profileId,
       };
     } else {
-      res.body = { servers: serverData };
+      res.body = { servers: serverData, profileId: profileId };
     }
 
     res.status(200).send(res.body);
@@ -92,11 +106,24 @@ export const getAll = async (req, res, next) => {
   }
 };
 
-export const getOne = async (req, res, next) => {
+export const getServer = async (req, res, next) => {
   try {
+    // const profile = await Profile.findById(req.user.profileId); // Use the id from JWT token
+
+    // if (!profile) {
+    //   return res.status(404).json({ message: "Profile not found" });
+    // }
+
+    // // Find all servers with ids in profile's servers array
+    // const server = await Server.findOne({
+    //   _id: req.params.server,
+    // });
+
+    const profileId = req.user.profileId;
+
     const server = await Server.findOne({
-      _id: req.params.getOne,
-      profileId: req.user.profileId,
+      _id: req.params.server,
+      profileId,
     })
       .populate({
         path: "members",
@@ -107,6 +134,8 @@ export const getOne = async (req, res, next) => {
         select: "_id type ",
       });
 
+    console.log("Here's server", server);
+
     if (!server) {
       res.status(404).send({ message: "Server not found" });
     }
@@ -114,7 +143,6 @@ export const getOne = async (req, res, next) => {
     const serverData = {
       name: server.name,
       id: server._id,
-      profileId: server.profileId,
       inviteCode: server.inviteCode,
       image: server.image,
       channels: server.channels,
@@ -122,9 +150,9 @@ export const getOne = async (req, res, next) => {
     };
 
     if (res.body) {
-      res.body = { ...res.body, server: serverData };
+      res.body = { ...res.body, server: serverData, profileId: profileId };
     } else {
-      res.body = { server: serverData };
+      res.body = { server: serverData, profileId: profileId };
     }
 
     res.status(200).send(res.body);

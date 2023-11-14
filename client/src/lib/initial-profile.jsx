@@ -1,61 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import InitialModal from "@/components/modals/initialModal";
 import { get } from "@/services/apiService";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import { handleResponse, handleError } from "@/services/responseHandler";
-import useServer from "@/hooks/useServer";
 
 const InitialProfile = () => {
-  console.log("INSIDE INITIAL PROFILE");
-  const serverDispatch = useServer("dispatch");
-
   const navigate = useNavigate();
-  const [isInitialModalOpen, setInitialModalOpen] = useState(false);
-  const authDispatch = useAuth("dispatch");
   const user = useAuth("user");
   const access_token = useAuth("token");
-  const activeServer = useServer("activeServer");
-  const servers = useServer("servers");
-
-  const fetchServers = async () => {
-    try {
-      console.log("trying");
-      const response = await get(`/servers/${user}/getAll`, access_token);
-      const data = await handleResponse(response, authDispatch);
-
-      if (data.servers.length > 0) {
-        console.log("Got data, ", data);
-        const customPayload = {
-          servers: data.servers,
-          activeServer: data.servers[0].id,
-        };
-        console.log("dispatching from initial-profile");
-        serverDispatch({ type: "SET_CUSTOM", payload: customPayload });
-      } else {
-        setInitialModalOpen(true);
-        setFetching(false);
-      }
-    } catch (err) {
-      handleError(err);
-    }
-  };
+  const [servers, setServers] = useState([]);
+  const [isInitialModalOpen, setInitialModalOpen] = useState(false);
+  const dispatch = useAuth("dispatch");
 
   useEffect(() => {
-    if (!activeServer || !servers) {
-      fetchServers();
-    }
+    const handlePopulation = async () => {
+      try {
+        const response = await get(`/servers/${user}/servers`, access_token);
+        const data = await handleResponse(response, dispatch);
+
+        setServers(data.servers); // Update the state with the fetched servers
+        console.log(data.servers);
+
+        if (data.servers.length === 0) {
+          // If no servers are available, open the dialog
+          setInitialModalOpen(true);
+        }
+      } catch (err) {
+        handleError(err);
+      }
+    };
+
+    handlePopulation();
   }, []);
 
   useEffect(() => {
-    if (activeServer && servers) {
-      navigate(`/servers/${activeServer}`);
+    if (servers.length > 0) {
+      navigate(`/servers/${servers[0].id}`);
     }
-  }, [activeServer, servers]);
-
-  if (!servers) {
-    return <div>Loading...</div>;
-  }
+  }, [servers, navigate]);
 
   return <div>{isInitialModalOpen && <InitialModal />}</div>;
 };

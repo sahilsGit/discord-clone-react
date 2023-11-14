@@ -63,7 +63,7 @@ const ServerCreationModal = () => {
 
   // Use effect to display selected-image preview
   useEffect(() => {
-    // console.log("AvatarImage is being changed: ", avatarImage);
+    console.log("AvatarImage is being changed: ", avatarImage);
     if (avatarImage) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -98,7 +98,7 @@ const ServerCreationModal = () => {
         handleError(err);
       }
     } else {
-      // console.log("Avatar image not found!");
+      console.log("Avatar image not found!");
       throw new Error("Avatar image not found"); // Reject the promise if avatarImage is not available
     }
   };
