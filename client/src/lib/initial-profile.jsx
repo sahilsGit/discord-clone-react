@@ -9,7 +9,6 @@ import useServer from "@/hooks/useServer";
 const InitialProfile = () => {
   console.log("INSIDE INITIAL PROFILE");
   const serverDispatch = useServer("dispatch");
-
   const navigate = useNavigate();
   const [isInitialModalOpen, setInitialModalOpen] = useState(false);
   const authDispatch = useAuth("dispatch");
@@ -20,7 +19,6 @@ const InitialProfile = () => {
 
   const fetchServers = async () => {
     try {
-      console.log("trying");
       const response = await get(`/servers/${user}/getAll`, access_token);
       const data = await handleResponse(response, authDispatch);
 
@@ -28,9 +26,8 @@ const InitialProfile = () => {
         console.log("Got data, ", data);
         const customPayload = {
           servers: data.servers,
-          activeServer: data.servers[0].id,
+          activeServer: activeServer || data.servers[0].id,
         };
-        console.log("dispatching from initial-profile");
         serverDispatch({ type: "SET_CUSTOM", payload: customPayload });
       } else {
         setInitialModalOpen(true);

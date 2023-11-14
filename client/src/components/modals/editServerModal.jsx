@@ -194,7 +194,7 @@ const EditServerModal = () => {
       );
 
       const data = await handleResponse(response, dispatch);
-      window.location.reload(); // TODO, find a better approach rather then refreshing whole page
+      // window.location.reload(); // TODO, find a better approach rather then refreshing whole page
     } catch (err) {
       handleError(err);
       console.log(err); // Being lazy
