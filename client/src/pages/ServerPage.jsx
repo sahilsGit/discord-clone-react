@@ -1,53 +1,67 @@
 import NavigationSidebar from "@/components/navigation/navigation-sidebar";
+import { useParams } from "react-router-dom";
+import Sidebar from "@/components/server/sidebar/sidebar";
+import useServer from "@/hooks/useServer";
 import { get } from "@/services/apiService";
 import useAuth from "@/hooks/useAuth";
-import { handleResponse, handleError } from "@/services/responseHandler";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "@/components/server/sidebar/sidebar";
+import { handleError, handleResponse } from "@/services/responseHandler";
+import { useEffect } from "react";
 
 const ServerPage = () => {
+  console.log("SERVER PAGE");
+
+  const params = useParams();
+  const serverDispatch = useServer("dispatch");
+  const activeServer = useServer("activeServer");
   const user = useAuth("user");
   const access_token = useAuth("token");
-  const dispatch = useAuth("dispatch");
-  const navigate = useNavigate();
+  const authDispatch = useAuth("dispatch");
+  const serverDetails = useServer("serverDetails");
 
-  const [servers, setServers] = useState([]);
-  const [serversFetched, setServersFetched] = useState(false);
-  const [profileId, setProfileId] = useState("");
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await get(
+  //         `/servers/${user}/${params.id}`,
+  //         access_token
+  //       );
+  //       const data = await handleResponse(response, authDispatch);
+
+  //       const customPayload = {
+  //         serverDetails: data.server,
+  //         activeServer: params.id,
+  //       };
+
+  //       console.log("Dipatching from serverPage");
+  //       serverDispatch({ type: "SET_CUSTOM", payload: customPayload });
+  //     } catch (err) {
+  //       handleError(err);
+  //     }
+  //   };
+
+  //   if (activeServer !== params.id) {
+  //     fetchData();
+  //   }
+  // }, []);
+
+  console.log("serverpage", activeServer);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await get(`/servers/${user}/servers`, access_token);
-        const data = await handleResponse(response, dispatch);
+    console.log("dispatching new active server");
+    serverDispatch({ type: "SET_ACTIVE_SERVER", payload: params.id });
+  }, [params.id]);
 
-        setServers(data.servers);
-        setProfileId(data.profileId);
-
-        setServersFetched(true);
-      } catch (err) {
-        handleError(err);
-        return navigate("/login");
-      }
-    };
-
-    fetchData();
-  }, [access_token, user, profileId, dispatch]);
-
-  if (!user || !access_token) {
-    return navigate("/login");
+  if (!serverDetails) {
+    return <div>Loading server details...</div>;
   }
 
   return (
     <main className="h-screen flex">
       <div className="h-full w-[72px] bg-main10">
-        <NavigationSidebar servers={servers} />
+        <NavigationSidebar />
       </div>
       <div className="h-full w-[240px] bg-main08">
-        {serversFetched && (
-          <Sidebar profileId={profileId} alreadyFetched={servers[0]} />
-        )}
+        <Sidebar />
       </div>
     </main>
   );

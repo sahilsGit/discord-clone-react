@@ -1,17 +1,17 @@
 import express from "express";
 import {
   createServer,
-  findServers,
-  getServer,
+  getAll,
+  getOne,
   updateServerBasics,
 } from "../controllers/serverController.js";
 
 const router = express.Router();
 
 /* GET users listing. */
-router.get("/:username/servers", findServers);
+router.get("/:username/getAll", getAll);
 router.post("/create", createServer);
-router.get("/:username/:server", getServer);
+router.get("/:username/:getOne", getOne);
 router.put("/:serverId/update/basics", updateServerBasics);
 
 export default router;

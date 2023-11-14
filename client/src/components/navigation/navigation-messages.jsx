@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { useTheme } from "../providers/theme-provider";
 export const DirectMessages = () => {
   const { theme } = useTheme();
-
-  const [imageSrc, setImageSrc] = useState("");
   const [style, setStyle] = useState("");
 
   useEffect(() => {

@@ -25,11 +25,11 @@ function App() {
         >
           <ModalProvider />
           <Routes>
-            <Route path="/" element={<Homepage />} />
-            <Route path="/about" element={<About />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="*" element={<PageNotFound />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Homepage />} />
+            <Route path="/about" element={<About />} />
             <Route
               path="/user"
               element={

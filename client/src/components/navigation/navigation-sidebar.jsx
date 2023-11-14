@@ -4,8 +4,10 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NavigationItem } from "./navigation-item";
 import { ModeToggle } from "../mode-toggle";
+import useServer from "@/hooks/useServer";
 
-const NavigationSidebar = ({ servers }) => {
+const NavigationSidebar = () => {
+  const servers = useServer("servers");
   return (
     <div className="flex flex-col h-full justify-between pt-[14px] pb-[14px]">
       <div className="flex flex-col items-center h-full text-primary gap-1.5">

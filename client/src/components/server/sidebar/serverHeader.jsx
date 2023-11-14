@@ -6,6 +6,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useModal } from "@/hooks/useModals";
+import useServer from "@/hooks/useServer";
 import {
   ChevronDown,
   LogOut,
@@ -16,7 +17,16 @@ import {
   Users,
 } from "lucide-react";
 
-export const ServerHeader = ({ server, role }) => {
+export const ServerHeader = () => {
+  console.log("SERVERHEADER MOUNTED");
+
+  const server = useServer("serverDetails");
+  const role = server.members.find((member) => {
+    return member.profileId === server.profileId;
+  })?.role;
+
+  console.log(role);
+
   const { onOpen } = useModal();
   const isAdmin = role === "ADMIN";
   const isModerator = isAdmin || role === "MODERATOR";

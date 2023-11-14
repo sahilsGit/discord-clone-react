@@ -30,6 +30,7 @@ const LoginForm = () => {
   const dispatch = useAuth("dispatch");
 
   const from = location.state?.from?.pathname || "/";
+  console.log(from);
 
   const form = useForm({
     resolver: zodResolver(loginSchema),

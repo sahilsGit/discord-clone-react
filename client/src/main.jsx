@@ -4,14 +4,16 @@ import App from "./App.jsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { AuthContextProvider } from "@/context/authContext.jsx";
-import axios from "axios";
+import { ServerContextProvider } from "./context/serverContext.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <React.StrictMode>
-      <AuthContextProvider>
+    {/* <React.StrictMode> */}
+    <AuthContextProvider>
+      <ServerContextProvider>
         <App />
-      </AuthContextProvider>
-    </React.StrictMode>
+      </ServerContextProvider>
+    </AuthContextProvider>
+    {/* </React.StrictMode> */}
   </BrowserRouter>
 );

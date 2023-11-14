@@ -1,6 +1,6 @@
 import { Profile, Server } from "../modals/Schema.js";
 
-export const findServers = async (req, res, next) => {
+export const getAll = async (req, res, next) => {
   try {
     // TODO : Possiblity for reducing db look for optimisation
 
@@ -43,7 +43,7 @@ export const findServers = async (req, res, next) => {
   }
 };
 
-export const getServer = async (req, res, next) => {
+export const getOne = async (req, res, next) => {
   try {
     // const profile = await Profile.findById(req.user.profileId); // Use the id from JWT token
 

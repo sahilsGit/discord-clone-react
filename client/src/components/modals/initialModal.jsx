@@ -26,6 +26,7 @@ import { v4 } from "uuid";
 import { post } from "@/services/apiService";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/services/responseHandler";
+import useServer from "@/hooks/useServer";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -38,13 +39,13 @@ const formSchema = z.object({
 const InitialModal = () => {
   // For setting server image
 
-  const dispatch = useAuth("dispatch"); // Dispatch authContext if response brings in a new access_token
-
   const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
-
   const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
+
+  const authDispatch = useAuth("dispatch"); // Dispatch authContext if response brings in a new access_token
   const access_token = useAuth("token"); // For authorization
   const username = useAuth("user"); // For Server creation
+  const serverDispatch = useServer("dispatch");
 
   // react-hook-form setup with zod resolver
   const form = useForm({
@@ -82,7 +83,7 @@ const InitialModal = () => {
         const response = await post("/upload", formData, access_token);
 
         // Parse the response as JSON
-        const data = await handleResponse(response, dispatch);
+        const data = await handleResponse(response, authDispatch);
 
         // Access the newFilename property from the parsed JSON
         const { newFilename } = data;
@@ -92,7 +93,7 @@ const InitialModal = () => {
         handleError(err);
       }
     } else {
-      console.log("Avatar image not found!");
+      // console.log("Avatar image not found!");
       throw new Error("Avatar image not found"); // Reject the promise if avatarImage is not available
     }
   };
@@ -120,12 +121,6 @@ const InitialModal = () => {
     const image = await uploadImage(); // Wait for image name you get upon resolution
 
     // Request pre-requisites
-    const headers = {
-      Authorization: `Bearer ${access_token}`,
-      "Content-Type": "application/json",
-      Origin: "http://localhost:5173",
-    };
-
     const toBeSent = {
       name: data.name,
       image: image, // Store the name
@@ -134,14 +129,25 @@ const InitialModal = () => {
     };
 
     try {
-      post("/servers/create", JSON.stringify(toBeSent), access_token);
+      const response = post(
+        "/servers/create",
+        JSON.stringify(toBeSent),
+        access_token
+      );
+      await handleResponse(response, authDispatch);
+
+      // Now fetching all the servers once again
+      const res = await get(`/servers/${user}/getAll`, access_token);
+      const data = await handleResponse(res, authDispatch);
+
+      serverDispatch({ type: "SET_SERVERS", payload: data.servers });
+      serverDispatch({ type: "SET_ACTIVE_SERVER", payload: data.servers[0] });
     } catch (err) {
       console.log(err); // Being lazy
     }
     form.reset();
   };
-  {
-  }
+
   // Scadcn UI's Dialog box
   return (
     <Dialog open>

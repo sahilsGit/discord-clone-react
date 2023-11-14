@@ -28,6 +28,7 @@ const handleError = (error) => {
   switch (error.status) {
     case 401:
       alert("Unauthorized (401)");
+      localStorage.clear();
       break;
 
     case 403:
