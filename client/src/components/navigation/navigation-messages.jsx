@@ -1,9 +1,13 @@
 import { ActionTooltip } from "@/components/action-tooltip";
 import { useEffect, useState } from "react";
 import { useTheme } from "../providers/theme-provider";
+import { useNavigate, useParams } from "react-router-dom";
+import { cn } from "@/lib/utils";
 export const DirectMessages = () => {
   const { theme } = useTheme();
   const [style, setStyle] = useState("");
+  const navigate = useNavigate();
+  const isMe = window.location.pathname.includes("/@me");
 
   useEffect(() => {
     if (theme === "light") {
@@ -17,10 +21,28 @@ export const DirectMessages = () => {
 
   return (
     <>
-      <button className="group w-full relative flex justify-center items-center">
-        <div className="absolute h-[8px] w-[4px] opacity-0 left-0 bg-primary rounded-r-full transition-all group-hover:opacity-100 group-hover:h-[20px]"></div>
+      <button
+        onClick={() => {
+          navigate("/@me");
+        }}
+        className="group w-full relative flex justify-center items-center"
+      >
+        {/* <div className="absolute h-[8px] w-[4px] opacity-0 left-0 bg-primary rounded-r-full transition-all group-hover:opacity-100 group-hover:h-[20px]"></div> */}
+        <div
+          className={cn(
+            "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
+            !isMe && "group-hover:h-[20px]",
+            isMe && "h-[36px]",
+            !isMe && "h-[8px]"
+          )}
+        ></div>
         <ActionTooltip side="right" align="center" label="Direct Messages">
-          <div className="relative h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all bg-main07 group-hover:bg-indigo-500">
+          <div
+            className={cn(
+              "relative h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all bg-main07 group-hover:bg-indigo-500",
+              isMe && "rounded-[16px] bg-indigo-500"
+            )}
+          >
             <img
               className={style}
               src="../../../../../assets/images/logos/discord_logo.png"

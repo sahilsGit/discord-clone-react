@@ -75,6 +75,8 @@ app.get("/api/getImage/:imageName", (req, res) => {
 app.post("/api/upload", upload.single("image"), (req, res) => {
   const newFilename = req.file.filename;
 
+  console.log(newFilename);
+
   // Send the new filename as a response
   res.json({ newFilename });
 });

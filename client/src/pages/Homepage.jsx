@@ -1,28 +1,33 @@
 import useAuth from "@/hooks/useAuth";
-import InitialProfile from "@/lib/initial-profile";
-import { useEffect } from "react";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom for navigation
+import useServer from "@/hooks/useServer";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom"; // Import Link from react-router-dom for navigation
 
 const Homepage = () => {
-  console.log("INSIDE HOMEPAGE");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const user = useAuth("user");
   const access_token = useAuth("token");
+  const servers = useServer("servers");
 
   useEffect(() => {
-    console.log("HOMEPAGE MOUNTED");
-  }, []);
+    if (user && access_token && servers) {
+      navigate("/@me");
+    }
+    setLoading(false);
+  });
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
-      {!user || !access_token ? (
-        <div>
-          <p>Please log in or register to access this page.</p>
-          <Link to="/login">Login</Link>
-          <Link to="/register">Register</Link>
-        </div>
-      ) : (
-        <InitialProfile />
-      )}
+      <div>
+        <p>Please log in or register to access this page.</p>
+        <Link to="/login">Login</Link>
+        <Link to="/register">Register</Link>
+      </div>
     </>
   );
 };

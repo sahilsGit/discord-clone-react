@@ -31,7 +31,7 @@ function App() {
             <Route path="/" element={<Homepage />} />
             <Route path="/about" element={<About />} />
             <Route
-              path="/user"
+              path="/@me"
               element={
                 <RequireAuth>
                   <InitialProfile />

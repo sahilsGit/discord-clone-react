@@ -1,7 +1,7 @@
 import useServer from "@/hooks/useServer";
 import { ServerHeader } from "./serverHeader";
 
-const Sidebar = () => {
+const ServerSidebar = () => {
   console.log("SIDEBAR MOUNTED");
   const server = useServer("serverDetails");
   console.log("serverDetails", server);
@@ -29,7 +29,7 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default ServerSidebar;
 
 {
   /* <ServerHeader server={server} role={role} /> */

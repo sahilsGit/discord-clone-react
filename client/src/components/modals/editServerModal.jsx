@@ -21,11 +21,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { X, Plus, Image, CloudFog } from "lucide-react";
+import { X, Plus, Image } from "lucide-react";
 import { get, post, update } from "@/services/apiService";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/services/responseHandler";
 import { useModal } from "@/hooks/useModals";
+import useServer from "@/hooks/useServer";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -43,6 +44,7 @@ const EditServerModal = () => {
   const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
   const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
   const access_token = useAuth("token"); // For authorization
+  const serverDispatch = useServer("dispatch");
 
   const { server } = data;
 
@@ -132,10 +134,10 @@ const EditServerModal = () => {
         const response = await post("/upload", formData, access_token, {
           Origin: "http://localhost:5173",
         });
+
         const data = await handleResponse(response, dispatch); // Parse the res
         const { newFilename } = data; // Access the newFilename property
 
-        console.log("here's new file", newFilename);
         return newFilename; // For DB storage
       } catch (err) {
         handleError(err);
@@ -193,13 +195,20 @@ const EditServerModal = () => {
         access_token
       );
 
-      const data = await handleResponse(response, dispatch);
-      // window.location.reload(); // TODO, find a better approach rather then refreshing whole page
+      console.log("res", response);
+
+      await handleResponse(response, dispatch);
+      console.log("dispatching...");
+      serverDispatch({ type: "TOGGLE_SWITCH" });
     } catch (err) {
       handleError(err);
       console.log(err); // Being lazy
     }
-    form.reset();
+
+    setTimeout(() => {
+      onClose();
+      form.reset();
+    }, 1000);
   };
 
   const handleClose = () => {

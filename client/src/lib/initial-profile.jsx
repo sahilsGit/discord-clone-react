@@ -1,60 +1,52 @@
-import React, { useEffect, useState } from "react";
-import InitialModal from "@/components/modals/initialModal";
-import { get } from "@/services/apiService";
-import { useNavigate } from "react-router-dom";
-import useAuth from "@/hooks/useAuth";
-import { handleResponse, handleError } from "@/services/responseHandler";
-import useServer from "@/hooks/useServer";
+// import { get } from "@/services/apiService";
+// import useAuth from "@/hooks/useAuth";
+// import { handleResponse, handleError } from "@/services/responseHandler";
+// import useServer from "@/hooks/useServer";
+import NavigationSidebar from "@/components/navigation/navigation-sidebar";
+import MeSidebar from "@/components/me/sidebar/meSidebar";
 
 const InitialProfile = () => {
-  console.log("INSIDE INITIAL PROFILE");
-  const serverDispatch = useServer("dispatch");
-  const navigate = useNavigate();
-  const [isInitialModalOpen, setInitialModalOpen] = useState(false);
-  const authDispatch = useAuth("dispatch");
-  const user = useAuth("user");
-  const access_token = useAuth("token");
-  const activeServer = useServer("activeServer");
-  const servers = useServer("servers");
+  // const serverDispatch = useServer("dispatch");
+  // const authDispatch = useAuth("dispatch");
+  // const user = useAuth("user");
+  // const access_token = useAuth("token");
+  // const servers = useServer("servers");
 
-  const fetchServers = async () => {
-    try {
-      const response = await get(`/servers/${user}/getAll`, access_token);
-      const data = await handleResponse(response, authDispatch);
+  // useEffect(() => {
+  //   const fetchServers = async () => {
+  //     try {
+  //       const response = await get(`/servers/${user}/getAll`, access_token);
+  //       const data = await handleResponse(response, authDispatch);
 
-      if (data.servers.length > 0) {
-        console.log("Got data, ", data);
-        const customPayload = {
-          servers: data.servers,
-          activeServer: activeServer || data.servers[0].id,
-        };
-        serverDispatch({ type: "SET_CUSTOM", payload: customPayload });
-      } else {
-        setInitialModalOpen(true);
-        setFetching(false);
-      }
-    } catch (err) {
-      handleError(err);
-    }
-  };
+  //       const serverIds = Object.keys(data.servers);
 
-  useEffect(() => {
-    if (!activeServer || !servers) {
-      fetchServers();
-    }
-  }, []);
+  //       if (serverIds.length > 0) {
+  //         serverDispatch({ type: "SET_SERVERS", payload: data.servers });
+  //       }
+  //     } catch (err) {
+  //       handleError(err);
+  //     }
+  //   };
 
-  useEffect(() => {
-    if (activeServer && servers) {
-      navigate(`/servers/${activeServer}`);
-    }
-  }, [activeServer, servers]);
+  //   if (!servers) {
+  //     fetchServers();
+  //   }
+  // });
 
-  if (!servers) {
-    return <div>Loading...</div>;
-  }
+  // if (!servers) {
+  //   return <div>Loading...</div>;
+  // }
 
-  return <div>{isInitialModalOpen && <InitialModal />}</div>;
+  return (
+    <main className="h-screen flex">
+      <div className="h-full w-[72px] bg-main10">
+        <NavigationSidebar />
+      </div>
+      <div className="h-full w-[240px] bg-main08">
+        <MeSidebar />
+      </div>
+    </main>
+  );
 };
 
 export default InitialProfile;

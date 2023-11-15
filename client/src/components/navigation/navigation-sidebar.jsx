@@ -15,7 +15,7 @@ const NavigationSidebar = () => {
         <Separator className="h-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-7" />
         <ScrollArea className="w-full flex pt-[2px]">
           <div className="flex flex-col items-center justify-center space-y-1.5">
-            {servers.map((server) => (
+            {Object.values(servers).map((server) => (
               <NavigationItem
                 key={server.id}
                 id={server.id}

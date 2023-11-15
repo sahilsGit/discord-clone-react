@@ -8,12 +8,12 @@ import { ServerContextProvider } from "./context/serverContext.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    {/* <React.StrictMode> */}
-    <AuthContextProvider>
-      <ServerContextProvider>
-        <App />
-      </ServerContextProvider>
-    </AuthContextProvider>
-    {/* </React.StrictMode> */}
+    <React.StrictMode>
+      <AuthContextProvider>
+        <ServerContextProvider>
+          <App />
+        </ServerContextProvider>
+      </AuthContextProvider>
+    </React.StrictMode>
   </BrowserRouter>
 );

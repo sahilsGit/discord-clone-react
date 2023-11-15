@@ -69,12 +69,17 @@ export const getAll = async (req, res, next) => {
       _id: { $in: profile.servers },
     });
 
-    const serverData = servers.map((server) => ({
-      name: server.name,
-      inviteCode: server.inviteCode,
-      id: server._id,
-      image: server.image,
-    }));
+    const serverData = servers.reduce((accumulator, server) => {
+      accumulator[server._id] = {
+        name: server.name,
+        inviteCode: server.inviteCode,
+        id: server._id,
+        image: server.image,
+      };
+      return accumulator;
+    }, {});
+
+    // Now serverDataObject is an object with keys as server IDs and values as server details.
 
     if (res.body) {
       res.body = {
@@ -164,16 +169,44 @@ export const updateServerBasics = async (req, res, next) => {
 
     const updatedServer = await server.save(); // Save the updated server
 
-    console.log(process.cwd());
+    // console.log(process.cwd());
+
     if (oldImage) {
       const imagePath = `./public/images/${oldImage}`;
       await fs.unlink(imagePath);
     }
 
-    res.status(200).json({
-      message: "Server details updated successfully.",
-      server: updatedServer,
-    });
+    // const newObject = {
+    //   [updatedServer._id]: {
+    //     name: updatedServer.name,
+    //     inviteCode: updatedServer.inviteCode,
+    //     id: updatedServer._id,
+    //     image: updatedServer.image,
+    //   },
+    // };
+
+    // const serverDetails = {
+    //   name: updatedServer.name,
+    //   id: updatedServer._id,
+    //   profileId: updatedServer.profileId,
+    //   inviteCode: updatedServer.inviteCode,
+    //   image: updatedServer.image,
+    //   channels: updatedServer.channels,
+    //   members: updatedServer.members,
+    // };
+
+    // res.status(200).json({
+    //   message: "Server details updated successfully.",
+    //   server: newObject,
+    //   serverDetails: serverDetails,
+    // });
+
+    if (res.body) {
+      res.body = { ...res.body };
+      res.status(200).send(res.body);
+    } else {
+      res.status(200).send({ message: "okay..." });
+    }
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);
