@@ -16,6 +16,7 @@ const ServerPage = () => {
   const access_token = useAuth("token");
   const serverDetails = useServer("serverDetails");
   const servers = useServer("servers");
+
   // const activeServer = useServer("activeServer");
   // const authDispatch = useAuth("dispatch");
 

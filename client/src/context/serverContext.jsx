@@ -1,7 +1,7 @@
 import useAuth from "@/hooks/useAuth";
 import { get } from "@/services/apiService";
 import { handleError, handleResponse } from "@/services/responseHandler";
-import React, { createContext, useEffect, useMemo, useReducer } from "react";
+import React, { createContext, useEffect, useReducer } from "react";
 
 const initialState = {
   servers: JSON.parse(localStorage.getItem("servers")) || null,
@@ -16,7 +16,6 @@ const initialState = {
 export const ServerContext = createContext(initialState);
 
 const serverReducer = (state, action) => {
-  console.log("Reducer called with action:", action);
   switch (action.type) {
     case "SET_CUSTOM":
       return { ...state, ...action.payload };
@@ -34,6 +33,31 @@ const serverReducer = (state, action) => {
       return { ...state, loading: action.payload };
     case "TOGGLE_SWITCH":
       return { ...state, toggled: !state.toggled };
+    case "ADD_MEMBERS":
+      return {
+        ...state,
+        serverDetails: {
+          ...state.serverDetails,
+          members: [...state.serverDetails.members, ...action.payload],
+        },
+      };
+    case "UPDATE_MEMBER":
+      const memberIndex = state.serverDetails.members.findIndex(
+        (member) => member.id === action.payload.id
+      );
+      if (memberIndex !== -1) {
+        return {
+          ...state,
+          serverDetails: {
+            ...state.serverDetails,
+            members: [
+              ...state.serverDetails.members.slice(0, memberIndex),
+              action.payload,
+              ...state.serverDetails.members.slice(memberIndex + 1),
+            ],
+          },
+        };
+      }
     default:
       return state;
   }
@@ -54,10 +78,13 @@ export const ServerContextProvider = ({ children }) => {
   }, [state.activeServer]);
 
   useEffect(() => {
-    console.log("useEffect kicked in");
+    console.log("serverDetails did change, kicking useEffect");
+    localStorage.setItem("serverDetails", JSON.stringify(state.serverDetails));
+  }, [state.serverDetails]);
+
+  useEffect(() => {
     const fetchServers = async () => {
       try {
-        console.log("fetching from inside useeeeee");
         const response = await get(`/servers/${user}/getAll`, access_token);
         const data = await handleResponse(response, authDispatch);
         const serverIds = Object.keys(data.servers);
@@ -86,10 +113,9 @@ export const ServerContextProvider = ({ children }) => {
 
     if (user && access_token) {
       fetchServers();
-    }
-
-    if (state.activeServer && user && access_token) {
-      fetchData();
+      if (state.activeServer) {
+        fetchData();
+      }
     }
   }, [state.toggled, user, access_token, state.activeServer]);
 

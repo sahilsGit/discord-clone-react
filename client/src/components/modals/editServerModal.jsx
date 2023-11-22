@@ -92,8 +92,7 @@ const EditServerModal = () => {
               `/getImage/${server.image}`,
               access_token
             );
-            const responseClone = response.clone();
-            const imageData = await responseClone.blob();
+            const imageData = await response.blob();
 
             const image = URL.createObjectURL(imageData);
             setImagePreview(image);

@@ -40,6 +40,7 @@ const LoginForm = () => {
     },
   });
   const onSubmit = async (data) => {
+    localStorage.clear();
     dispatch({ type: "LOGIN_START" });
 
     const body = {

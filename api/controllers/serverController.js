@@ -1,5 +1,5 @@
 import { Server, Profile } from "../modals/Schema.js";
-import fs from "fs/promises";
+import fs from "fs";
 
 export const createServer = async (req, res, next) => {
   try {
@@ -79,8 +79,6 @@ export const getAll = async (req, res, next) => {
       return accumulator;
     }, {});
 
-    // Now serverDataObject is an object with keys as server IDs and values as server details.
-
     if (res.body) {
       res.body = {
         ...res.body,
@@ -106,15 +104,41 @@ export const getOne = async (req, res, next) => {
       .populate({
         path: "members",
         select: "_id profileId role",
+        options: { limit: 1 },
       })
       .populate({
         path: "channels",
-        select: "_id type ",
+        select: "_id type",
       });
 
     if (!server) {
       res.status(404).send({ message: "Server not found" });
     }
+
+    const sendMemberWithImage = async (member) => {
+      const profile = await Profile.findById(member.profileId).select(
+        "image name email"
+      );
+
+      if (!profile) {
+        return null;
+      }
+
+      return {
+        email: profile.email,
+        name: profile.name,
+        id: member._id,
+        profileId: member.profileId,
+        role: member.role,
+        image: profile.image ? profile.image : null,
+      };
+    };
+
+    const populatedMembers = await Promise.all(
+      server.members.map(sendMemberWithImage)
+    );
+
+    console.log("populatedMembers", populatedMembers);
 
     const serverData = {
       name: server.name,
@@ -123,7 +147,7 @@ export const getOne = async (req, res, next) => {
       inviteCode: server.inviteCode,
       image: server.image,
       channels: server.channels,
-      members: server.members,
+      members: populatedMembers,
     };
 
     if (res.body) {
@@ -167,39 +191,12 @@ export const updateServerBasics = async (req, res, next) => {
       server.image = image;
     } // Update values
 
-    const updatedServer = await server.save(); // Save the updated server
-
-    // console.log(process.cwd());
+    await server.save(); // Save the updated server
 
     if (oldImage) {
       const imagePath = `./public/images/${oldImage}`;
-      await fs.unlink(imagePath);
+      fs.unlink(imagePath);
     }
-
-    // const newObject = {
-    //   [updatedServer._id]: {
-    //     name: updatedServer.name,
-    //     inviteCode: updatedServer.inviteCode,
-    //     id: updatedServer._id,
-    //     image: updatedServer.image,
-    //   },
-    // };
-
-    // const serverDetails = {
-    //   name: updatedServer.name,
-    //   id: updatedServer._id,
-    //   profileId: updatedServer.profileId,
-    //   inviteCode: updatedServer.inviteCode,
-    //   image: updatedServer.image,
-    //   channels: updatedServer.channels,
-    //   members: updatedServer.members,
-    // };
-
-    // res.status(200).json({
-    //   message: "Server details updated successfully.",
-    //   server: newObject,
-    //   serverDetails: serverDetails,
-    // });
 
     if (res.body) {
       res.body = { ...res.body };
@@ -210,5 +207,66 @@ export const updateServerBasics = async (req, res, next) => {
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);
+  }
+};
+
+// MEMBERS' SPECIFIC APIs++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+export const getMembers = async (req, res) => {
+  const { skip } = req.query;
+
+  try {
+    const server = await Server.findOne({
+      _id: req.params.serverId,
+      profileId: req.user.profileId,
+    }).populate({
+      path: "members",
+      select: "_id profileId role",
+      options: {
+        limit: 1,
+        skip: skip || 0,
+      },
+    });
+
+    if (!server) {
+      res.status(404).send({ message: "Server not found" });
+    }
+
+    const sendMemberWithImage = async (member) => {
+      const profile = await Profile.findById(member.profileId).select(
+        "image name email"
+      );
+
+      if (!profile) {
+        return null;
+      }
+
+      console.log("member's name", profile.name);
+
+      return {
+        email: profile.email,
+        name: profile.name,
+        id: member._id,
+        profileId: member.profileId,
+        role: member.role,
+        image: profile.image ? profile.image : null,
+      };
+    };
+
+    // Use Promise.all to initiate parallel fetching of member details and images
+    const populatedMembers = await Promise.all(
+      server.members.map(sendMemberWithImage)
+    );
+
+    if (res.body) {
+      res.body = { ...res.body, members: populatedMembers };
+    } else {
+      res.body = { members: populatedMembers };
+    }
+
+    res.status(200).send(res.body);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
   }
 };

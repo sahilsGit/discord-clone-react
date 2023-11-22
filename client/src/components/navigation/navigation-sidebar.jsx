@@ -3,7 +3,7 @@ import { DirectMessages } from "@/components/navigation/navigation-messages";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NavigationItem } from "./navigation-item";
-import { ModeToggle } from "../mode-toggle";
+import { ModeToggle } from "@/components/mode-toggle";
 import useServer from "@/hooks/useServer";
 
 const NavigationSidebar = () => {
@@ -13,19 +13,23 @@ const NavigationSidebar = () => {
       <div className="flex flex-col items-center h-full text-primary gap-1.5">
         <DirectMessages />
         <Separator className="h-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-7" />
-        <ScrollArea className="w-full flex pt-[2px]">
-          <div className="flex flex-col items-center justify-center space-y-1.5">
-            {Object.values(servers).map((server) => (
-              <NavigationItem
-                key={server.id}
-                id={server.id}
-                name={server.name}
-                image={server.image}
-              />
-            ))}
-          </div>
-        </ScrollArea>
-        <Separator className="mt-[1px] h-[1px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-7" />
+        {servers ? (
+          <>
+            <ScrollArea className="w-full flex pt-[2px]">
+              <div className="flex flex-col items-center justify-center space-y-1.5">
+                {Object.values(servers).map((server) => (
+                  <NavigationItem
+                    key={server.id}
+                    id={server.id}
+                    name={server.name}
+                    image={server.image}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+            <Separator className="mt-[1px] h-[1px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-7" />
+          </>
+        ) : null}
         <NavigationAction />
       </div>
       <ModeToggle />

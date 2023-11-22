@@ -13,19 +13,13 @@ export const AuthContext = createContext(INITIAL_STATE);
 
 // Reducer function for managing authentication state
 const AuthReducer = (state, action) => {
+  console.log("recieved dispatch", action);
   switch (action.type) {
     case "LOGIN_START":
       return {
         access_token: null,
         user: null, // Clear the user on login start
         loading: true, // Set loading to true
-        error: null, // Clear any previous errors
-      };
-    case "LOGIN_SUCCESS":
-      return {
-        access_token: action.payload.access_token,
-        user: action.payload.user, // Set the authenticated user
-        loading: false, // Set loading to false
         error: null, // Clear any previous errors
       };
     case "LOGIN_FAILURE":
@@ -35,7 +29,7 @@ const AuthReducer = (state, action) => {
         loading: false, // Set loading to false
         error: action.payload, // Set the error message
       };
-    case "TOKEN_RECIEVED":
+    case "TOKEN_RECEIVED":
       return {
         access_token: action.payload.access_token,
         user: action.payload.user,

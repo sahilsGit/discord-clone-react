@@ -10,17 +10,13 @@ export const NavigationItem = ({ name, id, image }) => {
   const [imageSrc, setImageSrc] = useState(null);
   const params = useParams();
   const navigate = useNavigate();
-
-  const authDispatch = useAuth("authDispatch");
   const access_token = useAuth("token");
 
   useEffect(() => {
     const getImage = async () => {
       try {
         const response = await get(`/getImage/${image}`, access_token);
-        const responseClone = response.clone();
-
-        const imageData = await responseClone.blob();
+        const imageData = await response.blob();
         const imageUrl = URL.createObjectURL(imageData);
 
         setImageSrc(imageUrl);
@@ -30,7 +26,7 @@ export const NavigationItem = ({ name, id, image }) => {
     };
 
     getImage();
-  }, [image, authDispatch]);
+  }, [image]);
 
   return (
     <button

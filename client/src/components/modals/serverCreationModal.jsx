@@ -27,6 +27,7 @@ import { post } from "@/services/apiService";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/services/responseHandler";
 import { useModal } from "@/hooks/useModals";
+import useServer from "@/hooks/useServer";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -41,6 +42,7 @@ const ServerCreationModal = () => {
   const { isOpen, onClose, type } = useModal();
   const isModalOpen = isOpen && type === "createServer";
 
+  const serverDispatch = useServer("dispatch");
   // For setting server image
   const dispatch = useAuth("dispatch"); //authContext if response brings in a new access_token
 
@@ -139,7 +141,10 @@ const ServerCreationModal = () => {
     } catch (err) {
       console.log(err); // Being lazy
     }
-    form.reset();
+    setTimeout(() => {
+      onClose();
+      form.reset();
+    }, 1000);
   };
 
   const handleClose = () => {

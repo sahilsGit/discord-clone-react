@@ -1,7 +1,7 @@
 import { ActionTooltip } from "@/components/action-tooltip";
 import { useEffect, useState } from "react";
 import { useTheme } from "../providers/theme-provider";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 export const DirectMessages = () => {
   const { theme } = useTheme();

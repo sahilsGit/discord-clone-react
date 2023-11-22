@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import indexRouter from "./routes/index.js";
 import serverRouter from "./routes/servers.js";
 import authRouter from "./routes/auth.js";
+import membersRouter from "./routes/members.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import multer from "multer";
@@ -26,7 +27,6 @@ const upload = multer({
   }),
 });
 
-// view engine setup
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -50,6 +50,7 @@ app.use("/api/auth", authRouter);
 app.use(verifyToken);
 app.use("/api/logout", logoutRouter);
 app.use("/api/servers", serverRouter);
+app.use("/api/members", membersRouter);
 
 ///// Temp
 

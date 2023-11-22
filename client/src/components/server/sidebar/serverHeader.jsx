@@ -25,8 +25,6 @@ export const ServerHeader = () => {
     return member.profileId === server.profileId;
   })?.role;
 
-  console.log(role);
-
   const { onOpen } = useModal();
   const isAdmin = role === "ADMIN";
   const isModerator = isAdmin || role === "MODERATOR";
@@ -63,7 +61,12 @@ export const ServerHeader = () => {
           </DropdownMenuItem>
         )}
         {isAdmin && (
-          <DropdownMenuItem className="px-3 py-2 text-xs cursor-pointer">
+          <DropdownMenuItem
+            onClick={() => {
+              onOpen("members", { server: server });
+            }}
+            className="px-3 py-2 text-xs cursor-pointer"
+          >
             Manage Members
             <Users className="h-4 w-4 ml-auto" />
           </DropdownMenuItem>

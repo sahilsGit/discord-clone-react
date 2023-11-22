@@ -1,18 +1,25 @@
 const handleResponse = async (response, dispatch) => {
   // Success responses
   if (response.ok) {
-    const data = await response.json();
+    try {
+      const data = await response.json();
 
-    if (data.newAccessToken) {
-      dispatch({
-        type: "TOKEN_RECIEVED",
-        payload: {
-          access_token: data.newAccessToken,
-          user: data.username,
-        },
-      });
+      console.log("here's data I rec", data);
+
+      if (data.newAccessToken) {
+        dispatch({
+          type: "TOKEN_RECEIVED",
+          payload: {
+            access_token: data.newAccessToken,
+            user: data.username,
+          },
+        });
+      }
+
+      return data;
+    } catch (jsonError) {
+      console.error("Error parsing JSON response:", jsonError);
     }
-    return data;
   } else {
     // Handle errors
     const error = {

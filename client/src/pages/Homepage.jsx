@@ -1,5 +1,4 @@
 import useAuth from "@/hooks/useAuth";
-import useServer from "@/hooks/useServer";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Import Link from react-router-dom for navigation
 
@@ -8,10 +7,12 @@ const Homepage = () => {
   const navigate = useNavigate();
   const user = useAuth("user");
   const access_token = useAuth("token");
-  const servers = useServer("servers");
+
+  console.log("inside homepage");
 
   useEffect(() => {
-    if (user && access_token && servers) {
+    if (user && access_token) {
+      console.log("navigating");
       navigate("/@me");
     }
     setLoading(false);
