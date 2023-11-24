@@ -211,8 +211,8 @@ const EditServerModal = () => {
   };
 
   const handleClose = () => {
-    form.reset();
     onClose();
+    form.reset();
   };
 
   // Scadcn UI's Dialog box
@@ -298,8 +298,10 @@ const EditServerModal = () => {
             <div className="flex justify-between bg-gray-100 px-5 py-3.5">
               <Button
                 size="custom"
+                type="button"
                 className="bg-gray-100 hover:bg-gray-100 p-0"
                 disabled={isLoading}
+                onClick={handleClose}
               >
                 Back
               </Button>
