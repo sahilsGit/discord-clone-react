@@ -1,4 +1,4 @@
-// imports
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,20 +27,21 @@ import {
   DropdownMenuItem,
   DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSubContent,
-  DropdownMenuTrigger,
-  DropdownMenuSubTrigger,
   DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import SearchBar from "@/components/server/sidebar/membersSearchBar";
 
 const roleIconMap = {
   GUEST: null,
   MODERATOR: <ShieldCheck className="h-4 w-4 ml-2 text-indigo-500" />,
-  ADMIN: <ShieldAlert className="h-4 w-4 text-rose-500" />,
+  ADMIN: <ShieldAlert className="h-4 w-4 ml-2 text-rose-500" />,
 };
-// Main component for serving the server creation dialog box
+
 const MembersModal = () => {
-  const { isOpen, onClose, type, data } = useModal();
+  const { isOpen, onClose, type } = useModal();
   const isModalOpen = isOpen && type === "members";
   const server = useServer("serverDetails");
   const authDispatch = useAuth("dispatch");
@@ -48,6 +49,21 @@ const MembersModal = () => {
   const access_token = useAuth("token");
   const activeServer = useServer("activeServer");
   const user = useAuth("user");
+  const [results, setResults] = useState([]);
+  const [search, setSearch] = useState(false);
+
+  const startSearch = (bool) => {
+    setSearch(bool);
+  };
+  const updateResults = (newResults) => {
+    setResults(newResults);
+  };
+
+  useEffect(() => {
+    if (isModalOpen) {
+      setResults([]);
+    }
+  }, [isModalOpen]);
 
   const fetchMembers = async () => {
     try {
@@ -67,7 +83,6 @@ const MembersModal = () => {
 
   const clickRoleChange = async (memberId, role) => {
     await onRoleChange(memberId, role);
-    // serverDispatch({ type: "TOGGLE_SWITCH" });
   };
 
   const onRoleChange = async (memberId, role) => {
@@ -84,10 +99,12 @@ const MembersModal = () => {
     }
   };
 
+  console.log("results inside members modal", results.length);
+
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>
-      <DialogContent className="flex flex-col bg-white text-black w-[435px] max-w-[430px] gap-1 pt-6 pb-6 pl-4 pr-4">
-        <div>
+      <DialogContent className="flex flex-col bg-white text-black w-[435px] max-w-[430px] gap-y-3 pt-7 pb-7 pl-4 pr-4">
+        <div className="flex flex-col">
           <p className="text-md font-semibold">Manage Members</p>
           {server?.members.length == 1 ? (
             <DialogDescription className="text-xs text-zinc-500">
@@ -99,79 +116,88 @@ const MembersModal = () => {
             </DialogDescription>
           )}
         </div>
-        <ScrollArea className="mt-8 max-h-[420px] pr-6">
-          {server?.members.map((member) => (
-            <div key={member.id} className="flex items-center gap-x-2 mb-6">
-              <UserAvatar member={member} />
-              <div className="flex flex-col gap-y-1">
-                <div className="text-xs font-semibold flex items-center gap-x-1">
-                  {member.name}
-                  {roleIconMap[member.role]}
-                </div>
-                <p className="text-xxs text-zinc-500">{member.email}</p>
-              </div>
-              {server.profileId !== member.profileId && (
-                <div className="ml-auto">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <MoreVertical className="h-4 w-4 text-zinc-500" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent side="left">
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger className="flex items-center">
-                          <ShieldQuestion className="w-4 h-4 mr-2" />
-                          <span className="text-xs">Role</span>
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                          <DropdownMenuSubContent>
-                            <DropdownMenuItem
-                              className="text-xs"
-                              onClick={() => {
-                                clickRoleChange(member.id, "GUEST");
-                              }}
-                            >
-                              <Shield className="text-xxs h-4 w-4 mr-2" />
-                              Guest
-                              {member.role === "GUEST" && (
-                                <Check className="h-4 w-4 ml-auto" />
-                              )}
+        <SearchBar updateResults={updateResults} startSearch={startSearch} />
+        {results.length === 0 && (
+          <ScrollArea className="h-[200px]">
+            {!search &&
+              server?.members.map((member) => (
+                <div className="group">
+                  <div
+                    key={member.id}
+                    className="transition-all pl-3 rounded-sm group-hover:bg-zinc-300/50 flex items-center gap-x-3 pt-2 pb-2"
+                  >
+                    <UserAvatar member={member} />
+                    <div className="flex flex-col gap-y-0.5">
+                      <div className="text-xs font-semibold flex">
+                        {member.name}
+                        {roleIconMap[member.role]}
+                      </div>
+                      <p className="text-xxs text-zinc-500">{member.email}</p>
+                    </div>
+                    {server.profileId !== member.profileId && (
+                      <div className="ml-auto mr-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger>
+                            <MoreVertical className="h-4 w-4 text-zinc-500" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent side="left">
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger className="flex items-center">
+                                <ShieldQuestion className="w-4 h-4 mr-2" />
+                                <span className="text-xs">Role</span>
+                              </DropdownMenuSubTrigger>
+                              <DropdownMenuPortal>
+                                <DropdownMenuSubContent>
+                                  <DropdownMenuItem
+                                    className="text-xs"
+                                    onClick={() => {
+                                      clickRoleChange(member.id, "GUEST");
+                                    }}
+                                  >
+                                    <Shield className="text-xxs h-4 w-4 mr-2" />
+                                    Guest
+                                    {member.role === "GUEST" && (
+                                      <Check className="h-4 w-4 ml-auto" />
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    className="text-xs"
+                                    onClick={() => {
+                                      clickRoleChange(member.id, "MODERATOR");
+                                    }}
+                                  >
+                                    <ShieldCheck className="h-4 w-4 mr-2" />
+                                    Moderator
+                                    {member.role === "MODERATOR" && (
+                                      <Check className="h-4 w-4 ml-4" />
+                                    )}
+                                  </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                              </DropdownMenuPortal>
+                            </DropdownMenuSub>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-xs">
+                              <Gavel className="h-4 w-4 mr-2" />
+                              Kick
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-xs"
-                              onClick={() => {
-                                clickRoleChange(member.id, "MODERATOR");
-                              }}
-                            >
-                              <ShieldCheck className="h-4 w-4 mr-2" />
-                              Moderator
-                              {member.role === "MODERATOR" && (
-                                <Check className="h-4 w-4 ml-4" />
-                              )}
-                            </DropdownMenuItem>
-                          </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                      </DropdownMenuSub>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-xs">
-                        <Gavel className="h-4 w-4 mr-2" />
-                        Kick
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-              {}
-            </div>
-          ))}
-          <Button
-            className="p-2"
-            size="custom"
-            variant="primary"
-            onClick={fetchMembers}
-          >
-            <p className="text-xs">Fetch More</p>
-          </Button>
-        </ScrollArea>
+              ))}
+          </ScrollArea>
+        )}
+        {/* <Button size="custom" variant="primary" onClick={fetchMembers}>
+          <p className="text-xs">Scroll / Click</p>
+        </Button> */}
+        <div>
+          <DropdownMenuSeparator className="bg-zinc-300/50 m-0 mb-[2px]" />
+          <p className="text-xxxs text-zinc-500">
+            Tip: Scroll down to load more..
+          </p>
+        </div>
       </DialogContent>
     </Dialog>
   );

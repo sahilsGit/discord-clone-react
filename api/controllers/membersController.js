@@ -1,10 +1,10 @@
 import { Member, Profile, Server } from "../modals/Schema.js";
+import mongoose, { ObjectId } from "mongoose";
 
 export const changeRole = async (req, res, next) => {
   try {
     const { role } = req.body;
 
-    console.log("role that came", role);
     // Check if the server exists
     const server = await Server.findById(req.params.serverId);
     if (!server) {
@@ -25,8 +25,6 @@ export const changeRole = async (req, res, next) => {
     updatedMember.role = role;
     await updatedMember.save();
 
-    console.log("will look for pofile now");
-
     const profile = await Profile.findById(updatedMember.profileId).select(
       "image name email"
     );
@@ -40,8 +38,6 @@ export const changeRole = async (req, res, next) => {
       image: profile.image ? profile.image : null,
     };
 
-    console.log("paaaalllll", memberPayloadToSend);
-
     if (res.body) {
       res.body = { ...res.body, member: memberPayloadToSend };
     } else {
@@ -51,5 +47,77 @@ export const changeRole = async (req, res, next) => {
     res.status(200).send(res.body);
   } catch (err) {
     res.send(err.message);
+  }
+};
+
+export const searchMember = async (req, res, next) => {
+  const { term, skip } = req.query;
+  const limit = 2;
+  const serverId = new mongoose.Types.ObjectId(req.params.serverId);
+
+  if (!term) {
+    return res.status(400).send({ message: "Search term is required" });
+  }
+
+  if (term.length < 3) {
+    return res
+      .status(400)
+      .send({ message: "Search term must be at least 3 characters" });
+  }
+
+  try {
+    // Use aggregation pipeline to retrieve relevant data
+    const result = await Member.aggregate([
+      {
+        $match: {
+          serverId: serverId,
+        },
+      },
+      {
+        $lookup: {
+          from: "profiles",
+          localField: "profileId",
+          foreignField: "_id",
+          as: "profile",
+        },
+      },
+      {
+        $unwind: "$profile",
+      },
+      {
+        $match: {
+          "profile.name": { $regex: term, $options: "i" }, // Case-insensitive regex matching for the name
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          email: "$profile.email",
+          name: "$profile.name",
+          id: "$_id",
+          image: { $ifNull: ["$profile.image", null] },
+          profileId: "$profile._id",
+          role: 1,
+        },
+      },
+      {
+        $skip: parseInt(skip, 10),
+      },
+      {
+        $limit: limit, // Limit the result to a certain number of documents
+      },
+    ]);
+
+    console.log("searched member", result);
+
+    if (res.body) {
+      res.body = { ...res.body, members: result };
+    } else {
+      res.body = { members: result };
+    }
+    res.status(200).send(res.body);
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send(err.message);
   }
 };

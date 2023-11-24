@@ -263,7 +263,7 @@ const EditServerModal = () => {
                 <input
                   type="file"
                   accept=".png, .jpeg, .jpg"
-                  className="hidden imageField bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
+                  className="hidden imageField"
                   onChange={handleAvatarChange}
                 />
                 {/* onChange to handle the imageChange */}
