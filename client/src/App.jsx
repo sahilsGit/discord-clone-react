@@ -1,17 +1,16 @@
 import { Route, Routes } from "react-router-dom";
-import PageNotFound from "./pages/PageNotFound";
-import Homepage from "./pages/Homepage";
-import About from "./pages/About";
+import PageNotFound from "@/pages/PageNotFound";
+import Homepage from "@/pages/Homepage";
+import About from "@/pages/About";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ModalProvider } from "@/components/providers/modal-provider";
 
-import { cn } from "./lib/utils";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
-import InitialProfile from "./lib/initial-profile";
-import ServerPage from "@/pages/ServerPage";
-import RequireAuth from "@/lib/requireAuth";
-import InitialModal from "@/components/modals/initialModal";
+import { cn } from "@/lib/utils";
+import RequireAuth from "@/lib/require-auth";
+import InitialModal from "@/components/modals/Initial-Modal";
+import MainPage from "@/pages/MainPage";
+import RegistrationForm from "@/pages/Registration";
+import LoginForm from "@/pages/Login";
 
 function App() {
   return (
@@ -25,8 +24,8 @@ function App() {
         >
           <ModalProvider />
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<RegistrationForm />} />
             <Route path="*" element={<PageNotFound />} />
             <Route path="/" element={<Homepage />} />
             <Route path="/about" element={<About />} />
@@ -34,7 +33,7 @@ function App() {
               path="/@me"
               element={
                 <RequireAuth>
-                  <InitialProfile />
+                  <MainPage type="profile" />
                 </RequireAuth>
               }
             />
@@ -50,7 +49,7 @@ function App() {
               path="/servers/:id"
               element={
                 <RequireAuth>
-                  <ServerPage />
+                  <MainPage type="server" />
                 </RequireAuth>
               }
             />

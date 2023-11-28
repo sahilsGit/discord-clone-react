@@ -4,7 +4,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdownMenu";
 import { useModal } from "@/hooks/useModals";
 import useServer from "@/hooks/useServer";
 import {
@@ -28,6 +28,8 @@ export const ServerHeader = () => {
   const { onOpen } = useModal();
   const isAdmin = role === "ADMIN";
   const isModerator = isAdmin || role === "MODERATOR";
+
+  console.log(isAdmin, isModerator);
 
   return (
     <DropdownMenu>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import MemberScrollArea from "@/components/server/sidebar/memberScrollArea";
+import { DropdownMenuSeparator } from "@/components/ui/dropdownMenu";
+import MemberScrollArea from "@/components/server/sidebar/membersScrollArea";
 import MembersSearchBar from "@/components/server/sidebar/membersSearchBar";
 
 const MembersWrapper = () => {

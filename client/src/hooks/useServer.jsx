@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { ServerContext } from "@/context/serverContext";
+import { ServerContext } from "@/context/Servers-Context";
 
 const useServer = (value) => {
   switch (value) {

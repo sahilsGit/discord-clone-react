@@ -1,6 +1,6 @@
 import useAuth from "@/hooks/useAuth";
-import { get } from "@/services/apiService";
-import { handleError, handleResponse } from "@/services/responseHandler";
+import { get } from "@/services/api-service";
+import { handleError, handleResponse } from "@/lib/response-handler";
 import React, { createContext, useEffect, useReducer } from "react";
 
 const initialState = {
@@ -16,7 +16,18 @@ const initialState = {
 export const ServerContext = createContext(initialState);
 
 const serverReducer = (state, action) => {
+  console.log("RECIEVED SERVER DISPATCH:", action);
   switch (action.type) {
+    case "RESET_STATE":
+      return {
+        servers: null,
+        activeServer: null,
+        serverDetails: null,
+        members: null,
+        channels: null,
+        loading: true,
+        toggled: false,
+      };
     case "SET_CUSTOM":
       return { ...state, ...action.payload };
     case "SET_SERVERS":
@@ -78,7 +89,7 @@ export const ServerContextProvider = ({ children }) => {
   }, [state.activeServer]);
 
   useEffect(() => {
-    console.log("serverDetails did change, kicking useEffect");
+    console.log("SERVER DETAILS CHANGED");
     localStorage.setItem("serverDetails", JSON.stringify(state.serverDetails));
   }, [state.serverDetails]);
 
@@ -89,11 +100,11 @@ export const ServerContextProvider = ({ children }) => {
         const data = await handleResponse(response, authDispatch);
         const serverIds = Object.keys(data.servers);
 
-        if (serverIds.length > 0) {
+        if (serverIds.length > 0)
           dispatch({ type: "SET_SERVERS", payload: data.servers });
-        }
+        else dispatch({ type: "SET_SERVERS", payload: [] });
       } catch (err) {
-        handleError(err);
+        handleError(err, dispatch);
       }
     };
 
@@ -107,7 +118,7 @@ export const ServerContextProvider = ({ children }) => {
 
         dispatch({ type: "SET_SERVER_DETAILS", payload: data.server });
       } catch (err) {
-        handleError(err);
+        handleError(err, dispatch);
       }
     };
 
@@ -117,7 +128,7 @@ export const ServerContextProvider = ({ children }) => {
         fetchData();
       }
     }
-  }, [state.toggled, user, access_token, state.activeServer]);
+  }, [state.toggled, state.activeServer, user, access_token]);
 
   return (
     <ServerContext.Provider

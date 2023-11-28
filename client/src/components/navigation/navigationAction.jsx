@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { ActionTooltip } from "../action-tooltip";
+import { ActionTooltip } from "../actionTooltip";
 import { useModal } from "@/hooks/useModals";
 
 export const NavigationAction = () => {

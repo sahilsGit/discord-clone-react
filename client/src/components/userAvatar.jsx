@@ -1,12 +1,12 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import useAuth from "@/hooks/useAuth";
-import { get } from "@/services/apiService";
-import { handleError } from "@/services/responseHandler";
+import useServer from "@/hooks/useServer";
+import { get } from "@/services/api-service";
+import { handleError } from "@/lib/response-handler";
 import { useState, useEffect } from "react";
 
 export const UserAvatar = ({ member }) => {
-  console.log("member....", member);
-  const [imageSrc, setImageSrc] = useState(null);
+  const [imageSrc, setImageSrc] = useState("../../assets/images/fallback.jpg");
   const access_token = useAuth("token");
 
   const getImage = async () => {
@@ -25,10 +25,12 @@ export const UserAvatar = ({ member }) => {
   useEffect(() => {
     if (member.image) {
       getImage();
-    } else {
-      setImageSrc("../../assets/images/fallback.jpg");
     }
   }, [member.image]);
+
+  useEffect(() => {
+    console.log("RENDERING AVATAR IMAGE");
+  });
 
   if (!imageSrc) {
     return <div>Loading...</div>;

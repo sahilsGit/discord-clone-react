@@ -22,10 +22,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X, Plus, Image } from "lucide-react";
-import { v4 } from "uuid";
-import { post } from "@/services/apiService";
+import { get, post, update } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
-import { handleError, handleResponse } from "@/services/responseHandler";
+import { handleError, handleResponse } from "@/lib/response-handler";
 import { useModal } from "@/hooks/useModals";
 import useServer from "@/hooks/useServer";
 
@@ -36,22 +35,20 @@ const formSchema = z.object({
   }),
 });
 
-// Main component for serving the server creation dialog box
-const ServerCreationModal = () => {
+const EditServerModal = () => {
   // For conditionally rendering the dialog
-  const { isOpen, onClose, type } = useModal();
-  const isModalOpen = isOpen && type === "createServer";
 
-  const serverDispatch = useServer("dispatch");
-  // For setting server image
-  const dispatch = useAuth("dispatch"); //authContext if response brings in a new access_token
-
+  const { isOpen, onClose, type, data } = useModal();
+  const isModalOpen = isOpen && type === "editServer";
+  const dispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
   const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
-
   const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
   const access_token = useAuth("token"); // For authorization
+  const serverDispatch = useServer("dispatch");
 
-  const username = useAuth("user"); // For Server creation
+  const { server } = data;
+
+  // console.log(server);
 
   // react-hook-from setup with zod resolver
   const form = useForm({
@@ -61,12 +58,59 @@ const ServerCreationModal = () => {
     },
   });
 
+  useEffect(() => {
+    const fetchFormData = async () => {
+      if (server) {
+        try {
+          const response = await get(`/getImage/${server.image}`, access_token);
+          const responseClone = response.clone();
+          const imageData = await responseClone.blob();
+
+          const image = URL.createObjectURL(imageData);
+          setImagePreview(image);
+        } catch (err) {
+          handleError(err);
+        }
+
+        form.setValue("name", server.name);
+      }
+    };
+
+    if (isModalOpen) {
+      fetchFormData();
+    }
+  }, [isModalOpen]);
+
   const isLoading = form.formState.isSubmitting; // For disabling buttons on submission
+
+  useEffect(() => {
+    if (!avatarImage && !imagePreview) {
+      const fetchFormData = async () => {
+        if (server) {
+          try {
+            const response = await get(
+              `/getImage/${server.image}`,
+              access_token
+            );
+            const imageData = await response.blob();
+
+            const image = URL.createObjectURL(imageData);
+            setImagePreview(image);
+          } catch (err) {
+            handleError(err);
+          }
+
+          form.setValue("name", server.name);
+        }
+      };
+      fetchFormData();
+    }
+  }, [imagePreview]);
 
   // Use effect to display selected-image preview
   useEffect(() => {
-    // console.log("AvatarImage is being changed: ", avatarImage);
     if (avatarImage) {
+      console.log("Kicking this as avatarImage is triggered", avatarImage);
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result); // Set avatar preview
@@ -79,29 +123,26 @@ const ServerCreationModal = () => {
 
   // Function for handling Multer image update | Returns image url on resolution
   const uploadImage = async () => {
-    const formData = new FormData();
-    formData.append("image", avatarImage);
-
     // Upload image and save it in designated place
     if (avatarImage) {
+      console.log("Got image on upload");
+      const formData = new FormData();
+      formData.append("image", avatarImage);
+
       try {
         const response = await post("/upload", formData, access_token, {
           Origin: "http://localhost:5173",
         });
 
-        // Parse the response as JSON
-        const data = await handleResponse(response, dispatch);
-
-        // Access the newFilename property from the parsed JSON
-        const { newFilename } = data;
+        const data = await handleResponse(response, dispatch); // Parse the res
+        const { newFilename } = data; // Access the newFilename property
 
         return newFilename; // For DB storage
       } catch (err) {
         handleError(err);
       }
     } else {
-      // console.log("Avatar image not found!");
-      throw new Error("Avatar image not found"); // Reject the promise if avatarImage is not available
+      return null;
     }
   };
 
@@ -112,11 +153,14 @@ const ServerCreationModal = () => {
   };
 
   const handleDeleteImage = () => {
-    setAvatarImage(""); // Reset avatarImage state (Important for X button implementation)
+    setAvatarImage(null); // Reset avatarImage state (Important for X button implementation)
+    setImagePreview(null);
   };
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
+
+    console.log("file", file);
     if (file) {
       setAvatarImage(file); // Set the AvatarImage state with the choose image
     } else {
@@ -127,20 +171,39 @@ const ServerCreationModal = () => {
   const onSubmit = async (data) => {
     const image = await uploadImage(); // Wait for image you get upon resolution
 
-    // Request pre-requisites
+    const updatedValues = {};
 
-    const toBeSent = {
-      name: data.name,
-      image: image, // Store the name
-      inviteCode: v4(),
-      username, // profileId from global context
-    };
+    if (image) {
+      updatedValues["image"] = image;
+    }
+    if (server.name != data.name) {
+      updatedValues["name"] = data.name;
+    }
+
+    if (Object.keys(updatedValues).length === 0) {
+      alert(
+        "You did not update anything, kindly choose a new image or a name."
+      );
+      return;
+    }
 
     try {
-      post("/servers/create", JSON.stringify(toBeSent), access_token);
+      const response = await update(
+        `/servers/${server.id}/update/basics`,
+        updatedValues,
+        access_token
+      );
+
+      console.log("res", response);
+
+      await handleResponse(response, dispatch);
+      console.log("dispatching...");
+      serverDispatch({ type: "TOGGLE_SWITCH" });
     } catch (err) {
+      handleError(err);
       console.log(err); // Being lazy
     }
+
     setTimeout(() => {
       onClose();
       form.reset();
@@ -148,8 +211,8 @@ const ServerCreationModal = () => {
   };
 
   const handleClose = () => {
-    form.reset();
     onClose();
+    form.reset();
   };
 
   // Scadcn UI's Dialog box
@@ -200,7 +263,7 @@ const ServerCreationModal = () => {
                 <input
                   type="file"
                   accept=".png, .jpeg, .jpg"
-                  className="hidden imageField bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
+                  className="hidden imageField"
                   onChange={handleAvatarChange}
                 />
                 {/* onChange to handle the imageChange */}
@@ -235,8 +298,10 @@ const ServerCreationModal = () => {
             <div className="flex justify-between bg-gray-100 px-5 py-3.5">
               <Button
                 size="custom"
+                type="button"
                 className="bg-gray-100 hover:bg-gray-100 p-0"
                 disabled={isLoading}
+                onClick={handleClose}
               >
                 Back
               </Button>
@@ -246,7 +311,7 @@ const ServerCreationModal = () => {
                 variant="primary"
                 disabled={isLoading}
               >
-                Create
+                Save
               </Button>
             </div>
           </form>
@@ -256,4 +321,4 @@ const ServerCreationModal = () => {
   );
 };
 
-export default ServerCreationModal;
+export default EditServerModal;

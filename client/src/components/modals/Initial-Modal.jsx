@@ -22,10 +22,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X, Plus, Image } from "lucide-react";
-import { get, post, update } from "@/services/apiService";
+import { v4 } from "uuid";
+import { post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
-import { handleError, handleResponse } from "@/services/responseHandler";
-import { useModal } from "@/hooks/useModals";
+import { handleError, handleResponse } from "@/lib/response-handler";
 import useServer from "@/hooks/useServer";
 
 // zod form schema for validation
@@ -35,22 +35,19 @@ const formSchema = z.object({
   }),
 });
 
-const EditServerModal = () => {
-  // For conditionally rendering the dialog
+// Main component for serving the server creation dialog box
+const InitialModal = () => {
+  // For setting server image
 
-  const { isOpen, onClose, type, data } = useModal();
-  const isModalOpen = isOpen && type === "editServer";
-  const dispatch = useAuth("dispatch"); //authContext if response brings in a new access_token
   const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
   const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
+
+  const authDispatch = useAuth("dispatch"); // Dispatch Auth-Context if response brings in a new access_token
   const access_token = useAuth("token"); // For authorization
+  const username = useAuth("user"); // For Server creation
   const serverDispatch = useServer("dispatch");
 
-  const { server } = data;
-
-  // console.log(server);
-
-  // react-hook-from setup with zod resolver
+  // react-hook-form setup with zod resolver
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,62 +55,16 @@ const EditServerModal = () => {
     },
   });
 
-  useEffect(() => {
-    const fetchFormData = async () => {
-      if (server) {
-        try {
-          const response = await get(`/getImage/${server.image}`, access_token);
-          const responseClone = response.clone();
-          const imageData = await responseClone.blob();
-
-          const image = URL.createObjectURL(imageData);
-          setImagePreview(image);
-        } catch (err) {
-          handleError(err);
-        }
-
-        form.setValue("name", server.name);
-      }
-    };
-
-    if (isModalOpen) {
-      fetchFormData();
-    }
-  }, [isModalOpen]);
-
   const isLoading = form.formState.isSubmitting; // For disabling buttons on submission
-
-  useEffect(() => {
-    if (!avatarImage && !imagePreview) {
-      const fetchFormData = async () => {
-        if (server) {
-          try {
-            const response = await get(
-              `/getImage/${server.image}`,
-              access_token
-            );
-            const imageData = await response.blob();
-
-            const image = URL.createObjectURL(imageData);
-            setImagePreview(image);
-          } catch (err) {
-            handleError(err);
-          }
-
-          form.setValue("name", server.name);
-        }
-      };
-      fetchFormData();
-    }
-  }, [imagePreview]);
 
   // Use effect to display selected-image preview
   useEffect(() => {
+    console.log("AvatarImage is being changed: ", avatarImage);
+
     if (avatarImage) {
-      console.log("Kicking this as avatarImage is triggered", avatarImage);
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target.result); // Set avatar preview
+        setImagePreview(e.target.result); // Set preview
       };
       reader.readAsDataURL(avatarImage);
     } else {
@@ -121,28 +72,32 @@ const EditServerModal = () => {
     }
   }, [avatarImage]);
 
-  // Function for handling Multer image update | Returns image url on resolution
+  // Function for handling Multer image update | Returns image name upon resolution
   const uploadImage = async () => {
+    const formData = new FormData();
+    formData.append("image", avatarImage); // Send the image as form data
+
     // Upload image and save it in designated place
     if (avatarImage) {
-      console.log("Got image on upload");
-      const formData = new FormData();
-      formData.append("image", avatarImage);
-
       try {
+        console.log(formData);
         const response = await post("/upload", formData, access_token, {
           Origin: "http://localhost:5173",
         });
 
-        const data = await handleResponse(response, dispatch); // Parse the res
-        const { newFilename } = data; // Access the newFilename property
+        // Parse the response as JSON
+        const data = await handleResponse(response, authDispatch);
+
+        // Access the newFilename property from the parsed JSON
+        const { newFilename } = data;
 
         return newFilename; // For DB storage
       } catch (err) {
         handleError(err);
       }
     } else {
-      return null;
+      // console.log("Avatar image not found!");
+      throw new Error("Avatar image not found"); // Reject the promise if avatarImage is not available
     }
   };
 
@@ -153,14 +108,11 @@ const EditServerModal = () => {
   };
 
   const handleDeleteImage = () => {
-    setAvatarImage(null); // Reset avatarImage state (Important for X button implementation)
-    setImagePreview(null);
+    setAvatarImage(""); // Reset avatarImage state (Important for X button implementation)
   };
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-
-    console.log("file", file);
     if (file) {
       setAvatarImage(file); // Set the AvatarImage state with the choose image
     } else {
@@ -169,55 +121,39 @@ const EditServerModal = () => {
   };
 
   const onSubmit = async (data) => {
-    const image = await uploadImage(); // Wait for image you get upon resolution
+    const image = await uploadImage(); // Wait for image name you get upon resolution
 
-    const updatedValues = {};
-
-    if (image) {
-      updatedValues["image"] = image;
-    }
-    if (server.name != data.name) {
-      updatedValues["name"] = data.name;
-    }
-
-    if (Object.keys(updatedValues).length === 0) {
-      alert(
-        "You did not update anything, kindly choose a new image or a name."
-      );
-      return;
-    }
+    // Request pre-requisites
+    const toBeSent = {
+      name: data.name,
+      image: image, // Store the name
+      inviteCode: v4(),
+      username, // profileId from global context
+    };
 
     try {
-      const response = await update(
-        `/servers/${server.id}/update/basics`,
-        updatedValues,
+      const response = post(
+        "/servers/create",
+        JSON.stringify(toBeSent),
         access_token
       );
+      await handleResponse(response, authDispatch);
 
-      console.log("res", response);
+      // Now fetching all the servers once again
+      const res = await get(`/servers/${user}/getAll`, access_token);
+      const data = await handleResponse(res, authDispatch);
 
-      await handleResponse(response, dispatch);
-      console.log("dispatching...");
-      serverDispatch({ type: "TOGGLE_SWITCH" });
+      serverDispatch({ type: "SET_SERVERS", payload: data.servers });
+      serverDispatch({ type: "SET_ACTIVE_SERVER", payload: data.servers[0] });
     } catch (err) {
-      handleError(err);
       console.log(err); // Being lazy
     }
-
-    setTimeout(() => {
-      onClose();
-      form.reset();
-    }, 1000);
-  };
-
-  const handleClose = () => {
-    onClose();
     form.reset();
   };
 
   // Scadcn UI's Dialog box
   return (
-    <Dialog open={isModalOpen} onOpenChange={handleClose}>
+    <Dialog open>
       <DialogContent className="bg-white text-black p-0 max-w-sm overflow-hidden">
         <DialogHeader className="pt-6 px-7 space-y-2">
           <DialogTitle className="text-2xl text-center font-bold">
@@ -263,7 +199,7 @@ const EditServerModal = () => {
                 <input
                   type="file"
                   accept=".png, .jpeg, .jpg"
-                  className="hidden imageField"
+                  className="hidden imageField bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
                   onChange={handleAvatarChange}
                 />
                 {/* onChange to handle the imageChange */}
@@ -298,10 +234,8 @@ const EditServerModal = () => {
             <div className="flex justify-between bg-gray-100 px-5 py-3.5">
               <Button
                 size="custom"
-                type="button"
                 className="bg-gray-100 hover:bg-gray-100 p-0"
                 disabled={isLoading}
-                onClick={handleClose}
               >
                 Back
               </Button>
@@ -311,7 +245,7 @@ const EditServerModal = () => {
                 variant="primary"
                 disabled={isLoading}
               >
-                Save
+                Create
               </Button>
             </div>
           </form>
@@ -321,4 +255,4 @@ const EditServerModal = () => {
   );
 };
 
-export default EditServerModal;
+export default InitialModal;

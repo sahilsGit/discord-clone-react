@@ -1,5 +1,5 @@
 import { Member, Profile, Server } from "../modals/Schema.js";
-import mongoose, { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 
 export const changeRole = async (req, res, next) => {
   try {
@@ -52,7 +52,7 @@ export const changeRole = async (req, res, next) => {
 
 export const searchMember = async (req, res, next) => {
   const { term, skip } = req.query;
-  const limit = 2;
+  const limit = 1;
   const serverId = new mongoose.Types.ObjectId(req.params.serverId);
 
   if (!term) {

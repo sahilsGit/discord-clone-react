@@ -99,17 +99,22 @@ export const getOne = async (req, res, next) => {
   try {
     const server = await Server.findOne({
       _id: req.params.getOne,
-      profileId: req.user.profileId,
     })
       .populate({
         path: "members",
         select: "_id profileId role",
+        match: { profileId: req.user.profileId },
         options: { limit: 1 },
       })
       .populate({
         path: "channels",
         select: "_id type",
       });
+
+    const doc = await Server.findById({ _id: req.params.getOne });
+    const totalMembersCount = doc.members.length;
+
+    console.log("serverssss", server);
 
     if (!server) {
       res.status(404).send({ message: "Server not found" });
@@ -139,6 +144,7 @@ export const getOne = async (req, res, next) => {
     );
 
     console.log("populatedMembers", populatedMembers);
+    console.log("ttt", totalMembersCount);
 
     const serverData = {
       name: server.name,
@@ -148,6 +154,7 @@ export const getOne = async (req, res, next) => {
       image: server.image,
       channels: server.channels,
       members: populatedMembers,
+      totalMembersCount: totalMembersCount,
     };
 
     if (res.body) {
@@ -218,7 +225,6 @@ export const getMembers = async (req, res) => {
   try {
     const server = await Server.findOne({
       _id: req.params.serverId,
-      profileId: req.user.profileId,
     }).populate({
       path: "members",
       select: "_id profileId role",

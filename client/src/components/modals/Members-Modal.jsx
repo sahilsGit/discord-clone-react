@@ -18,13 +18,13 @@ const MembersModal = () => {
       <DialogContent className="flex flex-col bg-white text-black w-[435px] max-w-[430px] gap-y-3 pt-7 pb-7 pl-4 pr-4">
         <div className="flex flex-col">
           <p className="text-md font-semibold">Manage Members</p>
-          {server?.members.length == 1 ? (
+          {server?.totalMembersCount == 1 ? (
             <DialogDescription className="text-xs text-zinc-500">
-              {server?.members.length} Member
+              {server?.totalMembersCount} Member
             </DialogDescription>
           ) : (
             <DialogDescription className="text-xs text-zinc-500">
-              {server?.members.length} Members
+              {server?.totalMembersCount} Members
             </DialogDescription>
           )}
         </div>

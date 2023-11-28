@@ -1,10 +1,10 @@
 import useServer from "@/hooks/useServer";
 import { ServerHeader } from "./serverHeader";
+import { useEffect } from "react";
 
 const ServerSidebar = () => {
   console.log("SIDEBAR MOUNTED");
   const server = useServer("serverDetails");
-  console.log("serverDetails", server);
 
   // const textChannels = server?.channels.filter(
   //   (channel) => channel.type === "TEXT"
@@ -21,6 +21,10 @@ const ServerSidebar = () => {
   // const members = server?.members.filter(
   //   (member) => member.profileId !== profileId
   // );
+
+  useEffect(() => {
+    console.log("SERVER SIDEBAR MOUNTED");
+  });
 
   return (
     <div>

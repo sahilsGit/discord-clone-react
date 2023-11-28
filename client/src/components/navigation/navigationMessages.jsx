@@ -1,4 +1,4 @@
-import { ActionTooltip } from "@/components/action-tooltip";
+import { ActionTooltip } from "@/components/actionTooltip";
 import { useEffect, useState } from "react";
 import { useTheme } from "../providers/theme-provider";
 import { useNavigate } from "react-router-dom";

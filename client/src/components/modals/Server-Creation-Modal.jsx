@@ -23,9 +23,10 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X, Plus, Image } from "lucide-react";
 import { v4 } from "uuid";
-import { post } from "@/services/apiService";
+import { post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
-import { handleError, handleResponse } from "@/services/responseHandler";
+import { handleError, handleResponse } from "@/lib/response-handler";
+import { useModal } from "@/hooks/useModals";
 import useServer from "@/hooks/useServer";
 
 // zod form schema for validation
@@ -36,18 +37,22 @@ const formSchema = z.object({
 });
 
 // Main component for serving the server creation dialog box
-const InitialModal = () => {
+const ServerCreationModal = () => {
+  // For conditionally rendering the dialog
+  const { isOpen, onClose, type } = useModal();
+  const isModalOpen = isOpen && type === "createServer";
+
   // For setting server image
+  const dispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
 
   const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
+
   const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
-
-  const authDispatch = useAuth("dispatch"); // Dispatch authContext if response brings in a new access_token
   const access_token = useAuth("token"); // For authorization
-  const username = useAuth("user"); // For Server creation
-  const serverDispatch = useServer("dispatch");
 
-  // react-hook-form setup with zod resolver
+  const username = useAuth("user"); // For Server creation
+
+  // react-hook-from setup with zod resolver
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,12 +64,11 @@ const InitialModal = () => {
 
   // Use effect to display selected-image preview
   useEffect(() => {
-    console.log("AvatarImage is being changed: ", avatarImage);
-
+    // console.log("AvatarImage is being changed: ", avatarImage);
     if (avatarImage) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target.result); // Set preview
+        setImagePreview(e.target.result); // Set avatar preview
       };
       reader.readAsDataURL(avatarImage);
     } else {
@@ -72,21 +76,20 @@ const InitialModal = () => {
     }
   }, [avatarImage]);
 
-  // Function for handling Multer image update | Returns image name upon resolution
+  // Function for handling Multer image update | Returns image url on resolution
   const uploadImage = async () => {
     const formData = new FormData();
-    formData.append("image", avatarImage); // Send the image as form data
+    formData.append("image", avatarImage);
 
     // Upload image and save it in designated place
     if (avatarImage) {
       try {
-        console.log(formData);
         const response = await post("/upload", formData, access_token, {
           Origin: "http://localhost:5173",
         });
 
         // Parse the response as JSON
-        const data = await handleResponse(response, authDispatch);
+        const data = await handleResponse(response, dispatch);
 
         // Access the newFilename property from the parsed JSON
         const { newFilename } = data;
@@ -121,9 +124,10 @@ const InitialModal = () => {
   };
 
   const onSubmit = async (data) => {
-    const image = await uploadImage(); // Wait for image name you get upon resolution
+    const image = await uploadImage(); // Wait for image you get upon resolution
 
     // Request pre-requisites
+
     const toBeSent = {
       name: data.name,
       image: image, // Store the name
@@ -132,28 +136,24 @@ const InitialModal = () => {
     };
 
     try {
-      const response = post(
-        "/servers/create",
-        JSON.stringify(toBeSent),
-        access_token
-      );
-      await handleResponse(response, authDispatch);
-
-      // Now fetching all the servers once again
-      const res = await get(`/servers/${user}/getAll`, access_token);
-      const data = await handleResponse(res, authDispatch);
-
-      serverDispatch({ type: "SET_SERVERS", payload: data.servers });
-      serverDispatch({ type: "SET_ACTIVE_SERVER", payload: data.servers[0] });
+      post("/servers/create", JSON.stringify(toBeSent), access_token);
     } catch (err) {
       console.log(err); // Being lazy
     }
+    setTimeout(() => {
+      onClose();
+      form.reset();
+    }, 1000);
+  };
+
+  const handleClose = () => {
     form.reset();
+    onClose();
   };
 
   // Scadcn UI's Dialog box
   return (
-    <Dialog open>
+    <Dialog open={isModalOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white text-black p-0 max-w-sm overflow-hidden">
         <DialogHeader className="pt-6 px-7 space-y-2">
           <DialogTitle className="text-2xl text-center font-bold">
@@ -255,4 +255,4 @@ const InitialModal = () => {
   );
 };
 
-export default InitialModal;
+export default ServerCreationModal;
