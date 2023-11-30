@@ -130,8 +130,6 @@ export const login = async (req, res, next) => {
 
     await newSession.save();
 
-    console.log("refresh_token", refresh);
-
     res.cookie("refresh_token", refresh, {
       httpOnly: true,
       path: "/",

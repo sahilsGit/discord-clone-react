@@ -14,7 +14,7 @@ import { ScrollArea } from "@/components/ui/scrollArea";
 import { UserAvatar } from "@/components/userAvatar";
 import useAuth from "@/hooks/useAuth";
 import useServer from "@/hooks/useServer";
-import { get, update } from "@/services/api-service";
+import { get, remove, update } from "@/services/api-service";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import {
   Check,
@@ -34,7 +34,6 @@ const roleIconMap = {
 };
 
 const MemberScrollArea = ({ searchTerm, results, setResults }) => {
-  // const [page, setPage] = useState(1);
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
   const server = useServer("serverDetails");
@@ -46,8 +45,6 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const lastItemRef = useRef();
   const observer = useRef();
   const timeoutId = useRef(null);
-
-  console.log("outside to skip", server.members.length);
 
   useEffect(() => {
     observer.current = new IntersectionObserver(
@@ -141,8 +138,8 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
     }
   }, [searchTerm]);
 
-  const clickRoleChange = async (memberId, role) => {
-    await onRoleChange(memberId, role);
+  const clickRoleChange = (memberId, role) => {
+    onRoleChange(memberId, role);
   };
 
   const onRoleChange = async (memberId, role) => {
@@ -169,6 +166,23 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
     } catch (err) {
       handleError(err);
     }
+  };
+
+  const onKick = async (memberId) => {
+    try {
+      const response = await remove(
+        `/members/${activeServer}/${memberId}/remove`,
+        access_token
+      );
+      await handleResponse(response, authDispatch);
+      serverDispatch({ type: "REMOVE_MEMBER", payload: memberId });
+    } catch (err) {
+      handleError(err);
+    }
+  };
+
+  const clickKick = (memberId) => {
+    onKick(memberId);
   };
 
   const renderMemberItem = (member, index) => (
@@ -236,7 +250,12 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-xs">
+                <DropdownMenuItem
+                  className="text-xs"
+                  onClick={() => {
+                    clickKick(member.id);
+                  }}
+                >
                   <Gavel className="h-4 w-4 mr-2" />
                   Kick
                 </DropdownMenuItem>
@@ -250,7 +269,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
 
   return (
     <div className="flex flex-col gap-y-3">
-      <ScrollArea className="h-[70px]">
+      <ScrollArea className="h-[200px]">
         {!searchTerm ? (
           server?.members.map((member, index) =>
             renderMemberItem(member, index)
@@ -265,9 +284,6 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
           <p>{fetchLog}</p>
         )}
       </ScrollArea>
-      {/* <Button size="custom" variant="primary" onClick={fetchMembers}>
-        <p className="text-xs">Scroll / Click</p>
-      </Button> */}
     </div>
   );
 };

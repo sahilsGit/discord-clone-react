@@ -27,7 +27,6 @@ import { post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { useModal } from "@/hooks/useModals";
-import useServer from "@/hooks/useServer";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -43,14 +42,14 @@ const ServerCreationModal = () => {
   const isModalOpen = isOpen && type === "createServer";
 
   // For setting server image
-  const dispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
+  const authDispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
 
   const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
 
   const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
   const access_token = useAuth("token"); // For authorization
 
-  const username = useAuth("user"); // For Server creation
+  const user = useAuth("user"); // For Server creation
 
   // react-hook-from setup with zod resolver
   const form = useForm({
@@ -89,7 +88,7 @@ const ServerCreationModal = () => {
         });
 
         // Parse the response as JSON
-        const data = await handleResponse(response, dispatch);
+        const data = await handleResponse(response, authDispatch);
 
         // Access the newFilename property from the parsed JSON
         const { newFilename } = data;
@@ -127,18 +126,30 @@ const ServerCreationModal = () => {
     const image = await uploadImage(); // Wait for image you get upon resolution
 
     // Request pre-requisites
-
     const toBeSent = {
       name: data.name,
       image: image, // Store the name
       inviteCode: v4(),
-      username, // profileId from global context
+      username: user, // profileId from global context
     };
 
     try {
-      post("/servers/create", JSON.stringify(toBeSent), access_token);
+      const response = post(
+        "/servers/create",
+        JSON.stringify(toBeSent),
+        access_token
+      );
+
+      await handleResponse(response, authDispatch);
+
+      // Now fetching all the servers once again
+      const res = await get(`/servers/${user}/getAll`, access_token);
+      const data = await handleResponse(res, authDispatch);
+
+      serverDispatch({ type: "SET_SERVERS", payload: data.servers });
+      serverDispatch({ type: "SET_ACTIVE_SERVER", payload: data.servers[0] });
     } catch (err) {
-      console.log(err); // Being lazy
+      console.log(err);
     }
     setTimeout(() => {
       onClose();

@@ -47,8 +47,6 @@ const verifyToken = async (req, res, next) => {
           }
         );
 
-        console.log("new token generated", newAccessToken);
-
         // Extract the old expired token out of the headers
         const { Authorization, ...headers } = req.headers;
 

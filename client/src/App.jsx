@@ -11,6 +11,7 @@ import InitialModal from "@/components/modals/Initial-Modal";
 import MainPage from "@/pages/MainPage";
 import RegistrationForm from "@/pages/Registration";
 import LoginForm from "@/pages/Login";
+import InvitationPage from "./pages/InvitationPage";
 
 function App() {
   return (
@@ -50,6 +51,14 @@ function App() {
               element={
                 <RequireAuth>
                   <MainPage type="server" />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/invite/:inviteCode"
+              element={
+                <RequireAuth>
+                  <InvitationPage />
                 </RequireAuth>
               }
             />

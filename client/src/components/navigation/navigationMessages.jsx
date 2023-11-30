@@ -12,7 +12,7 @@ export const DirectMessages = () => {
   useEffect(() => {
     if (theme === "light") {
       setStyle(
-        "absolute top-[4.5px] invert left-[5.5px] h-[37px] w-[37px] group-hover:invert-0 transition-all"
+        "absolute top-[4.5px] left-[5.5px] h-[37px] w-[37px] group-hover:invert-0 transition-all"
       );
     } else {
       setStyle("absolute top-[4.5px] left-[5.5px] h-[37px] w-[37px]");

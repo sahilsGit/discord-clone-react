@@ -1,5 +1,6 @@
 const handleResponse = async (response, dispatch) => {
   // Success responses
+  console.log("status", response.status);
   if (response.ok) {
     try {
       const data = await response.json();
@@ -21,6 +22,7 @@ const handleResponse = async (response, dispatch) => {
       console.error("Error parsing JSON response:", jsonError);
     }
   } else {
+    console.log("issssssdie else");
     // Handle errors
     const error = {
       status: response.status,
@@ -34,12 +36,10 @@ const handleResponse = async (response, dispatch) => {
 const handleError = (error) => {
   switch (error.status) {
     case 401:
-      alert("Unauthorized (401)");
       localStorage.clear();
       break;
 
     case 403:
-      alert("Forbidden (403)");
       localStorage.clear();
       break;
 

@@ -69,6 +69,18 @@ const serverReducer = (state, action) => {
           },
         };
       }
+    case "REMOVE_MEMBER":
+      const updatedMembers = state.serverDetails.members.filter(
+        (member) => member.id !== action.payload.memberId
+      );
+
+      return {
+        ...state,
+        serverDetails: {
+          ...state.serverDetails,
+          members: updatedMembers,
+        },
+      };
     default:
       return state;
   }
@@ -102,7 +114,7 @@ export const ServerContextProvider = ({ children }) => {
 
         if (serverIds.length > 0)
           dispatch({ type: "SET_SERVERS", payload: data.servers });
-        else dispatch({ type: "SET_SERVERS", payload: [] });
+        else dispatch({ type: "SET_SERVERS", payload: null });
       } catch (err) {
         handleError(err, dispatch);
       }

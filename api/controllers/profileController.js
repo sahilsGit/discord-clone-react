@@ -63,8 +63,6 @@ export const getOne = async (req, res, next) => {
       profileId,
     });
 
-    console.log("Here's server", server);
-
     if (!server) {
       res.status(404).json({ message: "Server not found" });
     }

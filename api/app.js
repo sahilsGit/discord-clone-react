@@ -6,6 +6,7 @@ import indexRouter from "./routes/index.js";
 import serverRouter from "./routes/servers.js";
 import authRouter from "./routes/auth.js";
 import membersRouter from "./routes/members.js";
+import channelsRouter from "./routes/channels.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import multer from "multer";
@@ -51,6 +52,7 @@ app.use(verifyToken);
 app.use("/api/logout", logoutRouter);
 app.use("/api/servers", serverRouter);
 app.use("/api/members", membersRouter);
+app.use("/api/channels", channelsRouter);
 
 ///// Temp
 
@@ -75,8 +77,6 @@ app.get("/api/getImage/:imageName", (req, res) => {
 
 app.post("/api/upload", upload.single("image"), (req, res) => {
   const newFilename = req.file.filename;
-
-  console.log(newFilename);
 
   // Send the new filename as a response
   res.json({ newFilename });

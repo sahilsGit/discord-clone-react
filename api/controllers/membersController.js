@@ -121,3 +121,37 @@ export const searchMember = async (req, res, next) => {
     return res.status(500).send(err.message);
   }
 };
+
+export const removeMember = async (req, res, next) => {
+  try {
+    // Check if the server exists
+    const server = await Server.findById(req.params.serverId);
+    if (!server) {
+      return res.status(404).json({ error: "Server not found" });
+    }
+
+    // Find the Member document to be removed
+    const member = await Member.findById(req.params.memberId);
+    if (!member) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    // Validate that the Member belongs to the specified server
+    if (member.serverId.toString() !== req.params.serverId) {
+      return res
+        .status(400)
+        .json({ error: "Member does not belong to the specified server" });
+    }
+
+    // Remove the Member document, triggering the 'remove' middleware
+    await Member.deleteOne({ _id: req.params.memberId });
+
+    if (res.body) {
+      res.status(200).send(res.body);
+    } else {
+      res.status(200).send({ message: "Member removed Successfully" });
+    }
+  } catch (err) {
+    res.send(err.message);
+  }
+};

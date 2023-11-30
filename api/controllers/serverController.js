@@ -1,4 +1,4 @@
-import { Server, Profile } from "../modals/Schema.js";
+import { Server, Profile, Member, Channel } from "../modals/Schema.js";
 import fs from "fs";
 
 export const createServer = async (req, res, next) => {
@@ -39,6 +39,16 @@ export const createServer = async (req, res, next) => {
 
     const server = await newServer.save();
 
+    // Create the general channel
+    const generalChannel = new Channel({
+      name: "general",
+      type: "TEXT",
+      profileId: req.user.profileId,
+      serverId: newServer._id,
+    });
+
+    await generalChannel.save();
+
     if (res.body) {
       res.body = {
         ...res.body,
@@ -47,6 +57,7 @@ export const createServer = async (req, res, next) => {
     } else {
       res.body = { server: server };
     }
+    res.status(200).send(res.body);
   } catch (err) {
     res.status(500).send(err.message);
 
@@ -108,13 +119,11 @@ export const getOne = async (req, res, next) => {
       })
       .populate({
         path: "channels",
-        select: "_id type",
+        select: "_id type name",
       });
 
     const doc = await Server.findById({ _id: req.params.getOne });
     const totalMembersCount = doc.members.length;
-
-    console.log("serverssss", server);
 
     if (!server) {
       res.status(404).send({ message: "Server not found" });
@@ -142,9 +151,6 @@ export const getOne = async (req, res, next) => {
     const populatedMembers = await Promise.all(
       server.members.map(sendMemberWithImage)
     );
-
-    console.log("populatedMembers", populatedMembers);
-    console.log("ttt", totalMembersCount);
 
     const serverData = {
       name: server.name,
@@ -217,6 +223,81 @@ export const updateServerBasics = async (req, res, next) => {
   }
 };
 
+export const findserver = async (req, res, next) => {
+  let exists;
+  try {
+    console.log("in");
+    const server = await Server.findOne({ inviteCode: req.params.inviteCode });
+
+    if (!server) {
+      res.status(401).send({ message: "No server with this invite code" });
+    }
+
+    const profile = await Profile.findById(req.user.profileId);
+
+    if (!profile) {
+      return res.status(401).send({ message: "Profile not found" });
+    }
+
+    const serverExistsInProfile = profile.servers.includes(server._id);
+
+    if (serverExistsInProfile) {
+      exists = true;
+    } else {
+      exists = false;
+    }
+
+    if (res.body) {
+      res.body = {
+        ...res.body,
+        exists: exists,
+        serverId: server._id,
+      };
+    } else {
+      res.body = { exists: exists, serverId: server._id };
+    }
+    res.status(200).send(res.body);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+export const acceptInvite = async (req, res, next) => {
+  try {
+    console.log("inside accept");
+    const user = await Profile.findById(req.user.profileId); // Find profile with server's profileId argument
+    const server = await Server.findById(req.params.serverId);
+
+    if (user) {
+      user.servers.push(req.params.serverId); // Push this server's id to profile's "servers" array
+
+      // Create member
+      const member = new Member({
+        role: "GUEST", // Set the default role here if needed
+        profileId: req.user.profileId, // user's id
+        serverId: req.params.serverId, // server's id
+      });
+
+      await member.save();
+      user.members.push(member._id);
+      server.members.push(member._id);
+
+      await user.save(); // save user
+      await server.save();
+
+      if (res.body) {
+        res.body = { ...res.body, message: "Joined successfully" };
+      } else {
+        res.body = { message: "Joined successfully" };
+      }
+
+      res.status(200).send(res.body);
+    }
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
 // MEMBERS' SPECIFIC APIs++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 export const getMembers = async (req, res) => {
@@ -246,8 +327,6 @@ export const getMembers = async (req, res) => {
       if (!profile) {
         return null;
       }
-
-      console.log("member's name", profile.name);
 
       return {
         email: profile.email,

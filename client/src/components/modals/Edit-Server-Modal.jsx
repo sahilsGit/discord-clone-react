@@ -48,8 +48,6 @@ const EditServerModal = () => {
 
   const { server } = data;
 
-  // console.log(server);
-
   // react-hook-from setup with zod resolver
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -194,10 +192,7 @@ const EditServerModal = () => {
         access_token
       );
 
-      console.log("res", response);
-
       await handleResponse(response, dispatch);
-      console.log("dispatching...");
       serverDispatch({ type: "TOGGLE_SWITCH" });
     } catch (err) {
       handleError(err);

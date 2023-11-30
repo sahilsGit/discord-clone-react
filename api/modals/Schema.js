@@ -159,6 +159,57 @@ const memberSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now, required: true },
 });
 
+memberSchema.post("deleteOne", async function (next) {
+  const profileUpdatePromise = mongoose
+    .model("Profile")
+    .updateOne(
+      { _id: this.profileId },
+      { $pull: { members: this._id, servers: this.serverId } }
+    );
+
+  const serverUpdatePromise = mongoose
+    .model("Server")
+    .updateOne({ _id: this.serverId }, { $pull: { members: this._id } });
+  try {
+    console.log("inside memberSchema pre");
+
+    await Promise.all([profileUpdatePromise, serverUpdatePromise]);
+
+    console.log("Removed from Profile and Server models");
+
+    // // Remove references from the associated Message documents
+    // await mongoose
+    //   .model("Message")
+    //   .updateMany(
+    //     { _id: { $in: this.messages } },
+    //     { $pull: { members: this._id } }
+    //   );
+
+    // // Remove references from the associated DirectMessage documents
+    // await mongoose
+    //   .model("DirectMessage")
+    //   .updateMany(
+    //     { _id: { $in: this.directMessages } },
+    //     { $pull: { members: this._id } }
+    //   );
+
+    // // Remove references from the associated Conversation documents
+    // await mongoose.model("Conversation").updateMany(
+    //   {
+    //     $or: [
+    //       { _id: { $in: this.conversationsInitiated } },
+    //       { _id: { $in: this.conversationsReceived } },
+    //     ],
+    //   },
+    //   { $pull: { members: this._id } }
+    // );
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 memberSchema.index({ role: 1 });
 
 const channelSchema = new mongoose.Schema({
@@ -183,6 +234,32 @@ const channelSchema = new mongoose.Schema({
   ],
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
+});
+
+// Add a pre-save hook to update the user's servers array
+channelSchema.pre("save", async function (next) {
+  // Find the user (profile) by their profileId and update their servers array
+
+  const isNewChannel = this.isNew;
+
+  if (isNewChannel) {
+    try {
+      const user = await Profile.findById(this.profileId); // Find profile with server's profileId argument
+      if (user) {
+        user.channels.push(this._id); // Push this server's id to profile's "servers" array
+      }
+
+      const server = await Server.findById(this.serverId);
+      if (server) {
+        server.channels.push(this._id); // Push this server's id to profile's "servers" array
+      }
+      await user.save();
+      await server.save();
+    } catch (err) {
+      return next(err);
+    }
+  }
+  next();
 });
 
 const messageSchema = new mongoose.Schema({

@@ -32,6 +32,7 @@ const ProfilePage = ({ type }) => {
   const serverId = params.id;
 
   useEffect(() => {
+    console.log("serverId did change", serverId);
     // Dispatch the new activeServer when serverId changes
     if (type === "server" && user && access_token) {
       serverDispatch({ type: "SET_ACTIVE_SERVER", payload: serverId });
