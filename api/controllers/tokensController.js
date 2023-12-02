@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Session } from "../modals/Schema.js";
 
-const verifyToken = async (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
   // Extract tokens from cookies and headers
   const accessToken = req.headers["authorization"];
   const refreshToken = req.cookies.refresh_token;
@@ -66,6 +66,7 @@ const verifyToken = async (req, res, next) => {
         res.body = {
           newAccessToken: newAccessToken,
           username: decoded.username,
+          profileId: decoded.profileId,
         };
 
         // Call the next middleware
@@ -81,4 +82,61 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-export default verifyToken;
+export const refresh = async (req, res, next) => {
+  // Extract tokens from cookies and headers
+  console.log("inside ref");
+  const accessToken = req.headers["authorization"];
+  const refreshToken = req.cookies.refresh_token;
+
+  // Don't issue new token if access token is absent even if refresh token is present
+  if (!accessToken) {
+    return res.status(401).send("Invalid Token");
+  }
+
+  try {
+    // Verify refreshToken
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH);
+
+    // Refresh token is valid, generate a new access token and send it in the response
+    const newAccessToken = jwt.sign(
+      {
+        username: decoded.username,
+        profileId: decoded.profileId,
+      },
+      process.env.JWT,
+      {
+        expiresIn: "30s", // Token expiration time
+      }
+    );
+
+    // Extract the old expired token out of the headers
+    const { Authorization, ...headers } = req.headers;
+
+    // Add new access_token to the headers to let the request continue
+    const newHeaders = {
+      ...headers,
+      Authorization: `Bearer ${newAccessToken}`,
+    };
+
+    // Replace old headers with new ones
+    req.headers = newHeaders;
+
+    // Attach decoded JWT payload to the request
+    req.user = decoded;
+
+    // Add newAccessToken to the response for client token updation
+    res.body = {
+      newAccessToken: newAccessToken,
+      username: decoded.username,
+      profileId: decoded.profileId,
+    };
+
+    res.status(200).send({
+      newAccessToken: newAccessToken,
+      username: decoded.username,
+      profileId: decoded.profileId,
+    });
+  } catch (err) {
+    return res.status(401).send("Invalid Token");
+  }
+};

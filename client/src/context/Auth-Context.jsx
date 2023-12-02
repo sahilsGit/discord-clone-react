@@ -4,6 +4,7 @@ import { createContext, useEffect, useReducer } from "react";
 const INITIAL_STATE = {
   access_token: JSON.parse(localStorage.getItem("access_token")) || null,
   user: JSON.parse(localStorage.getItem("user")) || null, // Check for a previously authenticated user in local storage
+  profileId: null,
   loading: false, // Indicate if authentication actions are in progress
   error: null, // Store any authentication-related errors
 };
@@ -19,6 +20,7 @@ const AuthReducer = (state, action) => {
       return {
         access_token: null,
         user: null, // Clear the user on login start
+        profileId: null,
         loading: true, // Set loading to true
         error: null, // Clear any previous errors
       };
@@ -26,6 +28,7 @@ const AuthReducer = (state, action) => {
       return {
         access_token: null,
         user: null, // Clear the user on login failure
+        profileId: null,
         loading: false, // Set loading to false
         error: action.payload, // Set the error message
       };
@@ -33,6 +36,7 @@ const AuthReducer = (state, action) => {
       return {
         access_token: action.payload.access_token,
         user: action.payload.user,
+        profileId: action.payload.profileId,
         loading: false,
         error: null,
       };
@@ -40,6 +44,7 @@ const AuthReducer = (state, action) => {
       return {
         access_token: null,
         user: null, // Clear the user on logout
+        profileId: null,
         loading: false, // Set loading to false
         error: null, // Clear any previous errors
       };
@@ -63,6 +68,7 @@ export const AuthContextProvider = ({ children }) => {
       value={{
         access_token: state.access_token,
         user: state.user,
+        profileId: state.profileId,
         loading: state.loading,
         error: state.error,
         dispatch,

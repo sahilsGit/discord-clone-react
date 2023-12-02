@@ -2,13 +2,12 @@ import useAuth from "@/hooks/useAuth";
 import { get } from "@/services/api-service";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import React, { createContext, useEffect, useReducer } from "react";
+import { useNavigate } from "react-router-dom";
 
 const initialState = {
-  servers: JSON.parse(localStorage.getItem("servers")) || null,
+  servers: null,
   activeServer: JSON.parse(localStorage.getItem("activeServer")) || null,
   serverDetails: null,
-  members: null,
-  channels: null,
   loading: true,
   toggled: false,
 };
@@ -36,10 +35,6 @@ const serverReducer = (state, action) => {
       return { ...state, activeServer: action.payload };
     case "SET_SERVER_DETAILS":
       return { ...state, serverDetails: action.payload };
-    case "SET_MEMBERS":
-      return { ...state, members: action.payload };
-    case "SET_CHANNELS":
-      return { ...state, channels: action.payload };
     case "SET_LOADING":
       return { ...state, loading: action.payload };
     case "TOGGLE_SWITCH":
@@ -73,7 +68,6 @@ const serverReducer = (state, action) => {
       const updatedMembers = state.serverDetails.members.filter(
         (member) => member.id !== action.payload.memberId
       );
-
       return {
         ...state,
         serverDetails: {
@@ -87,23 +81,15 @@ const serverReducer = (state, action) => {
 };
 
 export const ServerContextProvider = ({ children }) => {
+  const navigate = useNavigate();
   const authDispatch = useAuth("dispatch");
   const user = useAuth("user");
   const access_token = useAuth("token");
   const [state, dispatch] = useReducer(serverReducer, initialState);
 
   useEffect(() => {
-    localStorage.setItem("servers", JSON.stringify(state.servers));
-  }, [state.servers]);
-
-  useEffect(() => {
     localStorage.setItem("activeServer", JSON.stringify(state.activeServer));
   }, [state.activeServer]);
-
-  useEffect(() => {
-    console.log("SERVER DETAILS CHANGED");
-    localStorage.setItem("serverDetails", JSON.stringify(state.serverDetails));
-  }, [state.serverDetails]);
 
   useEffect(() => {
     const fetchServers = async () => {
@@ -127,7 +113,6 @@ export const ServerContextProvider = ({ children }) => {
           access_token
         );
         const data = await handleResponse(response, authDispatch);
-
         dispatch({ type: "SET_SERVER_DETAILS", payload: data.server });
       } catch (err) {
         handleError(err, dispatch);
@@ -141,6 +126,13 @@ export const ServerContextProvider = ({ children }) => {
       }
     }
   }, [state.toggled, state.activeServer, user, access_token]);
+
+  useEffect(() => {
+    if (state.serverDetails)
+      navigate(
+        `/servers/${state.activeServer}/${state.serverDetails.channels[0]._id}`
+      );
+  }, [state.serverDetails, state.activeServer]);
 
   return (
     <ServerContext.Provider

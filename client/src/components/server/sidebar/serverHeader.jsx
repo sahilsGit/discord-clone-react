@@ -17,13 +17,8 @@ import {
   Users,
 } from "lucide-react";
 
-export const ServerHeader = () => {
-  console.log("SERVERHEADER MOUNTED");
-
+export const ServerHeader = ({ role }) => {
   const server = useServer("serverDetails");
-  const role = server.members.find((member) => {
-    return member.profileId === server.profileId;
-  })?.role;
 
   const { onOpen } = useModal();
   const isAdmin = role === "ADMIN";

@@ -4,8 +4,9 @@ import useServer from "@/hooks/useServer";
 import { get } from "@/services/api-service";
 import { handleError } from "@/lib/response-handler";
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
-export const UserAvatar = ({ member }) => {
+export const UserAvatar = ({ member, className }) => {
   const [imageSrc, setImageSrc] = useState("../../assets/images/fallback.jpg");
   const access_token = useAuth("token");
 
@@ -37,7 +38,7 @@ export const UserAvatar = ({ member }) => {
   }
 
   return (
-    <Avatar className="h-7 w-7 md:h-10 md:w-10">
+    <Avatar className={cn("h-7 w-7 md:h-10 md:w-10", className)}>
       <AvatarImage src={imageSrc} alt="" />
     </Avatar>
   );

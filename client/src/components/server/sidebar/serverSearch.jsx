@@ -32,15 +32,16 @@ const ServerSearch = ({ data }) => {
         <CommandInput placeholder="Search channels & members" />
         <CommandList>
           <CommandEmpty>No Results found</CommandEmpty>
-          {data.map(({ label, data }) => {
-            if (!data?.length) return null;
+          {data.map(({ label, contentArray }) => {
+            if (!contentArray?.length) return null;
 
             return (
               <CommandGroup key={label} heading={label}>
-                {data?.map(({ id, icon, name }) => {
+                {contentArray?.map(({ id, icon, name }) => {
                   return (
-                    <CommandItem key={id}>
-                      {icon} <span>{name}</span>
+                    <CommandItem className="flex space-x-3" key={id}>
+                      <span>{name}</span>
+                      <div>{icon}</div>
                     </CommandItem>
                   );
                 })}

@@ -57,9 +57,11 @@ const ChannelCreationModal = () => {
   const { isOpen, onClose, type, data } = useModal();
   const isModalOpen = isOpen && type === "createChannel";
   let serverId;
+  let channelType;
 
   if (isModalOpen) {
     serverId = data.server.id;
+    channelType = data.channelType;
   }
 
   // For setting server image
@@ -73,6 +75,12 @@ const ChannelCreationModal = () => {
       name: "",
     },
   });
+
+  useEffect(() => {
+    if (channelType) {
+      form.setValue("type", channelType);
+    }
+  }, [channelType]);
 
   const isLoading = form.formState.isSubmitting; // For disabling buttons on submission
 

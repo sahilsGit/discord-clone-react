@@ -13,6 +13,7 @@ const handleResponse = async (response, dispatch) => {
           payload: {
             access_token: data.newAccessToken,
             user: data.username,
+            profileId: data.profileId,
           },
         });
       }

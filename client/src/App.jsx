@@ -34,7 +34,23 @@ function App() {
               path="/@me"
               element={
                 <RequireAuth>
-                  <MainPage type="profile" />
+                  <MainPage type="messages" />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/servers/:serverId/:channelId"
+              element={
+                <RequireAuth>
+                  <MainPage type="channel" />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/servers/:serverId"
+              element={
+                <RequireAuth>
+                  <MainPage type="server" />
                 </RequireAuth>
               }
             />
@@ -46,14 +62,7 @@ function App() {
                 </RequireAuth>
               }
             />
-            <Route
-              path="/servers/:id"
-              element={
-                <RequireAuth>
-                  <MainPage type="server" />
-                </RequireAuth>
-              }
-            />
+
             <Route
               path="/invite/:inviteCode"
               element={

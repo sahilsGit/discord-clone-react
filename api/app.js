@@ -10,7 +10,7 @@ import channelsRouter from "./routes/channels.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import multer from "multer";
-import verifyToken from "./controllers/tokensController.js";
+import { verifyToken } from "./controllers/tokensController.js";
 import logoutRouter from "./routes/logout.js";
 import fs from "fs";
 

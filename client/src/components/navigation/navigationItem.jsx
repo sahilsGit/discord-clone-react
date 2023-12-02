@@ -39,15 +39,15 @@ export const NavigationItem = ({ name, id, image }) => {
       <div
         className={cn(
           "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
-          params?.id !== id && "group-hover:h-[20px]",
-          params?.id === id ? "h-[36px]" : "h-[8px]"
+          params?.serverId !== id && "group-hover:h-[20px]",
+          params?.serverId === id ? "h-[36px]" : "h-[8px]"
         )}
       ></div>
       <ActionTooltip side="right" align="center" label={name}>
         <div
           className={cn(
             "flex h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden",
-            params?.id === id && "rounded-[16px]"
+            params?.serverId === id && "rounded-[16px]"
           )}
         >
           <img className="" src={imageSrc} />

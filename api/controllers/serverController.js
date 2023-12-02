@@ -90,6 +90,13 @@ export const getAll = async (req, res, next) => {
       return accumulator;
     }, {});
 
+    // const serverData = servers.map((server) => ({
+    //   name: server.name,
+    //   inviteCode: server.inviteCode,
+    //   id: server._id,
+    //   image: server.image,
+    // }));
+
     if (res.body) {
       res.body = {
         ...res.body,
