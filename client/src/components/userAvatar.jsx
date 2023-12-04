@@ -19,7 +19,7 @@ export const UserAvatar = ({ member, className }) => {
 
       setImageSrc(imageUrl);
     } catch (err) {
-      handleError(err);
+      handleError(err, serverDispatch);
     }
   };
 
@@ -29,9 +29,9 @@ export const UserAvatar = ({ member, className }) => {
     }
   }, [member.image]);
 
-  useEffect(() => {
-    console.log("RENDERING AVATAR IMAGE");
-  });
+  // useEffect(() => {
+  //   // console.log("RENDERING AVATAR IMAGE");
+  // });
 
   if (!imageSrc) {
     return <div>Loading...</div>;

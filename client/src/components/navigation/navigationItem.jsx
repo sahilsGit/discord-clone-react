@@ -12,6 +12,8 @@ export const NavigationItem = ({ name, id, image }) => {
   const params = useParams();
   const navigate = useNavigate();
   const access_token = useAuth("token");
+  const serverDispatch = useServer("dispatch");
+  const activeServer = useServer("activeServer");
 
   useEffect(() => {
     const getImage = async () => {
@@ -22,7 +24,7 @@ export const NavigationItem = ({ name, id, image }) => {
 
         setImageSrc(imageUrl);
       } catch (err) {
-        handleError(err);
+        handleError(err, serverDispatch);
       }
     };
 
@@ -32,7 +34,7 @@ export const NavigationItem = ({ name, id, image }) => {
   return (
     <button
       onClick={() => {
-        navigate(`/servers/${id}`);
+        id !== activeServer && navigate(`/servers/${id}`);
       }}
       className="w-full flex items-center justify-center group relative"
     >

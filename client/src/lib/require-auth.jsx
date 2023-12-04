@@ -17,7 +17,7 @@ const RequireAuth = ({ children }) => {
     const refreshAuthDetails = async () => {
       try {
         const response = await get("/auth/refresh", access_token);
-        await handleResponse(response, authDispatch);
+        await handleResponse(response, authDispatch, serverDispatch);
       } catch (err) {
         serverDispatch({ type: "RESET_STATE" });
         navigate("/");

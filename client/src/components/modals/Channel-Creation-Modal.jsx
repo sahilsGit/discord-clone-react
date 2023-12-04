@@ -35,6 +35,7 @@ import { post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { useModal } from "@/hooks/useModals";
+import useServer from "@/hooks/useServer";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -65,7 +66,8 @@ const ChannelCreationModal = () => {
   }
 
   // For setting server image
-  const dispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
+  const authDispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
+  const serverDispatch = useServer("dispatch");
   const access_token = useAuth("token"); // For authorization
 
   // react-hook-from setup with zod resolver
@@ -85,7 +87,7 @@ const ChannelCreationModal = () => {
   const isLoading = form.formState.isSubmitting; // For disabling buttons on submission
 
   const onSubmit = async (data) => {
-    console.log("dataaaaa", data);
+    // console.log("dataaaaa", data);
     const dataToSend = {
       name: data.name,
       type: data.type,
@@ -96,9 +98,9 @@ const ChannelCreationModal = () => {
         JSON.stringify(dataToSend),
         access_token
       );
-      await handleResponse(response, dispatch);
+      await handleResponse(response, authDispatch, serverDispatch);
     } catch (err) {
-      handleError(err);
+      handleError(err, serverDispatch);
     }
   };
 

@@ -40,11 +40,12 @@ const EditServerModal = () => {
 
   const { isOpen, onClose, type, data } = useModal();
   const isModalOpen = isOpen && type === "editServer";
-  const dispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
+  const authDispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
   const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
   const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
   const access_token = useAuth("token"); // For authorization
   const serverDispatch = useServer("dispatch");
+  const activeServer = useServer("activeServer");
 
   const { server } = data;
 
@@ -67,14 +68,13 @@ const EditServerModal = () => {
           const image = URL.createObjectURL(imageData);
           setImagePreview(image);
         } catch (err) {
-          handleError(err);
+          handleError(err, serverDispatch);
         }
-
-        form.setValue("name", server.name);
       }
     };
 
     if (isModalOpen) {
+      form.setValue("name", server.name);
       fetchFormData();
     }
   }, [isModalOpen]);
@@ -95,7 +95,7 @@ const EditServerModal = () => {
             const image = URL.createObjectURL(imageData);
             setImagePreview(image);
           } catch (err) {
-            handleError(err);
+            handleError(err, serverDispatch);
           }
 
           form.setValue("name", server.name);
@@ -108,7 +108,7 @@ const EditServerModal = () => {
   // Use effect to display selected-image preview
   useEffect(() => {
     if (avatarImage) {
-      console.log("Kicking this as avatarImage is triggered", avatarImage);
+      // console.log("Kicking this as avatarImage is triggered", avatarImage);
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result); // Set avatar preview
@@ -123,7 +123,7 @@ const EditServerModal = () => {
   const uploadImage = async () => {
     // Upload image and save it in designated place
     if (avatarImage) {
-      console.log("Got image on upload");
+      // console.log("Got image on upload");
       const formData = new FormData();
       formData.append("image", avatarImage);
 
@@ -132,12 +132,16 @@ const EditServerModal = () => {
           Origin: "http://localhost:5173",
         });
 
-        const data = await handleResponse(response, dispatch); // Parse the res
+        const data = await handleResponse(
+          response,
+          authDispatch,
+          serverDispatch
+        ); // Parse the res
         const { newFilename } = data; // Access the newFilename property
 
         return newFilename; // For DB storage
       } catch (err) {
-        handleError(err);
+        handleError(err, serverDispatch);
       }
     } else {
       return null;
@@ -158,7 +162,7 @@ const EditServerModal = () => {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
 
-    console.log("file", file);
+    // console.log("file", file);
     if (file) {
       setAvatarImage(file); // Set the AvatarImage state with the choose image
     } else {
@@ -192,11 +196,10 @@ const EditServerModal = () => {
         access_token
       );
 
-      await handleResponse(response, dispatch);
-      serverDispatch({ type: "TOGGLE_SWITCH" });
+      await handleResponse(response, authDispatch, serverDispatch);
+      serverDispatch({ type: "SET_SERVER_CANDIDATE", payload: activeServer });
     } catch (err) {
-      handleError(err);
-      console.log(err); // Being lazy
+      handleError(err, serverDispatch);
     }
 
     setTimeout(() => {

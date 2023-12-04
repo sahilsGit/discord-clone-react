@@ -42,7 +42,7 @@ const ServerSidebar = () => {
     return member.profileId === profileId;
   })?.role;
 
-  console.log("role", role);
+  // console.log("role", role);
 
   const data = [
     {

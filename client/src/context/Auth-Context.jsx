@@ -14,7 +14,7 @@ export const AuthContext = createContext(INITIAL_STATE);
 
 // Reducer function for managing authentication state
 const AuthReducer = (state, action) => {
-  console.log("RECIEVED AUTH DISPATCH: ", action);
+  // console.log("RECIEVED AUTH DISPATCH: ", action);
   switch (action.type) {
     case "LOGIN_START":
       return {

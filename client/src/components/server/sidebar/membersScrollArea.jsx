@@ -53,12 +53,16 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
         if (target.isIntersecting && !isLoading) {
           if (searchTerm) {
             try {
-              console.log("infinite search scroll working");
+              // console.log("infinite search scroll working");
               const response = await get(
                 `/members/${server.id}/search?term=${searchTerm}&skip=${results.length}`,
                 access_token
               );
-              const data = await handleResponse(response, authDispatch);
+              const data = await handleResponse(
+                response,
+                authDispatch,
+                serverDispatch
+              );
 
               if (data.members.length < 1) {
                 setFetchLog("No results found");
@@ -68,21 +72,25 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
               setResults([...results, ...data.members]);
               setIsLoading(false);
             } catch (err) {
-              handleError(err);
+              handleError(err, serverDispatch);
             }
           } else {
-            console.log("inside to skip", server.members.length);
-            console.log("infinite member scroll working");
+            // console.log("inside to skip", server.members.length);
+            // console.log("infinite member scroll working");
             try {
               const response = await get(
                 `/servers/${user}/${activeServer}/members?skip=${server.members.length}`,
                 access_token
               );
 
-              const data = await handleResponse(response, authDispatch);
+              const data = await handleResponse(
+                response,
+                authDispatch,
+                serverDispatch
+              );
               serverDispatch({ type: "ADD_MEMBERS", payload: data.members });
             } catch (err) {
-              handleError(err);
+              handleError(err, serverDispatch);
             }
           }
         }
@@ -108,12 +116,16 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
           return;
         }
         try {
-          console.log("FETCHING MEMBERS FROM THE SEARCH");
+          // console.log("FETCHING MEMBERS FROM THE SEARCH");
           const response = await get(
             `/members/${server.id}/search?term=${searchTerm}&skip=${fetched}`,
             access_token
           );
-          const data = await handleResponse(response, authDispatch);
+          const data = await handleResponse(
+            response,
+            authDispatch,
+            serverDispatch
+          );
 
           if (data.members.length < 1) {
             setFetchLog("No results found");
@@ -123,7 +135,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
           setResults([...results, ...data.members]);
           setIsLoading(false);
         } catch (err) {
-          handleError(err);
+          handleError(err, serverDispatch);
         }
       }, 2000);
     },
@@ -149,7 +161,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
         { role: role },
         access_token
       );
-      const data = await handleResponse(response, authDispatch);
+      const data = await handleResponse(response, authDispatch, serverDispatch);
       serverDispatch({ type: "UPDATE_MEMBER", payload: data.member });
 
       const memberIndex = results.findIndex(
@@ -164,7 +176,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
         ]);
       }
     } catch (err) {
-      handleError(err);
+      handleError(err, serverDispatch);
     }
   };
 
@@ -174,10 +186,10 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
         `/members/${activeServer}/${memberId}/remove`,
         access_token
       );
-      await handleResponse(response, authDispatch);
+      await handleResponse(response, authDispatch, serverDispatch);
       serverDispatch({ type: "REMOVE_MEMBER", payload: memberId });
     } catch (err) {
-      handleError(err);
+      handleError(err, serverDispatch);
     }
   };
 
@@ -192,10 +204,10 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
       ref={(element) => {
         if (searchTerm && index === results.length - 1) {
           lastItemRef.current = element;
-          console.log("last ref changed", lastItemRef.current);
+          // console.log("last ref changed", lastItemRef.current);
         } else if (!searchTerm && index === server.members.length - 1) {
           lastItemRef.current = element;
-          console.log("last ref changed", lastItemRef.current);
+          // console.log("last ref changed", lastItemRef.current);
         }
       }}
     >

@@ -13,7 +13,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
  */
 
 const Homepage = () => {
-  console.log("HOMEPAGE MOUNTED");
+  // console.log("HOMEPAGE MOUNTED");
   const navigate = useNavigate(); // For programmatic navigation
   const location = useLocation();
   const from = location.state?.from?.pathname || "/@me";
@@ -24,7 +24,7 @@ const Homepage = () => {
 
   // Navigate the authenticated user to their profile pages
   useEffect(() => {
-    console.log("from", from);
+    // console.log("from", from);
     if (user && access_token) {
       navigate(from);
     }

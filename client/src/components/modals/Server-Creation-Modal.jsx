@@ -27,6 +27,7 @@ import { post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { useModal } from "@/hooks/useModals";
+import useServer from "@/hooks/useServer";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -43,6 +44,7 @@ const ServerCreationModal = () => {
 
   // For setting server image
   const authDispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
+  const serverDispatch = useServer("dispatch");
 
   const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
 
@@ -63,7 +65,7 @@ const ServerCreationModal = () => {
 
   // Use effect to display selected-image preview
   useEffect(() => {
-    // console.log("AvatarImage is being changed: ", avatarImage);
+    // // console.log("AvatarImage is being changed: ", avatarImage);
     if (avatarImage) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -88,17 +90,21 @@ const ServerCreationModal = () => {
         });
 
         // Parse the response as JSON
-        const data = await handleResponse(response, authDispatch);
+        const data = await handleResponse(
+          response,
+          authDispatch,
+          serverDispatch
+        );
 
         // Access the newFilename property from the parsed JSON
         const { newFilename } = data;
 
         return newFilename; // For DB storage
       } catch (err) {
-        handleError(err);
+        handleError(err, serverDispatch);
       }
     } else {
-      // console.log("Avatar image not found!");
+      // // console.log("Avatar image not found!");
       throw new Error("Avatar image not found"); // Reject the promise if avatarImage is not available
     }
   };
@@ -140,7 +146,7 @@ const ServerCreationModal = () => {
         access_token
       );
 
-      await handleResponse(response, authDispatch);
+      await handleResponse(response, authDispatch, serverDispatch);
 
       // Now fetching all the servers once again
       const res = await get(`/servers/${user}/getAll`, access_token);
@@ -149,7 +155,7 @@ const ServerCreationModal = () => {
       serverDispatch({ type: "SET_SERVERS", payload: data.servers });
       serverDispatch({ type: "SET_ACTIVE_SERVER", payload: data.servers[0] });
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
     setTimeout(() => {
       onClose();

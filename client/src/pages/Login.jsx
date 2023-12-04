@@ -18,6 +18,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { post } from "@/services/api-service";
 import { handleResponse, handleError } from "@/lib/response-handler";
 import useAuth from "@/hooks/useAuth";
+import useServer from "@/hooks/useServer";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -28,9 +29,9 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const authDispatch = useAuth("dispatch");
   const location = useLocation();
+  const serverDispatch = useServer("dispatch");
 
   const from = location.state ? location.state.from : "/@me";
-  console.log("fromm", from);
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -50,10 +51,10 @@ const LoginForm = () => {
 
     try {
       const response = await post("/auth/login", JSON.stringify(body));
-      await handleResponse(response, authDispatch);
+      await handleResponse(response, authDispatch, serverDispatch);
       navigate(from);
     } catch (err) {
-      handleError(err);
+      handleError(err, serverDispatch);
     }
   };
   return (

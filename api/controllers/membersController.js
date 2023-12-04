@@ -108,8 +108,6 @@ export const searchMember = async (req, res, next) => {
       },
     ]);
 
-    console.log("searched member", result);
-
     if (res.body) {
       res.body = { ...res.body, members: result };
     } else {
@@ -117,7 +115,7 @@ export const searchMember = async (req, res, next) => {
     }
     res.status(200).send(res.body);
   } catch (err) {
-    console.error(err.message);
+    // console.error(err.message);
     return res.status(500).send(err.message);
   }
 };

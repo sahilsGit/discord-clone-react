@@ -171,11 +171,7 @@ memberSchema.post("deleteOne", async function (next) {
     .model("Server")
     .updateOne({ _id: this.serverId }, { $pull: { members: this._id } });
   try {
-    console.log("inside memberSchema pre");
-
     await Promise.all([profileUpdatePromise, serverUpdatePromise]);
-
-    console.log("Removed from Profile and Server models");
 
     // // Remove references from the associated Message documents
     // await mongoose

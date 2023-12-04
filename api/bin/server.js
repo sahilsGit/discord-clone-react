@@ -19,10 +19,10 @@ const connect = async () => {
 app.listen(process.env.PORT || 4000, () => {
   try {
     connect().then(() => {
-      console.log("Server is listening on port 4000!");
+      // console.log("Server is listening on port 4000!");
       // calling the connect async function
     });
   } catch (err) {
-    console.error("Port Error: ", err);
+    // console.error("Port Error: ", err);
   }
 });

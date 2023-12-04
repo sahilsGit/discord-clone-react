@@ -84,7 +84,6 @@ export const verifyToken = async (req, res, next) => {
 
 export const refresh = async (req, res, next) => {
   // Extract tokens from cookies and headers
-  console.log("inside ref");
   const accessToken = req.headers["authorization"];
   const refreshToken = req.cookies.refresh_token;
 

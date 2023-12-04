@@ -8,7 +8,7 @@ import ServerChannel from "@/components/server/sidebar/serverChannel";
 import ServerMember from "@/components/server/sidebar/serverMember";
 
 const SidebarScrollArea = ({ data, role }) => {
-  console.log("content", data);
+  // console.log("content", data);
   const server = useServer("serverDetails");
   return (
     <>

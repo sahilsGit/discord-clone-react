@@ -108,13 +108,22 @@ export const getAll = async (req, res, next) => {
 
     res.status(200).send(res.body);
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     res.status(500).send(err.message);
   }
 };
 
 export const getOne = async (req, res, next) => {
   try {
+    const profile = await Profile.findOne({
+      _id: req.user.profileId,
+      servers: req.params.getOne,
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: "Server not found in profile" });
+    }
+
     const server = await Server.findOne({
       _id: req.params.getOne,
     })
@@ -133,7 +142,7 @@ export const getOne = async (req, res, next) => {
     const totalMembersCount = doc.members.length;
 
     if (!server) {
-      res.status(404).send({ message: "Server not found" });
+      return res.status(404).send({ message: "Server not found" });
     }
 
     const sendMemberWithImage = async (member) => {
@@ -178,7 +187,7 @@ export const getOne = async (req, res, next) => {
 
     res.status(200).send(res.body);
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     res.status(500).send(err.message);
   }
 };
@@ -225,7 +234,7 @@ export const updateServerBasics = async (req, res, next) => {
       res.status(200).send({ message: "okay..." });
     }
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     res.status(500).send(err.message);
   }
 };
@@ -233,7 +242,6 @@ export const updateServerBasics = async (req, res, next) => {
 export const findserver = async (req, res, next) => {
   let exists;
   try {
-    console.log("in");
     const server = await Server.findOne({ inviteCode: req.params.inviteCode });
 
     if (!server) {
@@ -271,7 +279,6 @@ export const findserver = async (req, res, next) => {
 
 export const acceptInvite = async (req, res, next) => {
   try {
-    console.log("inside accept");
     const user = await Profile.findById(req.user.profileId); // Find profile with server's profileId argument
     const server = await Server.findById(req.params.serverId);
 
@@ -358,7 +365,7 @@ export const getMembers = async (req, res) => {
 
     res.status(200).send(res.body);
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     res.status(500).send("Server Error");
   }
 };

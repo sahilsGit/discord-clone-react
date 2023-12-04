@@ -1,7 +1,7 @@
-import react from "react";
+import React from "react";
+
 const MessagesSidebar = () => {
-  console.log("PROFILE SIDEBAR MOUNTED");
-  return <div>hui hui hui</div>;
+  return <div>messagesSidebar</div>;
 };
 
 export default MessagesSidebar;

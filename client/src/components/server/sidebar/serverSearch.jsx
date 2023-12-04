@@ -11,7 +11,7 @@ import React, { useState } from "react";
 const ServerSearch = ({ data }) => {
   const [open, setOpen] = useState(false);
 
-  console.log("dddd", data);
+  // console.log("dddd", data);
   return (
     <>
       <button

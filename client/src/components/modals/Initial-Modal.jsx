@@ -59,7 +59,7 @@ const InitialModal = () => {
 
   // Use effect to display selected-image preview
   useEffect(() => {
-    console.log("AvatarImage is being changed: ", avatarImage);
+    // console.log("AvatarImage is being changed: ", avatarImage);
 
     if (avatarImage) {
       const reader = new FileReader();
@@ -80,23 +80,27 @@ const InitialModal = () => {
     // Upload image and save it in designated place
     if (avatarImage) {
       try {
-        console.log(formData);
+        // console.log(formData);
         const response = await post("/upload", formData, access_token, {
           Origin: "http://localhost:5173",
         });
 
         // Parse the response as JSON
-        const data = await handleResponse(response, authDispatch);
+        const data = await handleResponse(
+          response,
+          authDispatch,
+          serverDispatch
+        );
 
         // Access the newFilename property from the parsed JSON
         const { newFilename } = data;
 
         return newFilename; // For DB storage
       } catch (err) {
-        handleError(err);
+        handleError(err, serverDispatch);
       }
     } else {
-      // console.log("Avatar image not found!");
+      // // console.log("Avatar image not found!");
       throw new Error("Avatar image not found"); // Reject the promise if avatarImage is not available
     }
   };
@@ -137,7 +141,7 @@ const InitialModal = () => {
         JSON.stringify(toBeSent),
         access_token
       );
-      await handleResponse(response, authDispatch);
+      await handleResponse(response, authDispatch, serverDispatch);
 
       // Now fetching all the servers once again
       const res = await get(`/servers/${user}/getAll`, access_token);
@@ -146,7 +150,7 @@ const InitialModal = () => {
       serverDispatch({ type: "SET_SERVERS", payload: data.servers });
       serverDispatch({ type: "SET_ACTIVE_SERVER", payload: data.servers[0] });
     } catch (err) {
-      console.log(err); // Being lazy
+      // console.log(err); // Being lazy
     }
     form.reset();
   };

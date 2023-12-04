@@ -1,14 +1,13 @@
-const handleResponse = async (response, dispatch) => {
+const handleResponse = async (response, authDispatch, serverDispatch) => {
   // Success responses
-  console.log("status", response.status);
   if (response.ok) {
     try {
       const data = await response.json();
 
-      console.log("INSIDE RESPONSE HANDLER");
+      // console.log("INSIDE RESPONSE HANDLER");
 
       if (data.newAccessToken) {
-        dispatch({
+        authDispatch({
           type: "TOKEN_RECEIVED",
           payload: {
             access_token: data.newAccessToken,
@@ -23,7 +22,6 @@ const handleResponse = async (response, dispatch) => {
       console.error("Error parsing JSON response:", jsonError);
     }
   } else {
-    console.log("issssssdie else");
     // Handle errors
     const error = {
       status: response.status,
@@ -34,7 +32,8 @@ const handleResponse = async (response, dispatch) => {
   }
 };
 
-const handleError = (error) => {
+const handleError = (error, serverDispatch) => {
+  console.log("handle error triggered", error);
   switch (error.status) {
     case 401:
       localStorage.clear();
@@ -44,8 +43,10 @@ const handleError = (error) => {
       localStorage.clear();
       break;
 
+    case 404:
+      break;
+
     case error.status >= 400 && error.status < 500:
-      // Handle other client-side errors, e.g., display an error message to the user
       break;
 
     case error.status >= 500:
@@ -58,7 +59,9 @@ const handleError = (error) => {
       // Example: showToast('An unexpected error occurred');
       break;
   }
-  return;
+
+  console.log("returning err with status", error.status);
+  return error.status;
 };
 
 export { handleResponse, handleError };

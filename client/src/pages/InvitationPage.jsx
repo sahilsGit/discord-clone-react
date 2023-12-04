@@ -14,6 +14,7 @@ const InvitationPage = () => {
   const [loading, setLoading] = useState(true);
   const [exists, setExists] = useState();
   const navigate = useNavigate();
+  const serverDispatch = useServer("dispatch");
 
   useEffect(() => {
     const findServer = async () => {
@@ -22,12 +23,16 @@ const InvitationPage = () => {
           `/servers/${user}/find/${params.inviteCode}`,
           access_token
         );
-        const data = await handleResponse(response, authDispatch);
+        const data = await handleResponse(
+          response,
+          authDispatch,
+          serverDispatch
+        );
         data.exists ? setExists(true) : setExists(false);
         setLoading(false);
         setServerPage(data.serverId);
       } catch (err) {
-        handleError(err);
+        handleError(err, serverDispatch);
       }
     };
 
@@ -41,7 +46,7 @@ const InvitationPage = () => {
         null,
         access_token
       );
-      await handleResponse(response, authDispatch);
+      await handleResponse(response, authDispatch, serverDispatch);
       navigate(`/servers/${serverPage}`);
     } catch (err) {
       handleError;

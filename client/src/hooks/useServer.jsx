@@ -7,12 +7,14 @@ const useServer = (value) => {
       return useContext(ServerContext).servers;
     case "activeServer":
       return useContext(ServerContext).activeServer;
+    case "serverCandidate":
+      return useContext(ServerContext).serverCandidate;
+    case "channelCandidate":
+      return useContext(ServerContext).channelCandidate;
     case "serverDetails":
       return useContext(ServerContext).serverDetails;
-    case "members":
-      return useContext(ServerContext).members;
-    case "channels":
-      return useContext(ServerContext).channels;
+    case "activeChannel":
+      return useContext(ServerContext).activeChannel;
     case "dispatch":
       return useContext(ServerContext).dispatch;
     default:
