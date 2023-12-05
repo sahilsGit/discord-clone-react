@@ -39,6 +39,14 @@ function App() {
               }
             />
             <Route
+              path="/@me/:conversationId"
+              element={
+                <RequireAuth>
+                  <MainPage type="messages" />
+                </RequireAuth>
+              }
+            />
+            <Route
               path="/servers/:serverId/:channelId"
               element={
                 <RequireAuth>

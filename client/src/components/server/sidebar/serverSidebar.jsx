@@ -42,8 +42,6 @@ const ServerSidebar = () => {
     return member.profileId === profileId;
   })?.role;
 
-  // console.log("role", role);
-
   const data = [
     {
       label: "Text Channels",

@@ -114,6 +114,8 @@ export const getAll = async (req, res, next) => {
 };
 
 export const getOne = async (req, res, next) => {
+  const channel = req.query.channel;
+
   try {
     const profile = await Profile.findOne({
       _id: req.user.profileId,
@@ -179,10 +181,28 @@ export const getOne = async (req, res, next) => {
       totalMembersCount: totalMembersCount,
     };
 
-    if (res.body) {
-      res.body = { ...res.body, server: serverData };
+    let channelData;
+
+    if (channel) {
+      const foundChannel = serverData.channels.find(
+        (channelObj) => channelObj._id.toHexString() === channel
+      );
+
+      if (foundChannel) {
+        channelData = [foundChannel._id, foundChannel];
+      } else {
+        channelData = [serverData.channels[0]._id, serverData.channels[0]];
+      }
     } else {
-      res.body = { server: serverData };
+      channelData = [serverData.channels[0]._id, serverData.channels[0]];
+    }
+
+    console.log("channelData", channelData);
+
+    if (res.body) {
+      res.body = { ...res.body, server: serverData, channel: channelData };
+    } else {
+      res.body = { server: serverData, channel: channelData };
     }
 
     res.status(200).send(res.body);

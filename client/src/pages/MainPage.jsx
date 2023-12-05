@@ -79,18 +79,20 @@ const MainPage = ({ type }) => {
       <div className="h-full w-[72px] bg-main10 flex-shrink-0">
         <NavigationSidebar />
       </div>
-      <div className="h-full w-[240px] bg-main08 flex-shrink-0">
-        {type !== "messages" && !serverDetails ? (
-          <p>Loading...</p>
-        ) : type === "messages" ? (
-          <MessagesSidebar />
-        ) : (
-          <ServerSidebar />
-        )}
-      </div>
-      <div className="w-full">
-        <MainContentWrapper type={type} />
-      </div>
+
+      {type !== "messages" && !serverDetails ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <div className="h-full w-[240px] bg-main08 flex-shrink-0 ">
+            {type === "messages" ? <MessagesSidebar /> : <ServerSidebar />}
+          </div>
+
+          <div className="w-full">
+            <MainContentWrapper type={type} />
+          </div>
+        </>
+      )}
     </main>
   );
 };

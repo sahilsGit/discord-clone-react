@@ -8,7 +8,7 @@ const ServerMember = ({ member, server }) => {
   const navigate = useNavigate();
 
   const onClick = () => {
-    navigate(`/conversations/${member.id}`);
+    navigate(`/@me/${member.id}`);
   };
 
   return (

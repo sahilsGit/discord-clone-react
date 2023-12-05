@@ -64,3 +64,55 @@ export const createChannel = async (req, res, next) => {
     res.send(err.message);
   }
 };
+
+export const getChannel = async (req, res, next) => {
+  console.log("inside get channel");
+
+  try {
+    const profile = await Profile.findById(req.user.profileId);
+
+    console.log(profile);
+
+    if (!profile) {
+      return res.status(403).send("Profile not found");
+    }
+
+    // const hasChannel = profile.channels.includes(req.params.channelId);
+    const hasServer = profile.servers.includes(req.params.serverId);
+
+    if (!hasServer) {
+      return res
+        .status(404)
+        .json({ error: "User is not a member of this server" });
+    }
+
+    const channel = await Channel.findById(req.params.channelId);
+
+    if (!channel) {
+      return res
+        .status(404)
+        .json({ error: "Channel not found, does it even exists" });
+    }
+
+    if (res.body) {
+      res.body = {
+        ...res.body,
+        channel: [
+          channel._id,
+          { _id: channel._id, name: channel.name, type: channel.type },
+        ],
+      };
+    } else {
+      res.body = {
+        channel: [
+          channel._id,
+          { _id: channel._id, name: channel.name, type: channel.type },
+        ],
+      };
+    }
+
+    res.status(200).send(res.body);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};

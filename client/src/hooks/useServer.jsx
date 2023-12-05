@@ -13,6 +13,8 @@ const useServer = (value) => {
       return useContext(ServerContext).channelCandidate;
     case "serverDetails":
       return useContext(ServerContext).serverDetails;
+    case "channelDetails":
+      return useContext(ServerContext).channelDetails;
     case "activeChannel":
       return useContext(ServerContext).activeChannel;
     case "dispatch":

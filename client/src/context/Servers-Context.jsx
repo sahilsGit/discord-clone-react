@@ -9,6 +9,7 @@ const initialState = {
   activeServer: JSON.parse(localStorage.getItem("activeServer")) || null, // Holds Id of the currently active server
   activeChannel: null, // Holds Id of the currently active channel
   serverDetails: null, // Holds the activeServer's comprehensive details
+  channelDetails: null,
   serverCandidate: null, // Holds the serverId (temporarily) that's candidate for being the next activeServer
   channelCandidate: null, // Holds the channelId (temporarily) that's candidate for being the next activeChannel
   loading: true, //
@@ -17,7 +18,7 @@ const initialState = {
 export const ServerContext = createContext(initialState);
 
 const serverReducer = (state, action) => {
-  console.log("RECIEVED SERVER DISPATCH:", action);
+  console.log("RECIEVED SERVER DISPATCH:", action.type);
   switch (action.type) {
     case "RESET_STATE":
       return {
@@ -25,6 +26,7 @@ const serverReducer = (state, action) => {
         activeServer: null,
         serverDetails: null,
         activeChannel: null,
+        channelDetails: null,
         serverCandidate: null,
         channelCandidate: null,
         loading: true,
@@ -41,6 +43,8 @@ const serverReducer = (state, action) => {
       return { ...state, channelCandidate: action.payload };
     case "SET_SERVER_DETAILS":
       return { ...state, serverDetails: action.payload };
+    case "SET_CHANNEL_DETAILS":
+      return { ...state, channelDetails: action.payload };
     case "SET_ACTIVE_CHANNEL":
       return { ...state, activeChannel: action.payload };
     case "SET_LOADING":
@@ -108,59 +112,25 @@ export const ServerContextProvider = ({ children }) => {
     }
   };
 
-  const fetchData = async () => {
+  const fetchServerData = async () => {
+    let url;
+
+    state.channelCandidate
+      ? (url = `/servers/${user}/${state.serverCandidate}?channel=${state.channelCandidate}`)
+      : (url = `/servers/${user}/${state.serverCandidate}`);
+
     try {
-      console.log("fetching", state.serverCandidate);
-      const response = await get(
-        `/servers/${user}/${
-          state.serverCandidate ? state.serverCandidate : state.activeServer
-        }`,
-        access_token
-      );
-
+      const response = await get(url, access_token);
       const data = await handleResponse(response, authDispatch, dispatch);
-      console.log(
-        "got response",
-        data,
-        "channelCAndidate: ",
-        state.channelCandidate,
-        "serverCandidate: ",
-        state.serverCandidate,
-        "activeServer: ",
-        state.activeServer
-      );
-
-      if (state.channelCandidate) {
-        const channelExists = data.server.channels.some(
-          (channel) => channel._id === state.channelCandidate
-        );
-
-        if (channelExists) {
-          dispatch({
-            type: "SET_CUSTOM",
-            payload: {
-              serverDetails: data.server,
-              activeServer: state.serverCandidate
-                ? state.serverCandidate
-                : state.activeServer,
-              serverCandidate: null,
-              activeChannel: state.channelCandidate,
-              channelCandidate: null,
-            },
-          });
-          return;
-        }
-      }
 
       dispatch({
         type: "SET_CUSTOM",
         payload: {
           serverDetails: data.server,
-          activeServer: state.serverCandidate
-            ? state.serverCandidate
-            : state.activeServer,
+          activeServer: state.serverCandidate,
+          activeChannel: data.channel[0],
+          channelDetails: data.channel[1],
           serverCandidate: null,
-          activeChannel: data.server.channels[0]._id,
           channelCandidate: null,
         },
       });
@@ -168,6 +138,7 @@ export const ServerContextProvider = ({ children }) => {
       const errCode = handleError(err, dispatch);
 
       if (errCode === 404) {
+        dispatch({ type: "SET_SERVER_CANDIDATE", payload: null });
         state.activeServer
           ? navigate(`/servers/${state.activeServer}`)
           : navigate(`/@me`);
@@ -175,18 +146,61 @@ export const ServerContextProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    if (user && access_token && profileId) {
-      fetchServers();
-      if (state.serverCandidate || state.channelCandidate) fetchData();
+  const fetchChannelData = async () => {
+    try {
+      const response = await get(
+        `/channels/${state.activeServer}/${state.channelCandidate}`,
+        access_token
+      );
+
+      const data = await handleResponse(response, authDispatch, dispatch);
+
+      dispatch({
+        type: "SET_CUSTOM",
+        payload: {
+          activeChannel: data.channel[0],
+          channelDetails: data.channel[1],
+          serverCandidate: null,
+        },
+      });
+    } catch (err) {
+      const errCode = handleError(err, dispatch);
+
+      if (errCode === 404) {
+        state.activeChannel
+          ? navigate(`/servers/${state.activeServer}/${state.activeChannel}`)
+          : navigate(
+              `/servers/${state.activeServer}/${state.serverDetails.channels[0]._id}`
+            );
+      }
     }
-  }, [
-    state.serverCandidate,
-    state.channelCandidate,
-    access_token,
-    user,
-    profileId,
-  ]);
+  };
+
+  useEffect(() => {
+    if (!user && !access_token && !profileId) {
+      navigate("/");
+    }
+
+    state.serverCandidate && fetchServerData();
+  }, [state.serverCandidate]);
+
+  useEffect(() => {
+    if (!user && !access_token && !profileId) {
+      navigate("/");
+    }
+
+    fetchServers();
+  }, [access_token, user, profileId]);
+
+  useEffect(() => {
+    if (!user && !access_token && !profileId) {
+      navigate("/");
+    }
+
+    state.channelCandidate &&
+      state.serverCandidate === null &&
+      fetchChannelData();
+  }, [state.channelCandidate]);
 
   useEffect(() => {
     localStorage.setItem("activeServer", JSON.stringify(state.activeServer));
@@ -199,6 +213,13 @@ export const ServerContextProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("serverDetails", JSON.stringify(state.serverDetails));
   }, [state.serverDetails]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "channelDetails",
+      JSON.stringify(state.channelDetails)
+    );
+  }, [state.channelDetails]);
 
   return (
     <ServerContext.Provider

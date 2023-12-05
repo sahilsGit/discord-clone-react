@@ -118,14 +118,14 @@ export const login = async (req, res, next) => {
       },
       process.env.REFRESH,
       {
-        expiresIn: "20m", // Token expiration time
+        expiresIn: "1m", // Token expiration time
       }
     ); // Authorize user using the secret key
 
     const newSession = new Session({
       token: refresh,
       profileId: userProfile._id,
-      expireAt: new Date(Date.now() + 20 * 60 * 1000),
+      expireAt: new Date(Date.now() + 1 * 60 * 1000),
     });
 
     await newSession.save();
@@ -134,7 +134,7 @@ export const login = async (req, res, next) => {
       httpOnly: true,
       path: "/",
       sameSite: "Lax",
-      maxAge: 20 * 60 * 1000,
+      maxAge: 1 * 60 * 1000,
     });
 
     res.status(200).send({

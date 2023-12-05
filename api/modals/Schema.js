@@ -131,32 +131,40 @@ const memberSchema = new mongoose.Schema({
     ref: "Server",
     required: true,
   },
-  messages: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Message", required: true },
-  ],
+  messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Message" }],
   directMessages: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "DirectMessage",
-      required: true,
     },
   ],
   conversationsInitiated: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Conversation",
-      required: true,
     },
   ],
   conversationsReceived: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Conversation",
-      required: true,
     },
   ],
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
+});
+
+memberSchema.virtual("initiated", {
+  ref: "Conversation",
+  localField: "_id",
+  foreignField: "memberOneId",
+});
+
+// And another virtual to get all conversations received by this member
+memberSchema.virtual("received", {
+  ref: "Conversation",
+  localField: "_id",
+  foreignField: "memberTwoId",
 });
 
 memberSchema.post("deleteOne", async function (next) {
@@ -276,6 +284,9 @@ const messageSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now, required: true },
 });
 
+messageSchema.index({ channelId: 1 });
+messageSchema.index({ memberId: 1 });
+
 const conversationSchema = new mongoose.Schema({
   memberOneId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -297,6 +308,9 @@ const conversationSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now, required: true },
 });
 
+conversationSchema.index({ memberOneId: 1 });
+conversationSchema.index({ memberTwoId: 1 });
+
 const directMessageSchema = new mongoose.Schema({
   content: { type: mongoose.Schema.Types.String, required: true },
   fileUrl: { type: String },
@@ -314,6 +328,9 @@ const directMessageSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
 });
+
+directMessageSchema.index({ memberId: 1 });
+directMessageSchema.index({ conversationId: 1 });
 
 const Profile = mongoose.model("Profile", profileSchema);
 const Server = mongoose.model("Server", serverSchema);
