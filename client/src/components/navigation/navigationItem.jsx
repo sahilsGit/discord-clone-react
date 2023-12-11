@@ -12,8 +12,10 @@ export const NavigationItem = ({ name, id, image }) => {
   const params = useParams();
   const navigate = useNavigate();
   const access_token = useAuth("token");
-  const serverDispatch = useServer("dispatch");
-  const activeServer = useServer("activeServer");
+  const authDispatch = useAuth("dispatch");
+  const serverDetails = useServer("serverDetails");
+
+  const [clicked, setClicked] = useState(null);
 
   useEffect(() => {
     const getImage = async () => {
@@ -24,32 +26,45 @@ export const NavigationItem = ({ name, id, image }) => {
 
         setImageSrc(imageUrl);
       } catch (err) {
-        handleError(err, serverDispatch);
+        handleError(err, authDispatch);
       }
     };
 
     getImage();
   }, [image]);
 
+  useEffect(() => {
+    params.serverId ? setClicked(id) : setClicked(null);
+  }, [params.serverId]);
+
   return (
     <button
       onClick={() => {
-        id !== activeServer && navigate(`/servers/${id}`);
+        id !== serverDetails?.id && navigate(`/servers/${id}`);
       }}
-      className="w-full flex items-center justify-center group relative"
+      className={cn("w-full flex items-center justify-center group relative")}
     >
       <div
         className={cn(
           "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
-          params?.serverId !== id && "group-hover:h-[20px]",
-          params?.serverId === id ? "h-[36px]" : "h-[8px]"
+          serverDetails?.id !== id && "group-hover:h-[20px]",
+          params.serverId && serverDetails?.id === id ? "h-[36px]" : "h-[8px]",
+          params.serverId &&
+            serverDetails?.id !== params.serverId &&
+            params.serverId === clicked &&
+            "h-[20px]"
         )}
       ></div>
       <ActionTooltip side="right" align="center" label={name}>
         <div
           className={cn(
             "flex h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden",
-            params?.serverId === id && "rounded-[16px]"
+            ((params.serverId && serverDetails?.id === id) ||
+              params.serverId === clicked) &&
+              "rounded-[16px]",
+            params.serverId !== serverDetails?.id &&
+              params.serverId === clicked &&
+              "translate-y-[1px]"
           )}
         >
           <img className="" src={imageSrc} />

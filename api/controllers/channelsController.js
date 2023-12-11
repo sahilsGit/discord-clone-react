@@ -65,50 +65,93 @@ export const createChannel = async (req, res, next) => {
   }
 };
 
-export const getChannel = async (req, res, next) => {
-  console.log("inside get channel");
-
+export const getChannel = async (req, res) => {
   try {
-    const profile = await Profile.findById(req.user.profileId);
-
-    console.log(profile);
+    const profile = await Profile.findOne({
+      _id: req.user.profileId,
+      servers: req.params.serverId,
+    });
 
     if (!profile) {
-      return res.status(403).send("Profile not found");
+      return res.status(404).json({ error: "Server not found in profile" });
     }
 
-    // const hasChannel = profile.channels.includes(req.params.channelId);
-    const hasServer = profile.servers.includes(req.params.serverId);
+    const server = await Server.findOne({
+      _id: req.params.serverId,
+    })
+      .populate({
+        path: "members",
+        select: "_id profileId role",
+        options: { limit: 1 },
+      })
+      .populate({
+        path: "channels",
+        select: "_id type name",
+      });
 
-    if (!hasServer) {
-      return res
-        .status(404)
-        .json({ error: "User is not a member of this server" });
+    const doc = await Server.findById({ _id: req.params.serverId });
+
+    if (!server) {
+      return res.status(404).send({ message: "Server not found" });
     }
 
-    const channel = await Channel.findById(req.params.channelId);
+    const totalMembersCount = doc.members.length;
 
-    if (!channel) {
-      return res
-        .status(404)
-        .json({ error: "Channel not found, does it even exists" });
+    const sendMemberWithImage = async (member) => {
+      const profile = await Profile.findById(member.profileId).select(
+        "image name email"
+      );
+
+      if (!profile) {
+        return null;
+      }
+
+      return {
+        email: profile.email,
+        name: profile.name,
+        id: member._id,
+        profileId: member.profileId,
+        role: member.role,
+        image: profile.image ? profile.image : null,
+      };
+    };
+
+    const populatedMembers = await Promise.all(
+      server.members.map(sendMemberWithImage)
+    );
+
+    const myMembership = server.members.find(
+      (member) => member.profileId.toHexString() === req.user.profileId
+    );
+
+    const serverData = {
+      name: server.name,
+      id: server._id,
+      profileId: server.profileId,
+      inviteCode: server.inviteCode,
+      image: server.image,
+      channels: server.channels,
+      members: populatedMembers,
+      totalMembersCount: totalMembersCount,
+      myMembership: myMembership,
+    };
+
+    const foundChannel = serverData.channels.find(
+      (channelObj) => channelObj._id.toHexString() === req.params.channelId
+    );
+
+    let channelData;
+
+    if (foundChannel) {
+      channelData = [foundChannel._id, foundChannel];
+    } else {
+      channelData = [serverData.channels[0]._id, serverData.channels[0]];
     }
 
     if (res.body) {
-      res.body = {
-        ...res.body,
-        channel: [
-          channel._id,
-          { _id: channel._id, name: channel.name, type: channel.type },
-        ],
-      };
+      res.body = { ...res.body, server: serverData, channel: channelData };
     } else {
-      res.body = {
-        channel: [
-          channel._id,
-          { _id: channel._id, name: channel.name, type: channel.type },
-        ],
-      };
+      res.body = { server: serverData, channel: channelData };
     }
 
     res.status(200).send(res.body);

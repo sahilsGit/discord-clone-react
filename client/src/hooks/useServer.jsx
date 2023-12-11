@@ -17,6 +17,8 @@ const useServer = (value) => {
       return useContext(ServerContext).channelDetails;
     case "activeChannel":
       return useContext(ServerContext).activeChannel;
+    case "allConversations":
+      return useContext(ServerContext).allConversations;
     case "dispatch":
       return useContext(ServerContext).dispatch;
     default:

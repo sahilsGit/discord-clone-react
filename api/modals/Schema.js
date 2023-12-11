@@ -308,8 +308,19 @@ const conversationSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now, required: true },
 });
 
-conversationSchema.index({ memberOneId: 1 });
-conversationSchema.index({ memberTwoId: 1 });
+conversationSchema.index({ memberOneId: 1, memberTwoId: 1 });
+conversationSchema.index({ memberTwoId: 1, memberOneId: 1 });
+
+conversationSchema.post("save", async function (doc) {
+  // Update member's initiated and received virtuals
+  await Member.findByIdAndUpdate(doc.memberOneId, {
+    $push: { conversationsInitiated: doc._id },
+  });
+
+  await Member.findByIdAndUpdate(doc.memberTwoId, {
+    $push: { conversationsReceived: doc._id },
+  });
+});
 
 const directMessageSchema = new mongoose.Schema({
   content: { type: mongoose.Schema.Types.String, required: true },

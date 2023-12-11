@@ -16,7 +16,7 @@ const Homepage = () => {
   // console.log("HOMEPAGE MOUNTED");
   const navigate = useNavigate(); // For programmatic navigation
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/@me";
+  const from = location.state?.from?.pathname || "/@me/conversations";
 
   // Fetch user and access token from custom auth hook
   const user = useAuth("user");

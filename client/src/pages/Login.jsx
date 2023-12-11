@@ -29,9 +29,8 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const authDispatch = useAuth("dispatch");
   const location = useLocation();
-  const serverDispatch = useServer("dispatch");
 
-  const from = location.state ? location.state.from : "/@me";
+  const from = location.state ? location.state.from : "/@me/conversations";
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -51,10 +50,10 @@ const LoginForm = () => {
 
     try {
       const response = await post("/auth/login", JSON.stringify(body));
-      await handleResponse(response, authDispatch, serverDispatch);
+      await handleResponse(response, authDispatch);
       navigate(from);
     } catch (err) {
-      handleError(err, serverDispatch);
+      handleError(err, authDispatch);
     }
   };
   return (

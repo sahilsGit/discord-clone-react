@@ -31,7 +31,7 @@ function App() {
             <Route path="/" element={<Homepage />} />
             <Route path="/about" element={<About />} />
             <Route
-              path="/@me"
+              path="/@me/conversations"
               element={
                 <RequireAuth>
                   <MainPage type="messages" />
@@ -39,10 +39,10 @@ function App() {
               }
             />
             <Route
-              path="/@me/:conversationId"
+              path="/@me/conversations/:memberId/:myMemberId"
               element={
                 <RequireAuth>
-                  <MainPage type="messages" />
+                  <MainPage type="conversation" />
                 </RequireAuth>
               }
             />

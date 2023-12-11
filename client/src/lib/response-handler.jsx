@@ -1,10 +1,8 @@
-const handleResponse = async (response, authDispatch, serverDispatch) => {
+const handleResponse = async (response, authDispatch) => {
   // Success responses
   if (response.ok) {
     try {
       const data = await response.json();
-
-      // console.log("INSIDE RESPONSE HANDLER");
 
       if (data.newAccessToken) {
         authDispatch({
@@ -32,15 +30,13 @@ const handleResponse = async (response, authDispatch, serverDispatch) => {
   }
 };
 
-const handleError = (error, serverDispatch) => {
+const handleError = (error, authDispatch) => {
   console.log("handle error triggered", error);
   switch (error.status) {
-    case 401:
+    case 401 || 403:
       localStorage.clear();
-      break;
-
-    case 403:
-      localStorage.clear();
+      authDispatch({ type: "RESET_STATE" });
+      window.location.href = "/";
       break;
 
     case 404:
@@ -50,8 +46,6 @@ const handleError = (error, serverDispatch) => {
       break;
 
     case error.status >= 500:
-      // Handle server errors, e.g., display a generic server error message
-      // Example: showToast('Server Error: Please try again later');
       break;
 
     default:

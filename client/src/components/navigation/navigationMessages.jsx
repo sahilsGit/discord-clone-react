@@ -23,7 +23,7 @@ export const DirectMessages = () => {
     <>
       <button
         onClick={() => {
-          navigate("/@me");
+          navigate("/@me/conversations");
         }}
         className="group w-full relative flex justify-center items-center"
       >
@@ -40,7 +40,7 @@ export const DirectMessages = () => {
           <div
             className={cn(
               "relative h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all bg-main07 group-hover:bg-indigo-500",
-              isMe && "rounded-[16px] bg-indigo-500"
+              isMe && "rounded-[16px] bg-indigo-500 translate-y-[1px]"
             )}
           >
             <img

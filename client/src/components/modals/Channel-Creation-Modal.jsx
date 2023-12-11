@@ -67,7 +67,6 @@ const ChannelCreationModal = () => {
 
   // For setting server image
   const authDispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
-  const serverDispatch = useServer("dispatch");
   const access_token = useAuth("token"); // For authorization
 
   // react-hook-from setup with zod resolver
@@ -98,9 +97,9 @@ const ChannelCreationModal = () => {
         JSON.stringify(dataToSend),
         access_token
       );
-      await handleResponse(response, authDispatch, serverDispatch);
+      await handleResponse(response, authDispatch);
     } catch (err) {
-      handleError(err, serverDispatch);
+      handleError(err, authDispatch);
     }
   };
 

@@ -68,7 +68,7 @@ const EditServerModal = () => {
           const image = URL.createObjectURL(imageData);
           setImagePreview(image);
         } catch (err) {
-          handleError(err, serverDispatch);
+          handleError(err, authDispatch);
         }
       }
     };
@@ -95,7 +95,7 @@ const EditServerModal = () => {
             const image = URL.createObjectURL(imageData);
             setImagePreview(image);
           } catch (err) {
-            handleError(err, serverDispatch);
+            handleError(err, authDispatch);
           }
 
           form.setValue("name", server.name);
@@ -141,7 +141,7 @@ const EditServerModal = () => {
 
         return newFilename; // For DB storage
       } catch (err) {
-        handleError(err, serverDispatch);
+        handleError(err, authDispatch);
       }
     } else {
       return null;
@@ -196,10 +196,10 @@ const EditServerModal = () => {
         access_token
       );
 
-      await handleResponse(response, authDispatch, serverDispatch);
+      await handleResponse(response, authDispatch);
       serverDispatch({ type: "SET_SERVER_CANDIDATE", payload: activeServer });
     } catch (err) {
-      handleError(err, serverDispatch);
+      handleError(err, authDispatch);
     }
 
     setTimeout(() => {

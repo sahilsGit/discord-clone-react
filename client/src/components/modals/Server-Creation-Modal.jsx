@@ -101,7 +101,7 @@ const ServerCreationModal = () => {
 
         return newFilename; // For DB storage
       } catch (err) {
-        handleError(err, serverDispatch);
+        handleError(err, authDispatch);
       }
     } else {
       // // console.log("Avatar image not found!");
@@ -146,7 +146,7 @@ const ServerCreationModal = () => {
         access_token
       );
 
-      await handleResponse(response, authDispatch, serverDispatch);
+      await handleResponse(response, authDispatch);
 
       // Now fetching all the servers once again
       const res = await get(`/servers/${user}/getAll`, access_token);

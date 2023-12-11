@@ -69,9 +69,10 @@ export const getAll = async (req, res, next) => {
   try {
     // TODO : Possiblity for reducing db look for optimisation
     const profileId = req.user.profileId;
+
     const profile = await Profile.findById(profileId); // Use the id from JWT token
 
-    if (!profile) {
+    if (!profile || req.user.username !== req.params.username) {
       return res.status(404).json({ message: "Profile not found" });
     }
 
@@ -86,6 +87,7 @@ export const getAll = async (req, res, next) => {
         inviteCode: server.inviteCode,
         id: server._id,
         image: server.image,
+        channels: server.channels,
       };
       return accumulator;
     }, {});

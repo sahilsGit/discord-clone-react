@@ -32,7 +32,7 @@ const InvitationPage = () => {
         setLoading(false);
         setServerPage(data.serverId);
       } catch (err) {
-        handleError(err, serverDispatch);
+        handleError(err, authDispatch);
       }
     };
 
@@ -46,7 +46,7 @@ const InvitationPage = () => {
         null,
         access_token
       );
-      await handleResponse(response, authDispatch, serverDispatch);
+      await handleResponse(response, authDispatch);
       navigate(`/servers/${serverPage}`);
     } catch (err) {
       handleError;

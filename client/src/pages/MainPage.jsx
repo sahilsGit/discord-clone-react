@@ -7,6 +7,8 @@ import useServer from "@/hooks/useServer";
 import useAuth from "@/hooks/useAuth";
 import MessagesSidebar from "@/components/messages/sidebar/messagesSidebar";
 import MainContentWrapper from "@/components/main/mainContentWrapper";
+import { handleError, handleResponse } from "@/lib/response-handler";
+import { get } from "@/services/api-service";
 
 /*
  * MainPage
@@ -27,52 +29,95 @@ const MainPage = ({ type }) => {
   // Consume the Servers context using custom hook
   const serverDetails = useServer("serverDetails");
   const serverDispatch = useServer("dispatch");
-  const activeChannel = useServer("activeChannel");
-  const activeServer = useServer("activeServer");
+  const authDispatch = useAuth("dispatch");
+  const servers = useServer("servers");
+  let data;
+
+  console.log(type);
 
   // Consume the Auth context using custom hook
-  const user = useAuth("user");
   const access_token = useAuth("token");
 
-  useEffect(() => {
-    (!user || !access_token) && navigate("/");
+  const fetchConversation = async () => {
+    if (params.memberId === params.myMemberId) {
+      return;
+    }
+    try {
+      const response = get(
+        `/conversations/${params.memberId}/${params.myMemberId}`,
+        access_token
+      );
 
-    if (type === "messages") {
+      return handleResponse(response, authDispatch);
+    } catch (err) {
+      handleError(err, authDispatch);
+    }
+  };
+
+  const fetchChannelData = async () => {
+    try {
+      const response = await get(
+        `/channels/${params.serverId}/${params.channelId}`,
+        access_token
+      );
+
+      const data = await handleResponse(response, authDispatch);
+
       serverDispatch({
         type: "SET_CUSTOM",
         payload: {
-          activeChannel: null,
-          activeServer: null,
-          serverDetails: null,
-          serverCandidate: null,
-          channelCandidate: null,
+          serverDetails: data.server,
+          channelDetails: data.channel[1],
         },
       });
-    } else {
-      if (
-        (params.serverId && activeServer !== params.serverId) ||
-        !serverDetails
-      ) {
-        serverDispatch({
-          type: "SET_SERVER_CANDIDATE",
-          payload: params.serverId,
-        });
-      }
 
-      if (params.channelId && activeChannel !== params.channelId) {
-        serverDispatch({
-          type: "SET_CHANNEL_CANDIDATE",
-          payload: params.channelId,
-        });
+      console.log(data.server);
+    } catch (err) {
+      const errCode = handleError(err, authDispatch);
+
+      if (errCode === 404) {
+        navigate("/@me/conversations");
       }
     }
-  }, [type, params.serverId, params.channelId]);
+  };
+
+  const fetchAllConversations = async () => {
+    try {
+      const response = await get(
+        `/conversations/${serverDetails.myMembership._id}`,
+        access_token
+      );
+
+      const data = handleResponse(response, authDispatch);
+    } catch (err) {
+      const errCode = handleError(err, authDispatch);
+    }
+  };
 
   useEffect(() => {
-    activeServer &&
-      activeChannel &&
-      navigate(`/servers/${activeServer}/${activeChannel}`);
-  }, [activeServer, activeChannel]);
+    if (type == "channel" || type == "server") {
+      params.channelId
+        ? fetchChannelData()
+        : navigate(
+            `/servers/${params.serverId}/${
+              servers[params.serverId].channels[0]
+            }`
+          );
+    } else {
+      serverDispatch({
+        type: "SET_CUSTOM",
+        payload: {
+          serverDetails: null,
+          channelDetails: null,
+        },
+      });
+      // if (!allConversations || !allConversations?.length)
+      //   serverDetails && fetchAllConversations();
+
+      if (type === "conversation") data = fetchConversation();
+      else data = null;
+    }
+  }, [type, params.serverId, params.channelId]);
 
   return (
     <main className="h-screen flex">
@@ -81,15 +126,21 @@ const MainPage = ({ type }) => {
       </div>
 
       {type !== "messages" && !serverDetails ? (
-        <p>Loading...</p>
+        <div className="h-full w-[240px] bg-main08 flex-shrink-0 ">
+          <p>Loading...</p>
+        </div>
       ) : (
         <>
           <div className="h-full w-[240px] bg-main08 flex-shrink-0 ">
-            {type === "messages" ? <MessagesSidebar /> : <ServerSidebar />}
+            {type === "messages" || type === "conversation" ? (
+              <MessagesSidebar type={type} />
+            ) : (
+              <ServerSidebar />
+            )}
           </div>
 
           <div className="w-full">
-            <MainContentWrapper type={type} />
+            <MainContentWrapper type={type} data={data} />
           </div>
         </>
       )}

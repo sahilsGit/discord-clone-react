@@ -16,6 +16,14 @@ export const AuthContext = createContext(INITIAL_STATE);
 const AuthReducer = (state, action) => {
   // console.log("RECIEVED AUTH DISPATCH: ", action);
   switch (action.type) {
+    case "RESET_STATE":
+      return {
+        access_token: null,
+        user: null, // Clear the user on login start
+        profileId: null,
+        loading: false, // Set loading to true
+        error: null, // Clear any previous errors
+      };
     case "LOGIN_START":
       return {
         access_token: null,

@@ -1,6 +1,5 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import useAuth from "@/hooks/useAuth";
-import useServer from "@/hooks/useServer";
 import { get } from "@/services/api-service";
 import { handleError } from "@/lib/response-handler";
 import { useState, useEffect } from "react";
@@ -9,6 +8,7 @@ import { cn } from "@/lib/utils";
 export const UserAvatar = ({ member, className }) => {
   const [imageSrc, setImageSrc] = useState("../../assets/images/fallback.jpg");
   const access_token = useAuth("token");
+  const authDispatch = useAuth("dispatch");
 
   const getImage = async () => {
     try {
@@ -19,7 +19,7 @@ export const UserAvatar = ({ member, className }) => {
 
       setImageSrc(imageUrl);
     } catch (err) {
-      handleError(err, serverDispatch);
+      handleError(err, authDispatch);
     }
   };
 

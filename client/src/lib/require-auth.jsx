@@ -1,40 +1,39 @@
 import useAuth from "@/hooks/useAuth";
 import useServer from "@/hooks/useServer";
 import { get } from "@/services/api-service";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { handleResponse } from "./response-handler";
+import { handleError, handleResponse } from "./response-handler";
 
 const RequireAuth = ({ children }) => {
   const user = useAuth("user");
   const access_token = useAuth("token");
   const navigate = useNavigate();
-  const serverDispatch = useServer("dispatch");
   const profileId = useAuth("id");
   const authDispatch = useAuth("dispatch");
+  const [loading, setLoading] = useState(true);
+
+  console.log("INSIDE REQUIRE AUTH");
 
   useEffect(() => {
     const refreshAuthDetails = async () => {
       try {
         const response = await get("/auth/refresh", access_token);
-        await handleResponse(response, authDispatch, serverDispatch);
+        await handleResponse(response, authDispatch);
       } catch (err) {
-        serverDispatch({ type: "RESET_STATE" });
-        navigate("/");
+        handleError(err, authDispatch);
       }
     };
 
-    if (!user || !access_token) {
-      serverDispatch({ type: "RESET_STATE" });
+    if (user && access_token) {
+      !profileId ? refreshAuthDetails() : setLoading(false);
+    } else {
+      authDispatch({ type: "RESET_STATE" });
       navigate("/");
-    }
-
-    if (!profileId) {
-      refreshAuthDetails();
     }
   }, [user, access_token, profileId]);
 
-  return user && access_token ? children : <p>Loading...</p>;
+  return loading ? <p>Loading...</p> : children;
 };
 
 export default RequireAuth;

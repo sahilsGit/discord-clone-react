@@ -39,7 +39,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const server = useServer("serverDetails");
   const serverDispatch = useServer("dispatch");
   const user = useAuth("user");
-  const activeServer = useServer("activeServer");
+  const serverDetails = useServer("serverDetails");
   const [isLoading, setIsLoading] = useState(false);
   const [fetchLog, setFetchLog] = useState("");
   const lastItemRef = useRef();
@@ -72,14 +72,14 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
               setResults([...results, ...data.members]);
               setIsLoading(false);
             } catch (err) {
-              handleError(err, serverDispatch);
+              handleError(err, authDispatch);
             }
           } else {
             // console.log("inside to skip", server.members.length);
             // console.log("infinite member scroll working");
             try {
               const response = await get(
-                `/servers/${user}/${activeServer}/members?skip=${server.members.length}`,
+                `/servers/${user}/${serverDetails.id}/members?skip=${server.members.length}`,
                 access_token
               );
 
@@ -90,7 +90,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
               );
               serverDispatch({ type: "ADD_MEMBERS", payload: data.members });
             } catch (err) {
-              handleError(err, serverDispatch);
+              handleError(err, authDispatch);
             }
           }
         }
@@ -135,7 +135,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
           setResults([...results, ...data.members]);
           setIsLoading(false);
         } catch (err) {
-          handleError(err, serverDispatch);
+          handleError(err, authDispatch);
         }
       }, 2000);
     },
@@ -157,11 +157,11 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const onRoleChange = async (memberId, role) => {
     try {
       const response = await update(
-        `/members/${activeServer}/${memberId}`,
+        `/members/${serverDetails.id}/${memberId}`,
         { role: role },
         access_token
       );
-      const data = await handleResponse(response, authDispatch, serverDispatch);
+      const data = await handleResponse(response, authDispatch);
       serverDispatch({ type: "UPDATE_MEMBER", payload: data.member });
 
       const memberIndex = results.findIndex(
@@ -176,20 +176,20 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
         ]);
       }
     } catch (err) {
-      handleError(err, serverDispatch);
+      handleError(err, authDispatch);
     }
   };
 
   const onKick = async (memberId) => {
     try {
       const response = await remove(
-        `/members/${activeServer}/${memberId}/remove`,
+        `/members/${serverDetails.id}/${memberId}/remove`,
         access_token
       );
-      await handleResponse(response, authDispatch, serverDispatch);
+      await handleResponse(response, authDispatch);
       serverDispatch({ type: "REMOVE_MEMBER", payload: memberId });
     } catch (err) {
-      handleError(err, serverDispatch);
+      handleError(err, authDispatch);
     }
   };
 
