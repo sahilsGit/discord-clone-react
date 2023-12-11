@@ -1,28 +1,14 @@
-import { app } from "../app.js";
 import dotenv from "dotenv"; // Import the dotenv library for managing environment variables
 import mongoose from "mongoose"; // Import Mongoose for MongoDB interactions
 
 dotenv.config();
 
 // Function to establish a connection to the MongoDB database
-const connect = async () => {
+export const connect = async () => {
   try {
-    await mongoose.connect(process.env.MONGO); // Connect to MongoDB using the MONGO environment variable
+    await mongoose.connect(process.env.MONGO); // Connect to MongoDB using the MONGO environment variable;
     console.log("Connected to DB server");
   } catch (err) {
-    console.error("Error connecting to MongoDB: ", err);
-    throw err; // Throw an error if the connection attempt fails
+    console.log("Error connecting to MongoDB: ", err);
   }
 };
-
-// Start the Express server and listen on port 4000
-app.listen(process.env.PORT || 4000, () => {
-  try {
-    connect().then(() => {
-      // console.log("Server is listening on port 4000!");
-      // calling the connect async function
-    });
-  } catch (err) {
-    // console.error("Port Error: ", err);
-  }
-});

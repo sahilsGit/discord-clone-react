@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/server"
+    "start": "nodemon app.js"
   },
   "dependencies": {
     "axios": "^1.5.1",
@@ -21,6 +21,7 @@
     "multer": "^1.4.5-lts.1",
     "pug": "2.0.0-beta11",
     "react-fontawesome": "^1.7.1",
+    "socket.io": "^4.7.2",
     "uuid": "^9.0.1"
   }
 }

@@ -7,12 +7,21 @@ import serverRouter from "./routes/servers.js";
 import authRouter from "./routes/auth.js";
 import membersRouter from "./routes/members.js";
 import channelsRouter from "./routes/channels.js";
+import conversationsRouter from "./routes/conversations.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import multer from "multer";
 import { verifyToken } from "./controllers/tokensController.js";
 import logoutRouter from "./routes/logout.js";
 import fs from "fs";
+import { connect } from "./bin/server.js";
+
+connect().then(() => {
+  // Start the Express server and listen on port 4000
+  app.listen(process.env.PORT || 4000, () => {
+    console.log("Server is listening at port 4000");
+  });
+});
 
 export const app = express();
 
@@ -53,8 +62,7 @@ app.use("/api/logout", logoutRouter);
 app.use("/api/servers", serverRouter);
 app.use("/api/members", membersRouter);
 app.use("/api/channels", channelsRouter);
-
-///// Temp
+app.use("/api/conversations", conversationsRouter);
 
 app.get("/api/getImage/:imageName", (req, res) => {
   const imageName = req.params.imageName;
@@ -72,8 +80,6 @@ app.get("/api/getImage/:imageName", (req, res) => {
 
   // res.sendFile(imagePath);
 });
-
-/////
 
 app.post("/api/upload", upload.single("image"), (req, res) => {
   const newFilename = req.file.filename;
