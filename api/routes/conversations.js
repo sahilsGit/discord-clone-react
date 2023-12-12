@@ -6,10 +6,9 @@ import {
 
 const router = express.Router();
 
-console.log("conver rout");
 //Handle requests
 
-router.get("/:memberTwoId/:memberOneId", findConversation);
-router.get("/:memberId", getAllConversations);
+router.get("/:profileTwoId/:profileOneId", findConversation);
+router.get("/:profileId", getAllConversations);
 
 export default router;

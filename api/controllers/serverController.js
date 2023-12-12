@@ -37,7 +37,7 @@ export const createServer = async (req, res, next) => {
       image,
     });
 
-    const server = await newServer.save();
+    await newServer.save();
 
     // Create the general channel
     const generalChannel = new Channel({
@@ -49,13 +49,23 @@ export const createServer = async (req, res, next) => {
 
     await generalChannel.save();
 
+    const member = await Member.find({ profileId: profileId }).select(["_id"]);
+
+    console.log("ssss", member);
+
+    await Channel.findByIdAndUpdate(
+      generalChannel._id,
+      { $push: { members: member } },
+      { new: true } // This option ensures that you get the updated document in the callback
+    );
+
     if (res.body) {
       res.body = {
         ...res.body,
-        server: server,
+        server: newServer,
       };
     } else {
-      res.body = { server: server };
+      res.body = { server: newServer };
     }
     res.status(200).send(res.body);
   } catch (err) {

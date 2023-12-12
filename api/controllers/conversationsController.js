@@ -1,61 +1,54 @@
-import { Conversation, Member, Profile } from "../modals/Schema.js";
+import { DirectConversation, Profile } from "../modals/Schema.js";
 
 export const findConversation = async (req, res) => {
+  console.log("inside convsssss");
   try {
-    // const { memberOneId, memberTwoId } = req.params;
-    const memberOneId = req.params.memberOneId;
-    const memberTwoId = req.params.memberTwoId;
+    // const { profileOneId, profileTwoId } = req.params;
+    const profileOneId = req.params.profileOneId;
+    const profileTwoId = req.params.profileTwoId;
 
-    if (memberOneId === memberTwoId) {
+    if (profileOneId === profileTwoId) {
       return res
         .status(201)
         .send("You can't initiate conversation with yourself");
     }
-
     let conversation;
-    let populatedMember;
 
     // Check if a conversation already exists
-    conversation = await Conversation.findOne({
+    conversation = await DirectConversation.findOne({
       $or: [
-        { memberOneId, memberTwoId },
-        { memberOneId: memberTwoId, memberTwoId: memberOneId },
+        { initiatedBy: profileOneId, initiatedFor: profileTwoId },
+        { initiatedBy: profileTwoId, initiatedFor: profileOneId },
       ],
     });
 
     if (!conversation) {
-      console.log("initiating conversation");
-
       // Conversation does not exist, create a new one
-      conversation = new Conversation({
-        memberOneId,
-        memberTwoId,
-        directMessages: [], // You can add other necessary fields here
-        createdAt: new Date(),
+      conversation = new DirectConversation({
+        initiatedBy: profileOneId,
+        initiatedFor: profileTwoId,
+        messages: [], // You can add other necessary fields here
       });
-
       // Save the new conversation
       await conversation.save();
     }
 
-    populatedMember = await Member.findById(memberTwoId).populate({
-      path: "profileId",
-      select: "_id name image username",
-    });
-
+    console.log("over here");
+    const theirProfile = await Profile.findById(profileTwoId).select(
+      "_id name image username"
+    );
     if (res.body) {
       res.body = {
         ...res.body,
-        memberProfile: populatedMember.profileId,
+        memberProfile: theirProfile,
         conversation: conversation,
       };
     } else {
       res.body = {
-        memberProfile: populatedMember.profileId,
+        memberProfile: theirProfile,
         conversation: conversation,
       };
     }
-
     res.status(200).send(res.body);
   } catch (error) {
     res.status(500).send(error.member);
@@ -64,120 +57,33 @@ export const findConversation = async (req, res) => {
 
 export const getAllConversations = async (req, res) => {
   try {
-    const memberId = req.params.memberId;
+    const profileId = req.params.profileId;
+    console.log(profileId);
 
-    const conversationsInitiated = await Member.aggregate([
-      // Get the member document
+    const conversations = await DirectConversation.find({
+      $or: [{ initiatedBy: profileId }, { initiatedFor: profileId }],
+    }).populate([
       {
-        $match: {
-          _id: ObjectId(`${memberId}`),
-        },
+        path: "initiatedBy",
+        match: { _id: { $ne: req.user.profileId } },
+        select: "name _id image",
       },
-
-      // Look for memberId
       {
-        $lookup: {
-          from: "conversation",
-          as: "conversations",
-          localField: "_id",
-          foreignField: "memberOneId",
-        },
+        path: "initiatedFor",
+        match: { _id: { $ne: req.user.profileId } },
+        select: "name _id image",
       },
-
-      // Filter out unwanted fields
-      {
-        $project: {
-          _id: 0,
-          conversations: {
-            memberTwoId: 1,
-          },
-        },
-      },
-
-      //
     ]);
-
-    // const conversationsReceived = await Member.populate({
-    //   path: "conversationsReceived",
-    //   match: { _id: memberId },
-    //   select: {
-    //     memberOneId: 1,
-    //     _id: 0,
-    //   },
-    //   populate: {
-    //     path: "memberOneId",
-    //     select: {
-    //       profileId: 1,
-    //       _id: 0,
-    //     },
-    //   },
-    // });
-
-    // Combine the initiated and received conversations
-    const allConversations = conversationsInitiated.concat(
-      conversationsReceived
-    );
-
     if (res.body) {
       res.body = {
         ...res.body,
-        convProfile: aj,
+        convProfile: conversations,
       };
     } else {
-      res.body = { convProfile: aj };
+      res.body = { convProfile: conversations };
     }
-
     res.status(200).send(res.body);
   } catch (error) {
     res.status(500).send(error.message);
   }
 };
-
-// conversation = await Conversation.aggregate([
-//   {
-//     $match: {
-//       $or: [
-//         {
-//           $and: [
-//             { memberOneId: ObjectId("6567fd75436d90e52c023915") },
-//             { memberTwoId: ObjectId("6568a16559279ef436fe1d51") },
-//           ],
-//         },
-//         {
-//           $and: [
-//             { memberOneId: ObjectId("6568a16559279ef436fe1d51") },
-//             { memberTwoId: ObjectId("6567fd75436d90e52c023915") },
-//           ],
-//         },
-//       ],
-//     },
-//   },
-//   {
-//     $lookup: {
-//       from: "members",
-//       let: { memberId: "$memberTwoId" },
-//       pipeline: [
-//         {
-//           $match: {
-//             $expr: { $eq: ["$_id", "$$memberId"] }, // Check if _id matches the member ID
-//           },
-//         },
-//       ],
-//       as: "memberInfo",
-//     },
-//   },
-//   {
-//     $lookup: {
-//       from: "profiles",
-//       as: "ProfileInfo",
-//       localField: "memberInfo.profileId",
-//       foreignField: "_id",
-//     },
-//   },
-//   {
-//     $project: {
-//       _id: 0,
-//       ProfileInfo: 1,
-//     },
-//   },
-// ]);
