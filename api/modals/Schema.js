@@ -12,8 +12,11 @@ const profileSchema = new mongoose.Schema({
   members: [
     { type: mongoose.Schema.Types.ObjectId, ref: "Member", required: true },
   ],
-  channels: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Channel", required: true },
+  DirectMessages: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DirectMessage",
+    },
   ],
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
@@ -68,7 +71,7 @@ serverSchema.index({ profileId: 1 });
 
 // Add a pre-save hook to update the user's servers array
 serverSchema.pre("save", async function (next) {
-  // Find the user (profile) by their profileId and update their servers array
+  console.log("inside pre");
 
   const isNewServer = this.isNew;
 
@@ -86,9 +89,10 @@ serverSchema.pre("save", async function (next) {
           serverId: this._id, // server's id
         });
 
-        await member.save();
         user.members.push(member._id);
         this.members.push(member._id);
+
+        await member.save();
         await user.save(); // save user
       }
     } catch (err) {
@@ -131,23 +135,10 @@ const memberSchema = new mongoose.Schema({
     ref: "Server",
     required: true,
   },
-  messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Message" }],
-  directMessages: [
+  messages: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "DirectMessage",
-    },
-  ],
-  conversationsInitiated: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Conversation",
-    },
-  ],
-  conversationsReceived: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Conversation",
+      ref: "ServerMessage",
     },
   ],
   createdAt: { type: Date, default: Date.now, required: true },
@@ -157,14 +148,14 @@ const memberSchema = new mongoose.Schema({
 memberSchema.virtual("initiated", {
   ref: "Conversation",
   localField: "_id",
-  foreignField: "memberOneId",
+  foreignField: "profileOneId",
 });
 
 // And another virtual to get all conversations received by this member
 memberSchema.virtual("received", {
   ref: "Conversation",
   localField: "_id",
-  foreignField: "memberTwoId",
+  foreignField: "profileTwoId",
 });
 
 memberSchema.post("deleteOne", async function (next) {
@@ -233,32 +224,37 @@ const channelSchema = new mongoose.Schema({
     ref: "Server",
     required: true,
   },
-  messages: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Message", required: true },
+  members: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Member", required: true },
   ],
+  conversationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ServerConversation",
+  },
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
 });
 
-// Add a pre-save hook to update the user's servers array
 channelSchema.pre("save", async function (next) {
-  // Find the user (profile) by their profileId and update their servers array
-
   const isNewChannel = this.isNew;
 
   if (isNewChannel) {
     try {
       const user = await Profile.findById(this.profileId); // Find profile with server's profileId argument
-      if (user) {
-        user.channels.push(this._id); // Push this server's id to profile's "servers" array
-      }
-
       const server = await Server.findById(this.serverId);
       if (server) {
         server.channels.push(this._id); // Push this server's id to profile's "servers" array
       }
       await user.save();
       await server.save();
+
+      const newConversation = new ServerConversation({
+        serverId: this.serverId,
+        channelId: this._id,
+      });
+
+      this.conversationId = newConversation._id;
+      await newConversation.save();
     } catch (err) {
       return next(err);
     }
@@ -266,7 +262,27 @@ channelSchema.pre("save", async function (next) {
   next();
 });
 
-const messageSchema = new mongoose.Schema({
+const serverConversationSchema = new mongoose.Schema({
+  serverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Server",
+    required: true,
+  },
+  channelId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Channel",
+    required: true,
+  },
+  messages: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ServerMessage",
+      required: true,
+    },
+  ],
+});
+
+const serverMessageSchema = new mongoose.Schema({
   content: { type: mongoose.Schema.Types.String, required: true },
   fileUrl: { type: String },
   memberId: {
@@ -279,60 +295,61 @@ const messageSchema = new mongoose.Schema({
     ref: "Channel",
     required: true,
   },
+  serverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Server",
+    required: true,
+  },
+  conversationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ServerConversation",
+    required: true,
+  },
   deleted: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
 });
 
-messageSchema.index({ channelId: 1 });
-messageSchema.index({ memberId: 1 });
+serverMessageSchema.index({ channelId: 1 });
+serverMessageSchema.index({ memberId: 1 });
+serverMessageSchema.index({ serverId: 1 });
 
-const conversationSchema = new mongoose.Schema({
-  memberOneId: {
+const directConversationSchema = new mongoose.Schema({
+  initiatedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Member",
+    ref: "Profile",
     required: true,
   },
-  memberTwoId: {
+  initiatedFor: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Member",
+    ref: "Profile",
     required: true,
   },
-  directMessages: [
+  messages: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "DirectMessage",
       required: true,
     },
   ],
-  createdAt: { type: Date, default: Date.now, required: true },
-});
-
-conversationSchema.index({ memberOneId: 1, memberTwoId: 1 });
-conversationSchema.index({ memberTwoId: 1, memberOneId: 1 });
-
-conversationSchema.post("save", async function (doc) {
-  // Update member's initiated and received virtuals
-  await Member.findByIdAndUpdate(doc.memberOneId, {
-    $push: { conversationsInitiated: doc._id },
-  });
-
-  await Member.findByIdAndUpdate(doc.memberTwoId, {
-    $push: { conversationsReceived: doc._id },
-  });
 });
 
 const directMessageSchema = new mongoose.Schema({
   content: { type: mongoose.Schema.Types.String, required: true },
   fileUrl: { type: String },
-  memberId: {
+  SenderId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Member",
+    ref: "Profile",
+    required: true,
+  },
+  ReceiverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Profile",
     required: true,
   },
   conversationId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Conversation",
+    ref: "DirectConversation",
     required: true,
   },
   deleted: { type: Boolean, default: false },
@@ -347,8 +364,15 @@ const Profile = mongoose.model("Profile", profileSchema);
 const Server = mongoose.model("Server", serverSchema);
 const Member = mongoose.model("Member", memberSchema);
 const Channel = mongoose.model("Channel", channelSchema);
-const Message = mongoose.model("Message", messageSchema);
-const Conversation = mongoose.model("Conversation", conversationSchema);
+const ServerConversation = mongoose.model(
+  "ServerConversation",
+  serverConversationSchema
+);
+const ServerMessage = mongoose.model("ServerMessage", serverMessageSchema);
+const DirectConversation = mongoose.model(
+  "DirectConversation",
+  directConversationSchema
+);
 const DirectMessage = mongoose.model("DirectMessage", directMessageSchema);
 const Session = mongoose.model("Session", sessionSchema);
 
@@ -357,8 +381,9 @@ export {
   Server,
   Member,
   Channel,
-  Message,
-  Conversation,
+  ServerMessage,
+  ServerConversation,
+  DirectConversation,
   DirectMessage,
   Session,
 };
