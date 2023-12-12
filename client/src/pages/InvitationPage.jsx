@@ -47,7 +47,8 @@ const InvitationPage = () => {
         access_token
       );
       await handleResponse(response, authDispatch);
-      navigate(`/servers/${serverPage}`);
+      // navigate(`/servers/${serverPage}`);
+      navigate(`/@me/conversations`);
     } catch (err) {
       handleError;
     }

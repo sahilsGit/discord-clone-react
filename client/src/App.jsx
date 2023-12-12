@@ -39,7 +39,7 @@ function App() {
               }
             />
             <Route
-              path="/@me/conversations/:memberId/:myMemberId"
+              path="/@me/conversations/:memberProfileId/:myProfileId"
               element={
                 <RequireAuth>
                   <MainPage type="conversation" />
