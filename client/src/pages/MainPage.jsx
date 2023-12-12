@@ -31,6 +31,8 @@ const MainPage = ({ type }) => {
   const serverDispatch = useServer("dispatch");
   const authDispatch = useAuth("dispatch");
   const servers = useServer("servers");
+  const allConversations = useServer("allConversations");
+  const profileId = useAuth("id");
   let data;
 
   console.log(type);
@@ -39,12 +41,12 @@ const MainPage = ({ type }) => {
   const access_token = useAuth("token");
 
   const fetchConversation = async () => {
-    if (params.memberId === params.myMemberId) {
+    if (params.memberProfileId === params.myProfileId) {
       return;
     }
     try {
       const response = get(
-        `/conversations/${params.memberId}/${params.myMemberId}`,
+        `/conversations/${params.memberProfileId}/${params.myProfileId}`,
         access_token
       );
 
@@ -83,10 +85,7 @@ const MainPage = ({ type }) => {
 
   const fetchAllConversations = async () => {
     try {
-      const response = await get(
-        `/conversations/${serverDetails.myMembership._id}`,
-        access_token
-      );
+      const response = await get(`/conversations/${profileId}`, access_token);
 
       const data = handleResponse(response, authDispatch);
     } catch (err) {
@@ -111,8 +110,9 @@ const MainPage = ({ type }) => {
           channelDetails: null,
         },
       });
-      // if (!allConversations || !allConversations?.length)
-      //   serverDetails && fetchAllConversations();
+
+      if (!allConversations || !allConversations?.length)
+        fetchAllConversations();
 
       if (type === "conversation") data = fetchConversation();
       else data = null;

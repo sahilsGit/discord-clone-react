@@ -74,6 +74,7 @@ const ServerSidebar = () => {
         id: member.id,
         name: member.name,
         icon: roleIconMap[member.role],
+        profileId: member.profileId,
       })),
     },
   ];
