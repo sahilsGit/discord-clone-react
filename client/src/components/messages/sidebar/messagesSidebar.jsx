@@ -2,16 +2,16 @@ import React from "react";
 import MessagesSearch from "./messagesSearch";
 import MessagesScrollArea from "./messagesScrollArea";
 import MessagesFriends from "./messagesFriends";
+import ServerProfileControl from "@/components/server/sidebar/serverProfileControl";
 
 const MessagesSidebar = () => {
   return (
-    <>
-      <div className="flex h-10 border-neutral-200 dark:border-neutral-800 border-b-2">
-        <MessagesSearch />
-      </div>
+    <div className="flex h-full flex-col">
+      <MessagesSearch />
       <MessagesFriends />
       <MessagesScrollArea />
-    </>
+      <ServerProfileControl />
+    </div>
   );
 };
 

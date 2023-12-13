@@ -4,6 +4,7 @@ import ServerSearch from "./serverSearch";
 import { Hash, Mic, ShieldAlert, ShieldCheck, Video } from "lucide-react";
 import useServer from "@/hooks/useServer";
 import useAuth from "@/hooks/useAuth";
+import ServerProfileControl from "./serverProfileControl";
 
 const iconMap = {
   TEXT: <Hash className="mr-2 h-4 w-4" />,
@@ -80,10 +81,11 @@ const ServerSidebar = () => {
   ];
 
   return (
-    <div>
+    <div className="flex h-full flex-col">
       <ServerHeader role={role} />
       <ServerSearch data={data} />
       <SidebarScrollArea data={data} role={role} />
+      <ServerProfileControl />
     </div>
   );
 };
