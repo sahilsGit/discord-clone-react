@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import { useTheme } from "../providers/theme-provider";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import useServer from "@/hooks/useServer";
 export const DirectMessages = () => {
   const { theme } = useTheme();
   const [style, setStyle] = useState("");
   const navigate = useNavigate();
   const isMe = window.location.pathname.includes("/@me");
+  const serverDetails = useServer("serverDetails");
 
   useEffect(() => {
     if (theme === "light") {
@@ -31,16 +33,16 @@ export const DirectMessages = () => {
         <div
           className={cn(
             "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
-            !isMe && "group-hover:h-[20px]",
-            isMe && "h-[36px]",
-            !isMe && "h-[8px]"
+            serverDetails && "group-hover:h-[20px]",
+            !serverDetails && "h-[36px]",
+            serverDetails && "h-[8px]"
           )}
         ></div>
         <ActionTooltip side="right" align="center" label="Direct Messages">
           <div
             className={cn(
               "relative h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all bg-main07 group-hover:bg-indigo-500",
-              isMe && "rounded-[16px] bg-indigo-500 translate-y-[1px]"
+              !serverDetails && "rounded-[16px] bg-indigo-500 translate-y-[1px]"
             )}
           >
             <img
