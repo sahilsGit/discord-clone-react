@@ -1,4 +1,3 @@
-// Imports
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
@@ -120,30 +119,20 @@ const MainPage = ({ type }) => {
   }, [type, params.serverId, params.channelId]);
 
   return (
-    <main className="h-screen flex">
+    <main className="h-screen flex w-screen">
       <div className="h-full w-[72px] bg-main10 flex-shrink-0">
         <NavigationSidebar />
       </div>
-
-      {type !== "messages" && !serverDetails ? (
-        <div className="h-full w-[240px] bg-main08 flex-shrink-0 ">
-          <p>Loading...</p>
-        </div>
-      ) : (
-        <>
-          <div className="h-full w-[240px] bg-main08 flex-shrink-0 ">
-            {type === "messages" || type === "conversation" ? (
-              <MessagesSidebar type={type} />
-            ) : (
-              <ServerSidebar />
-            )}
-          </div>
-
-          <div className="w-full">
-            <MainContentWrapper type={type} data={data} />
-          </div>
-        </>
-      )}
+      <div className="w-[240px] bg-main08 flex-shrink-0 ">
+        {type === "messages" || type === "conversation" || !serverDetails ? (
+          <MessagesSidebar type={type} />
+        ) : (
+          <ServerSidebar />
+        )}
+      </div>
+      <div className="w-full h-full">
+        <MainContentWrapper type={type} data={data} />
+      </div>
     </main>
   );
 };

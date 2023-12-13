@@ -1,4 +1,5 @@
 import { ActionTooltip } from "@/components/actionTooltip";
+import { ScrollArea } from "@/components/ui/scrollArea";
 import useServer from "@/hooks/useServer";
 import { Plus } from "lucide-react";
 import React from "react";
@@ -23,6 +24,7 @@ const MessagesScrollArea = () => {
           </ActionTooltip>
         </div>
       </div>
+      <ScrollArea className="px-2 grow"></ScrollArea>
     </>
   );
 };
