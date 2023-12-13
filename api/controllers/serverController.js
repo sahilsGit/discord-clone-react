@@ -138,6 +138,8 @@ export const getOne = async (req, res, next) => {
       return res.status(404).json({ error: "Server not found in profile" });
     }
 
+    console.log("getting one server");
+
     const server = await Server.findOne({
       _id: req.params.getOne,
     })
@@ -145,12 +147,14 @@ export const getOne = async (req, res, next) => {
         path: "members",
         select: "_id profileId role",
         match: { profileId: req.user.profileId },
-        options: { limit: 1 },
+        options: { limit: 10 },
       })
       .populate({
         path: "channels",
         select: "_id type name",
       });
+
+    console.log("serversss", server);
 
     const doc = await Server.findById({ _id: req.params.getOne });
     const totalMembersCount = doc.members.length;
@@ -356,7 +360,7 @@ export const getMembers = async (req, res) => {
       path: "members",
       select: "_id profileId role",
       options: {
-        limit: 1,
+        limit: 10,
         skip: skip || 0,
       },
     });

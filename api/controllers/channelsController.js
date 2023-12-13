@@ -82,7 +82,7 @@ export const getChannel = async (req, res) => {
       .populate({
         path: "members",
         select: "_id profileId role",
-        options: { limit: 1 },
+        options: { limit: 10 },
       })
       .populate({
         path: "channels",
