@@ -145,66 +145,6 @@ const memberSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now, required: true },
 });
 
-memberSchema.virtual("initiated", {
-  ref: "Conversation",
-  localField: "_id",
-  foreignField: "profileOneId",
-});
-
-// And another virtual to get all conversations received by this member
-memberSchema.virtual("received", {
-  ref: "Conversation",
-  localField: "_id",
-  foreignField: "profileTwoId",
-});
-
-memberSchema.post("deleteOne", async function (next) {
-  const profileUpdatePromise = mongoose
-    .model("Profile")
-    .updateOne(
-      { _id: this.profileId },
-      { $pull: { members: this._id, servers: this.serverId } }
-    );
-
-  const serverUpdatePromise = mongoose
-    .model("Server")
-    .updateOne({ _id: this.serverId }, { $pull: { members: this._id } });
-  try {
-    await Promise.all([profileUpdatePromise, serverUpdatePromise]);
-
-    // // Remove references from the associated Message documents
-    // await mongoose
-    //   .model("Message")
-    //   .updateMany(
-    //     { _id: { $in: this.messages } },
-    //     { $pull: { members: this._id } }
-    //   );
-
-    // // Remove references from the associated DirectMessage documents
-    // await mongoose
-    //   .model("DirectMessage")
-    //   .updateMany(
-    //     { _id: { $in: this.directMessages } },
-    //     { $pull: { members: this._id } }
-    //   );
-
-    // // Remove references from the associated Conversation documents
-    // await mongoose.model("Conversation").updateMany(
-    //   {
-    //     $or: [
-    //       { _id: { $in: this.conversationsInitiated } },
-    //       { _id: { $in: this.conversationsReceived } },
-    //     ],
-    //   },
-    //   { $pull: { members: this._id } }
-    // );
-
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
 memberSchema.index({ role: 1 });
 
 const channelSchema = new mongoose.Schema({

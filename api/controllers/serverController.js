@@ -329,6 +329,18 @@ export const acceptInvite = async (req, res, next) => {
       });
 
       await member.save();
+
+      await Channel.updateMany(
+        {
+          serverId: req.params.serverId,
+        },
+        {
+          $addToSet: {
+            members: member._id,
+          },
+        }
+      );
+
       user.members.push(member._id);
       server.members.push(member._id);
 

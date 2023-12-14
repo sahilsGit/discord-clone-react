@@ -1,4 +1,4 @@
-import { Member, Profile, Server } from "../modals/Schema.js";
+import { Channel, Member, Profile, Server } from "../modals/Schema.js";
 import mongoose from "mongoose";
 
 export const changeRole = async (req, res, next) => {
@@ -122,27 +122,40 @@ export const searchMember = async (req, res, next) => {
 
 export const removeMember = async (req, res, next) => {
   try {
-    // Check if the server exists
-    const server = await Server.findById(req.params.serverId);
-    if (!server) {
-      return res.status(404).json({ error: "Server not found" });
-    }
-
-    // Find the Member document to be removed
     const member = await Member.findById(req.params.memberId);
+
     if (!member) {
-      return res.status(404).json({ error: "Member not found" });
+      return res.status(404).send("Member not found");
     }
 
-    // Validate that the Member belongs to the specified server
-    if (member.serverId.toString() !== req.params.serverId) {
-      return res
-        .status(400)
-        .json({ error: "Member does not belong to the specified server" });
-    }
+    const server = await Server.findById(member.serverId);
 
-    // Remove the Member document, triggering the 'remove' middleware
-    await Member.deleteOne({ _id: req.params.memberId });
+    // Remove member from Profile
+    const profileUpdatePromise = Profile.updateOne(
+      { _id: member.profileId },
+      { $pull: { members: member._id, servers: member.serverId } }
+    );
+
+    // Remove member from Server
+    const serverUpdatePromise = Server.updateOne(
+      { _id: member.serverId },
+      { $pull: { members: member._id } }
+    );
+
+    // Remove member from Channels
+    await Channel.updateMany(
+      { _id: { $in: server.channels } },
+      { $pull: { members: member._id } }
+    );
+
+    // Remove member reference from ServerMessage
+    // const messageUpdatePromise = ServerMessage.updateMany(
+    //   { memberId: member._id },
+    //   { memberId: null }
+    // );
+
+    await Promise.all([profileUpdatePromise, serverUpdatePromise]);
+    await Member.deleteOne({ _id: member._id });
 
     if (res.body) {
       res.status(200).send(res.body);
