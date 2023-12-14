@@ -15,8 +15,8 @@ export const createChannel = async (req, res, next) => {
       });
     }
 
-    const profile = Profile.findById(req.user.profileId);
-    const server = Server.findById(req.params.serverId);
+    const profile = await Profile.findById(req.user.profileId);
+    const server = await Server.findById(req.params.serverId);
 
     if (!profile) {
       res.status(401).send("No user found");
@@ -48,6 +48,7 @@ export const createChannel = async (req, res, next) => {
       type,
       profileId: req.user.profileId,
       serverId: req.params.serverId,
+      members: server.members,
     });
 
     await channel.save();
@@ -55,11 +56,13 @@ export const createChannel = async (req, res, next) => {
     if (res.body) {
       res.body = {
         ...res.body,
-        server: server,
+        server: channel,
       };
     } else {
-      res.body = { server: server };
+      res.body = { server: channel };
     }
+
+    res.status(200).send(res.body);
   } catch (err) {
     res.send(err.message);
   }

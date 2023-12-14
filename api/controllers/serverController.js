@@ -51,12 +51,10 @@ export const createServer = async (req, res, next) => {
 
     const member = await Member.find({ profileId: profileId }).select(["_id"]);
 
-    console.log("ssss", member);
-
     await Channel.findByIdAndUpdate(
       generalChannel._id,
       { $push: { members: member } },
-      { new: true } // This option ensures that you get the updated document in the callback
+      { new: true }
     );
 
     if (res.body) {

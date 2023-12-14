@@ -75,8 +75,6 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
               handleError(err, authDispatch);
             }
           } else {
-            // console.log("inside to skip", server.members.length);
-            // console.log("infinite member scroll working");
             try {
               const response = await get(
                 `/servers/${user}/${serverDetails.id}/members?skip=${server.members.length}`,
@@ -116,7 +114,6 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
           return;
         }
         try {
-          // console.log("FETCHING MEMBERS FROM THE SEARCH");
           const response = await get(
             `/members/${server.id}/search?term=${searchTerm}&skip=${fetched}`,
             access_token
@@ -180,7 +177,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
     }
   };
 
-  const onKick = async (memberId) => {
+  const kickMember = async (memberId) => {
     try {
       const response = await remove(
         `/members/${serverDetails.id}/${memberId}/remove`,
@@ -194,7 +191,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   };
 
   const clickKick = (memberId) => {
-    onKick(memberId);
+    kickMember(memberId);
   };
 
   const renderMemberItem = (member, index) => (
@@ -204,10 +201,8 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
       ref={(element) => {
         if (searchTerm && index === results.length - 1) {
           lastItemRef.current = element;
-          // console.log("last ref changed", lastItemRef.current);
         } else if (!searchTerm && index === server.members.length - 1) {
           lastItemRef.current = element;
-          // console.log("last ref changed", lastItemRef.current);
         }
       }}
     >
