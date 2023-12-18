@@ -11,6 +11,8 @@ const handleResponse = async (response, authDispatch) => {
             access_token: data.newAccessToken,
             user: data.username,
             profileId: data.profileId,
+            name: data.name,
+            image: data.image,
           },
         });
       }

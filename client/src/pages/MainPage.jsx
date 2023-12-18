@@ -1,13 +1,14 @@
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
-import ServerSidebar from "@/components/server/sidebar/serverSidebar";
 import useServer from "@/hooks/useServer";
 import useAuth from "@/hooks/useAuth";
-import MessagesSidebar from "@/components/messages/sidebar/messagesSidebar";
-import MainContentWrapper from "@/components/main/mainContentWrapper";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { get } from "@/services/api-service";
+import useMisc from "@/hooks/useMisc";
+import ConversationSidebar from "@/components/conversation/sidebar/conversationSidebar";
+import MainWrapper from "@/components/main/mainWrapper";
+import ChannelSidebar from "@/components/channel/sidebar/channelSidebar";
 
 /*
  * MainPage
@@ -30,26 +31,33 @@ const MainPage = ({ type }) => {
   const serverDispatch = useServer("dispatch");
   const authDispatch = useAuth("dispatch");
   const servers = useServer("servers");
-  const allConversations = useServer("allConversations");
+  const allConversations = useMisc("allConversations");
+  const miscDispatch = useMisc("dispatch");
   const profileId = useAuth("id");
+  const activeConversation = useMisc("activeConversation");
   let data;
-
-  console.log(type);
 
   // Consume the Auth context using custom hook
   const access_token = useAuth("token");
+
+  console.log(type);
 
   const fetchConversation = async () => {
     if (params.memberProfileId === params.myProfileId) {
       return;
     }
     try {
-      const response = get(
+      const response = await get(
         `/conversations/${params.memberProfileId}/${params.myProfileId}`,
         access_token
       );
 
-      return handleResponse(response, authDispatch);
+      const data = await handleResponse(response, authDispatch);
+
+      miscDispatch({
+        type: "SET_ACTIVE_CONVERSATION",
+        payload: data.conversation._id,
+      });
     } catch (err) {
       handleError(err, authDispatch);
     }
@@ -86,7 +94,12 @@ const MainPage = ({ type }) => {
     try {
       const response = await get(`/conversations/${profileId}`, access_token);
 
-      const data = handleResponse(response, authDispatch);
+      const data = await handleResponse(response, authDispatch);
+
+      miscDispatch({
+        type: "SET_CONVERSATIONS",
+        payload: data.convProfile,
+      });
     } catch (err) {
       const errCode = handleError(err, authDispatch);
     }
@@ -114,9 +127,13 @@ const MainPage = ({ type }) => {
         fetchAllConversations();
 
       if (type === "conversation") data = fetchConversation();
-      else data = null;
+      else {
+        if (activeConversation)
+          navigate(`/@me/conversations/${activeConversation}/${profileId}`);
+        else data = null;
+      }
     }
-  }, [type, params.serverId, params.channelId]);
+  }, [type, params.serverId, params.channelId, params.memberProfileId]);
 
   return (
     <main className="h-screen flex w-screen">
@@ -125,13 +142,13 @@ const MainPage = ({ type }) => {
       </div>
       <div className="w-[240px] bg-main08 flex-shrink-0 ">
         {type === "messages" || type === "conversation" || !serverDetails ? (
-          <MessagesSidebar type={type} />
+          <ConversationSidebar type={type} />
         ) : (
-          <ServerSidebar />
+          <ChannelSidebar />
         )}
       </div>
       <div className="w-full h-full">
-        <MainContentWrapper type={type} data={data} />
+        <MainWrapper type={type} data={data} />
       </div>
     </main>
   );

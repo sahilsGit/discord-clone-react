@@ -12,6 +12,7 @@ import MainPage from "@/pages/MainPage";
 import RegistrationForm from "@/pages/Registration";
 import LoginForm from "@/pages/Login";
 import InvitationPage from "./pages/InvitationPage";
+import { MiscContextProvider } from "./context/Misc-Context";
 
 function App() {
   return (
@@ -34,7 +35,9 @@ function App() {
               path="/@me/conversations"
               element={
                 <RequireAuth>
-                  <MainPage type="messages" />
+                  <MiscContextProvider>
+                    <MainPage type="messages" />
+                  </MiscContextProvider>
                 </RequireAuth>
               }
             />
@@ -42,7 +45,9 @@ function App() {
               path="/@me/conversations/:memberProfileId/:myProfileId"
               element={
                 <RequireAuth>
-                  <MainPage type="conversation" />
+                  <MiscContextProvider>
+                    <MainPage type="conversation" />
+                  </MiscContextProvider>
                 </RequireAuth>
               }
             />
@@ -50,7 +55,9 @@ function App() {
               path="/servers/:serverId/:channelId"
               element={
                 <RequireAuth>
-                  <MainPage type="channel" />
+                  <MiscContextProvider>
+                    <MainPage type="channel" />
+                  </MiscContextProvider>
                 </RequireAuth>
               }
             />
@@ -58,7 +65,9 @@ function App() {
               path="/servers/:serverId"
               element={
                 <RequireAuth>
-                  <MainPage type="server" />
+                  <MiscContextProvider>
+                    <MainPage type="server" />
+                  </MiscContextProvider>
                 </RequireAuth>
               }
             />

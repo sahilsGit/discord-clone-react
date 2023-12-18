@@ -6,7 +6,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import useServer from "@/hooks/useServer";
-import MembersWrapper from "@/components/server/sidebar/membersWrapper";
+import MembersWrapper from "../channel/sidebar/dropdownMenu/modal/membersWrapper";
 
 const MembersModal = () => {
   const { isOpen, onClose, type } = useModal();

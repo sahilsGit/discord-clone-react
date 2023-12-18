@@ -1,7 +1,6 @@
 import { DirectConversation, Profile } from "../modals/Schema.js";
 
 export const findConversation = async (req, res) => {
-  console.log("inside convsssss");
   try {
     // const { profileOneId, profileTwoId } = req.params;
     const profileOneId = req.params.profileOneId;
@@ -29,14 +28,17 @@ export const findConversation = async (req, res) => {
         initiatedFor: profileTwoId,
         messages: [], // You can add other necessary fields here
       });
+
+      console.log("New conversation created");
+
       // Save the new conversation
       await conversation.save();
     }
 
-    console.log("over here");
     const theirProfile = await Profile.findById(profileTwoId).select(
       "_id name image username"
     );
+
     if (res.body) {
       res.body = {
         ...res.body,

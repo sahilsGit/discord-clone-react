@@ -4,7 +4,7 @@ import React from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
-import ServerSidebar from "@/components/server/sidebar/serverSidebar";
+import ChannelSidebar from "./channel/sidebar/channelSidebar";
 
 const MobileToggle = () => {
   return (
@@ -18,7 +18,7 @@ const MobileToggle = () => {
         <div className="w-[72px]">
           <NavigationSidebar />
         </div>
-        <ServerSidebar />
+        <ChannelSidebar />
       </SheetContent>
     </Sheet>
   );

@@ -104,6 +104,8 @@ export const login = async (req, res, next) => {
       {
         username: userProfile.username,
         profileId: userProfile._id,
+        name: userProfile.name,
+        image: userProfile.image,
       },
       process.env.JWT,
       {
@@ -111,10 +113,14 @@ export const login = async (req, res, next) => {
       }
     ); // Authorize user using the secret key
 
+    console.log(userProfile.name, userProfile.image);
+
     const refresh = jwt.sign(
       {
         username: userProfile.username,
         profileId: userProfile._id,
+        name: userProfile.name,
+        image: userProfile.image,
       },
       process.env.REFRESH,
       {
@@ -141,6 +147,8 @@ export const login = async (req, res, next) => {
       username: userProfile.username,
       newAccessToken: access_token,
       profileId: userProfile._id,
+      name: userProfile.name,
+      image: userProfile.image,
     });
   } catch (err) {
     err.status = 500;

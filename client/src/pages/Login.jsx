@@ -50,7 +50,7 @@ const LoginForm = () => {
 
     try {
       const response = await post("/auth/login", JSON.stringify(body));
-      await handleResponse(response, authDispatch);
+      const data = await handleResponse(response, authDispatch);
       navigate(from);
     } catch (err) {
       handleError(err, authDispatch);

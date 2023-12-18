@@ -13,6 +13,10 @@ const useAuth = (value) => {
       return useContext(AuthContext).access_token;
     case "id":
       return useContext(AuthContext).profileId;
+    case "name":
+      return useContext(AuthContext).name;
+    case "image":
+      return useContext(AuthContext).image;
     case "dispatch":
       return useContext(AuthContext).dispatch;
     default:

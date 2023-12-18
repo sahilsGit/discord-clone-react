@@ -40,6 +40,8 @@ export const verifyToken = async (req, res, next) => {
           {
             username: decoded.username,
             profileId: decoded.profileId,
+            name: decoded.name,
+            image: decoded.image,
           },
           process.env.JWT,
           {
@@ -67,6 +69,8 @@ export const verifyToken = async (req, res, next) => {
           newAccessToken: newAccessToken,
           username: decoded.username,
           profileId: decoded.profileId,
+          name: decoded.name,
+          image: decoded.image,
         };
 
         // Call the next middleware
@@ -101,6 +105,8 @@ export const refresh = async (req, res, next) => {
       {
         username: decoded.username,
         profileId: decoded.profileId,
+        name: decoded.name,
+        image: decoded.image,
       },
       process.env.JWT,
       {
@@ -128,12 +134,16 @@ export const refresh = async (req, res, next) => {
       newAccessToken: newAccessToken,
       username: decoded.username,
       profileId: decoded.profileId,
+      name: decoded.name,
+      image: decoded.image,
     };
 
     res.status(200).send({
       newAccessToken: newAccessToken,
       username: decoded.username,
       profileId: decoded.profileId,
+      name: decoded.name,
+      image: decoded.image,
     });
   } catch (err) {
     return res.status(401).send("Invalid Token");

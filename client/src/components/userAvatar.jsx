@@ -5,14 +5,14 @@ import { handleError } from "@/lib/response-handler";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
-export const UserAvatar = ({ member, className }) => {
+export const UserAvatar = ({ subject, className }) => {
   const [imageSrc, setImageSrc] = useState("../../assets/images/fallback.jpg");
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
 
   const getImage = async () => {
     try {
-      const response = await get(`/getImage/${member.image}`, access_token);
+      const response = await get(`/getImage/${subject.image}`, access_token);
 
       const imageData = await response.blob();
       const imageUrl = URL.createObjectURL(imageData);
@@ -24,14 +24,10 @@ export const UserAvatar = ({ member, className }) => {
   };
 
   useEffect(() => {
-    if (member.image) {
+    if (subject.image) {
       getImage();
     }
-  }, [member.image]);
-
-  // useEffect(() => {
-  //   // console.log("RENDERING AVATAR IMAGE");
-  // });
+  }, [subject.image]);
 
   if (!imageSrc) {
     return <div>Loading...</div>;

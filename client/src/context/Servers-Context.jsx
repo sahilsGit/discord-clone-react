@@ -7,7 +7,6 @@ const initialState = {
   servers: null, // Holds basic details of all the server the user is member of
   serverDetails: null, // Holds the activeServer's comprehensive details
   channelDetails: null,
-  allConversations: null,
 };
 
 export const ServerContext = createContext(initialState);
@@ -21,8 +20,6 @@ const serverReducer = (state, action) => {
       return { ...state, serverDetails: action.payload };
     case "SET_CHANNEL_DETAILS":
       return { ...state, channelDetails: action.payload };
-    case "ALL_CONVERSATIONS":
-      return { ...state, allConversations: action.payload };
     case "RESET_STATE":
       return {
         servers: null,
@@ -99,13 +96,6 @@ export const ServerContextProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("serverDetails", JSON.stringify(state.serverDetails));
   }, [state.serverDetails]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "allConversations",
-      JSON.stringify(state.allConversations)
-    );
-  }, [state.allConversations]);
 
   useEffect(() => {
     localStorage.setItem(
