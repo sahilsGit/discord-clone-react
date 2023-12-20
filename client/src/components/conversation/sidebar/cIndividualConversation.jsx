@@ -25,7 +25,7 @@ const CIndividualConversation = ({ conversation, profile }) => {
     <button
       className={cn(
         "group px-2 py-1 rounded-sm flex items-center gap-x-2 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition mb-1",
-        (activeConversation === conversation?._id ||
+        (activeConversation?.id === conversation?._id ||
           params.memberProfileId === clicked) &&
           "bg-zinc-700/20 dark:bg-zinc-700"
       )}
@@ -35,9 +35,9 @@ const CIndividualConversation = ({ conversation, profile }) => {
       <p
         className={cn(
           "line-clamp-1 text-sm transition",
-          activeConversation !== conversation?._id &&
+          activeConversation?.id !== conversation?._id &&
             "text-primary dark:text-zinc-300 dark:text-zinc-300",
-          activeConversation === conversation?._id &&
+          activeConversation?.id === conversation?._id &&
             "text-primary dark:text-white"
         )}
       >

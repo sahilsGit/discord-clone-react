@@ -11,6 +11,7 @@ export const findConversation = async (req, res) => {
         .status(201)
         .send("You can't initiate conversation with yourself");
     }
+
     let conversation;
 
     // Check if a conversation already exists
@@ -89,3 +90,39 @@ export const getAllConversations = async (req, res) => {
     res.status(500).send(error.message);
   }
 };
+
+// export const findConversationById = async (req, res) => {
+//   try {
+//     const conversationId = req.params.conversationId;
+
+//     // Check if a conversation with the given ID exists
+//     const conversation = await DirectConversation.findById(conversationId);
+
+//     if (!conversation) {
+//       return res.status(404).send("Conversation not found");
+//     }
+
+//     const profileOneId = conversation.initiatedBy;
+//     const profileTwoId = conversation.initiatedFor;
+
+//     const theirProfile = await Profile.findById(
+//       profileTwoId === req.user.profileId ? profileOneId : profileTwoId
+//     ).select("_id name image username");
+
+//     if (res.body) {
+//       res.body = {
+//         ...res.body,
+//         memberProfile: theirProfile,
+//         conversation: conversation,
+//       };
+//     } else {
+//       res.body = {
+//         memberProfile: theirProfile,
+//         conversation: conversation,
+//       };
+//     }
+//     res.status(200).send(res.body);
+//   } catch (error) {
+//     res.status(500).send(error.message);
+//   }
+// };

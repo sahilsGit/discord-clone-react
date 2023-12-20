@@ -7,10 +7,10 @@ const ChannelHeader = ({ type, data }) => {
   const channelDetails = useServer("channelDetails");
   let name;
 
-  console.log(data);
-
   if (type === "channel" || (type === "server" && channelDetails)) {
     name = channelDetails.name;
+  } else {
+    name = data.memberProfile.name;
   }
 
   return (

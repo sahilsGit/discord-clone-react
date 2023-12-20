@@ -7,8 +7,8 @@ import {
 const router = express.Router();
 
 //Handle requests
-
 router.get("/:profileTwoId/:profileOneId", findConversation);
 router.get("/:profileId", getAllConversations);
+// router.get("/:conversationId", findConversationById);
 
 export default router;

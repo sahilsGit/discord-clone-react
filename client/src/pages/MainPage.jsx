@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
 import useServer from "@/hooks/useServer";
@@ -18,11 +18,10 @@ import ChannelSidebar from "@/components/channel/sidebar/channelSidebar";
  * Includes sidebars, and main-content-pane based on the page 'type'.
  * User can either stay or visit one their servers, obtaining a "server" 'type'.
  * Expects authentication details; if missing, it navigates to the hompeage.
+ *
  */
 
 const MainPage = ({ type }) => {
-  console.log("INSIDE MAIN PAGE");
-
   const params = useParams();
   const navigate = useNavigate();
 
@@ -34,8 +33,8 @@ const MainPage = ({ type }) => {
   const allConversations = useMisc("allConversations");
   const miscDispatch = useMisc("dispatch");
   const profileId = useAuth("id");
-  const activeConversation = useMisc("activeConversation");
-  let data;
+
+  const [data, setData] = useState(null);
 
   // Consume the Auth context using custom hook
   const access_token = useAuth("token");
@@ -56,8 +55,15 @@ const MainPage = ({ type }) => {
 
       miscDispatch({
         type: "SET_ACTIVE_CONVERSATION",
-        payload: data.conversation._id,
+        payload: {
+          id: data.conversation._id,
+          profileId: data.memberProfile._id,
+          name: data.memberProfile.name,
+          image: data.memberProfile.image ? data.memberProfile.image : null,
+        },
       });
+
+      setData(data);
     } catch (err) {
       handleError(err, authDispatch);
     }
@@ -101,7 +107,7 @@ const MainPage = ({ type }) => {
         payload: data.convProfile,
       });
     } catch (err) {
-      const errCode = handleError(err, authDispatch);
+      handleError(err, authDispatch);
     }
   };
 
@@ -126,11 +132,8 @@ const MainPage = ({ type }) => {
       if (!allConversations || !allConversations?.length)
         fetchAllConversations();
 
-      if (type === "conversation") data = fetchConversation();
-      else {
-        if (activeConversation)
-          navigate(`/@me/conversations/${activeConversation}/${profileId}`);
-        else data = null;
+      if (type === "conversation") {
+        fetchConversation();
       }
     }
   }, [type, params.serverId, params.channelId, params.memberProfileId]);

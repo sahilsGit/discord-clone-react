@@ -1,19 +1,60 @@
 import { UserAvatar } from "@/components/userAvatar";
 import useAuth from "@/hooks/useAuth";
+import useMisc from "@/hooks/useMisc";
+import { handleError, handleResponse } from "@/lib/response-handler";
 import { cn } from "@/lib/utils";
-import React from "react";
+import { get } from "@/services/api-service";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const ChMember = ({ member, server }) => {
-  const params = useParams();
-  const navigate = useNavigate();
-  const profileId = useAuth("id");
+  console.log("chMember");
+  const authDispatch = useAuth("dispatch");
+  const access_token = useAuth("token");
 
-  const onClick = () => {
+  const params = useParams();
+  const profileId = useAuth("id");
+  const miscDispatch = useMisc("dispatch");
+  const [data, setData] = useState();
+
+  const fetchConversation = async () => {
+    console.log("fetdcing");
     if (member.profileId === profileId) {
       return;
     }
-    navigate(`/@me/conversations/${member.profileId}/${profileId}`);
+    try {
+      const response = await get(
+        `/conversations/${member.profileId}/${profileId}`,
+        access_token
+      );
+
+      const data = await handleResponse(response, authDispatch);
+
+      console.log("gdd");
+      miscDispatch({
+        type: "SET_ACTIVE_CONVERSATION",
+        payload: {
+          id: data.conversation._id,
+          profileId: data.memberProfile._id,
+          name: data.memberProfile.name,
+          image: data.memberProfile.image ? data.memberProfile.image : null,
+        },
+      });
+
+      setData(data);
+    } catch (err) {
+      handleError(err, authDispatch);
+    }
+  };
+
+  const onClick = () => {
+    console.log("inside onclick");
+    if (member.profileId === profileId) {
+      return;
+    }
+    console.log("low");
+
+    fetchConversation();
   };
 
   return (

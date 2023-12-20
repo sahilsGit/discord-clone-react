@@ -1,4 +1,6 @@
+import useAuth from "@/hooks/useAuth";
 import { createContext, useEffect, useReducer } from "react";
+import { useNavigate } from "react-router-dom";
 
 const INITIAL_STATE = {
   allConversations: null,
@@ -33,6 +35,8 @@ const reducer = (state, action) => {
 
 export const MiscContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const navigate = useNavigate();
+  const profileId = useAuth("id");
 
   useEffect(() => {
     localStorage.setItem(
@@ -46,6 +50,13 @@ export const MiscContextProvider = ({ children }) => {
       "activeConversation",
       JSON.stringify(state.activeConversation)
     );
+
+    console.log("activeconv changesd");
+
+    state.activeConversation &&
+      navigate(
+        `/@me/conversations/${state.activeConversation.profileId}/${profileId}`
+      );
   }, [state.activeConversation]);
 
   return (

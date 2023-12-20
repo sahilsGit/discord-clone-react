@@ -70,15 +70,6 @@ export const createChannel = async (req, res, next) => {
 
 export const getChannel = async (req, res) => {
   try {
-    const profile = await Profile.findOne({
-      _id: req.user.profileId,
-      servers: req.params.serverId,
-    });
-
-    if (!profile) {
-      return res.status(404).json({ error: "Server not found in profile" });
-    }
-
     const server = await Server.findOne({
       _id: req.params.serverId,
     })
@@ -92,40 +83,29 @@ export const getChannel = async (req, res) => {
         select: "_id type name",
       });
 
-    const doc = await Server.findById({ _id: req.params.serverId });
-
     if (!server) {
       return res.status(404).send({ message: "Server not found" });
     }
 
-    const totalMembersCount = doc.members.length;
+    const doc = await Server.findById({ _id: req.params.serverId });
+    const totalMembersCount = doc.members.length; // Use accurate count
 
-    const sendMemberWithImage = async (member) => {
+    const populatedMembers = server.members.map(async (member) => {
       const profile = await Profile.findById(member.profileId).select(
         "image name email"
       );
 
-      if (!profile) {
-        return null;
-      }
-
-      return {
-        email: profile.email,
-        name: profile.name,
-        id: member._id,
-        profileId: member.profileId,
-        role: member.role,
-        image: profile.image ? profile.image : null,
-      };
-    };
-
-    const populatedMembers = await Promise.all(
-      server.members.map(sendMemberWithImage)
-    );
-
-    const myMembership = server.members.find(
-      (member) => member.profileId.toHexString() === req.user.profileId
-    );
+      return profile
+        ? {
+            email: profile.email,
+            name: profile.name,
+            id: member._id,
+            profileId: member.profileId,
+            role: member.role,
+            image: profile.image || null,
+          }
+        : null;
+    });
 
     const serverData = {
       name: server.name,
@@ -134,22 +114,20 @@ export const getChannel = async (req, res) => {
       inviteCode: server.inviteCode,
       image: server.image,
       channels: server.channels,
-      members: populatedMembers,
-      totalMembersCount: totalMembersCount,
-      myMembership: myMembership,
+      members: await Promise.all(populatedMembers),
+      totalMembersCount,
+      myMembership: server.members.find(
+        (member) => member.profileId.toHexString() === req.user.profileId
+      ),
     };
 
     const foundChannel = serverData.channels.find(
       (channelObj) => channelObj._id.toHexString() === req.params.channelId
     );
 
-    let channelData;
-
-    if (foundChannel) {
-      channelData = [foundChannel._id, foundChannel];
-    } else {
-      channelData = [serverData.channels[0]._id, serverData.channels[0]];
-    }
+    const channelData = foundChannel
+      ? [foundChannel._id, foundChannel]
+      : [serverData.channels[0]._id, serverData.channels[0]];
 
     if (res.body) {
       res.body = { ...res.body, server: serverData, channel: channelData };

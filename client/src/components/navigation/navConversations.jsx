@@ -4,12 +4,16 @@ import { useTheme } from "../providers/theme-provider";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import useServer from "@/hooks/useServer";
+import useMisc from "@/hooks/useMisc";
+import useAuth from "@/hooks/useAuth";
 export const NavConversations = () => {
   const { theme } = useTheme();
   const [style, setStyle] = useState("");
   const navigate = useNavigate();
   const isMe = window.location.pathname.includes("/@me");
   const serverDetails = useServer("serverDetails");
+  const activeConversation = useMisc("activeConversation");
+  const profileId = useAuth("id");
 
   useEffect(() => {
     if (theme === "light") {
@@ -25,7 +29,13 @@ export const NavConversations = () => {
     <>
       <button
         onClick={() => {
-          navigate("/@me/conversations");
+          if (activeConversation?.id) {
+            navigate(
+              `/@me/conversations/${activeConversation.profileId}/${profileId}`
+            );
+          } else {
+            navigate("/@me/conversations");
+          }
         }}
         className="group w-full relative flex justify-center items-center"
       >
