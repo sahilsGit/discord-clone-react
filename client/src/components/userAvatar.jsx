@@ -29,9 +29,7 @@ export const UserAvatar = ({ subject, className }) => {
     }
   }, [subject.image]);
 
-  if (!imageSrc) {
-    return <div>Loading...</div>;
-  }
+  console.log(imageSrc);
 
   return (
     <Avatar className={cn("h-7 w-7 md:h-10 md:w-10", className)}>

@@ -4,8 +4,8 @@ import useMisc from "@/hooks/useMisc";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { cn } from "@/lib/utils";
 import { get } from "@/services/api-service";
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 
 const ChMember = ({ member, server }) => {
   console.log("chMember");
@@ -18,7 +18,6 @@ const ChMember = ({ member, server }) => {
   const [data, setData] = useState();
 
   const fetchConversation = async () => {
-    console.log("fetdcing");
     if (member.profileId === profileId) {
       return;
     }
@@ -30,7 +29,6 @@ const ChMember = ({ member, server }) => {
 
       const data = await handleResponse(response, authDispatch);
 
-      console.log("gdd");
       miscDispatch({
         type: "SET_ACTIVE_CONVERSATION",
         payload: {
@@ -48,11 +46,9 @@ const ChMember = ({ member, server }) => {
   };
 
   const onClick = () => {
-    console.log("inside onclick");
     if (member.profileId === profileId) {
       return;
     }
-    console.log("low");
 
     fetchConversation();
   };

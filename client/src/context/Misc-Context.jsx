@@ -51,8 +51,6 @@ export const MiscContextProvider = ({ children }) => {
       JSON.stringify(state.activeConversation)
     );
 
-    console.log("activeconv changesd");
-
     state.activeConversation &&
       navigate(
         `/@me/conversations/${state.activeConversation.profileId}/${profileId}`

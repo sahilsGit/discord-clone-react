@@ -33,13 +33,11 @@ const MainPage = ({ type }) => {
   const allConversations = useMisc("allConversations");
   const miscDispatch = useMisc("dispatch");
   const profileId = useAuth("id");
-
-  const [data, setData] = useState(null);
+  const channelDetails = useServer("channelDetails");
+  const activeConversation = useMisc("activeConversation");
 
   // Consume the Auth context using custom hook
   const access_token = useAuth("token");
-
-  console.log(type);
 
   const fetchConversation = async () => {
     if (params.memberProfileId === params.myProfileId) {
@@ -62,8 +60,6 @@ const MainPage = ({ type }) => {
           image: data.memberProfile.image ? data.memberProfile.image : null,
         },
       });
-
-      setData(data);
     } catch (err) {
       handleError(err, authDispatch);
     }
@@ -112,14 +108,12 @@ const MainPage = ({ type }) => {
   };
 
   useEffect(() => {
-    if (type == "channel" || type == "server") {
-      params.channelId
-        ? fetchChannelData()
-        : navigate(
-            `/servers/${params.serverId}/${
-              servers[params.serverId].channels[0]
-            }`
-          );
+    if (type == "server") {
+      navigate(
+        `/servers/${params.serverId}/${servers[params.serverId].channels[0]}`
+      );
+    } else if (type == "channel") {
+      params.channelId && !channelDetails && fetchChannelData();
     } else {
       serverDispatch({
         type: "SET_CUSTOM",
@@ -138,20 +132,28 @@ const MainPage = ({ type }) => {
     }
   }, [type, params.serverId, params.channelId, params.memberProfileId]);
 
+  if (
+    (params.channelId && !channelDetails) ||
+    (params.serverId && !serverDetails) ||
+    (params.memberProfileId && !activeConversation && !allConversations)
+  ) {
+    return null;
+  }
+
   return (
     <main className="h-screen flex w-screen">
       <div className="h-full w-[72px] bg-main10 flex-shrink-0">
         <NavigationSidebar />
       </div>
       <div className="w-[240px] bg-main08 flex-shrink-0 ">
-        {type === "messages" || type === "conversation" || !serverDetails ? (
-          <ConversationSidebar type={type} />
+        {type === "conversation" || type === "messages" ? (
+          <ConversationSidebar />
         ) : (
           <ChannelSidebar />
         )}
       </div>
       <div className="w-full h-full">
-        <MainWrapper type={type} data={data} />
+        <MainWrapper type={type} />
       </div>
     </main>
   );

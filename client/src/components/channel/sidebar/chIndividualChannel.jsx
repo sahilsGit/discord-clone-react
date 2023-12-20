@@ -1,9 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Edit, Hash, Lock, Mic, Trash, Video } from "lucide-react";
 import { ActionTooltip } from "@/components/actionTooltip";
 import useServer from "@/hooks/useServer";
+import { get } from "@/services/api-service";
+import { handleError, handleResponse } from "@/lib/response-handler";
+import useAuth from "@/hooks/useAuth";
 
 const iconMap = {
   TEXT: Hash,
@@ -12,31 +15,65 @@ const iconMap = {
 };
 
 const ChIndividualChannel = ({ channel, role, server, type }) => {
-  const params = useParams();
-  const navigate = useNavigate();
   const Icon = iconMap[type];
   const channelDetails = useServer("channelDetails");
-  const [clicked, setClicked] = useState(null);
+  const [clicked, setClicked] = useState(false);
+  const access_token = useAuth("token");
+  const serverDispatch = useServer("dispatch");
+  const serverDetails = useServer("serverDetails");
+  const authDispatch = useAuth("dispatch");
 
-  const onClick = () => {
-    setClicked(channel.id);
-    navigate(`/servers/${params.serverId}/${channel.id}`);
+  const fetchChannelData = async () => {
+    try {
+      const response = await get(
+        `/channels/${serverDetails.id}/${channel.id}`,
+        access_token
+      );
+
+      const data = await handleResponse(response, authDispatch);
+
+      serverDispatch({
+        type: "SET_CUSTOM",
+        payload: {
+          serverDetails: data.server,
+          channelDetails: data.channel[1],
+        },
+      });
+
+      console.log(data.server);
+    } catch (err) {
+      const errCode = handleError(err, authDispatch);
+      if (errCode === 404) {
+        navigate("/@me/conversations");
+      }
+    }
   };
 
-  // useEffect(() => {
-  //   params.channelId ? setClicked(channel.id) : setClicked(null);
-  // }, [params.channelId]);
+  const onClick = () => {
+    setClicked(true);
+    fetchChannelData();
+  };
 
   const onAction = (e, action) => {
     e.stopPropagation();
     // onOpen(action, { channel, server });
   };
 
+  useEffect(() => {
+    if (
+      !serverDetails ||
+      !channelDetails ||
+      channelDetails._id !== channel.id
+    ) {
+      setClicked(false);
+    }
+  }, [channelDetails, serverDetails]);
+
   return (
     <button
       className={cn(
         "group px-2 py-1 rounded-sm flex items-center gap-x-2 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition mb-1",
-        (channelDetails?._id === channel.id || params.channelId === clicked) &&
+        (channelDetails._id === channel.id || clicked) &&
           "bg-zinc-700/20 dark:bg-zinc-700"
       )}
       onClick={onClick}

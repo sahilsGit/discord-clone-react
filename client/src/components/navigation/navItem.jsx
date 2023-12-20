@@ -1,21 +1,22 @@
 import { useEffect, useState } from "react";
 import { ActionTooltip } from "../actionTooltip";
 import { get } from "@/services/api-service";
-import { handleError } from "@/lib/response-handler";
+import { handleError, handleResponse } from "@/lib/response-handler";
 import useAuth from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useServer from "@/hooks/useServer";
 
 export const NavItem = ({ name, id, image }) => {
   const [imageSrc, setImageSrc] = useState(null);
-  const params = useParams();
   const navigate = useNavigate();
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
   const serverDetails = useServer("serverDetails");
-
-  const [clicked, setClicked] = useState(null);
+  const [clicked, setClicked] = useState(false);
+  const servers = useServer("servers");
+  const serverDispatch = useServer("dispatch");
+  const channelDetails = useServer("channelDetails");
 
   useEffect(() => {
     const getImage = async () => {
@@ -33,14 +34,47 @@ export const NavItem = ({ name, id, image }) => {
     getImage();
   }, [image]);
 
+  const fetchChannelData = async () => {
+    try {
+      const response = await get(
+        `/channels/${id}/${servers[id].channels[0]}`,
+        access_token
+      );
+
+      const data = await handleResponse(response, authDispatch);
+
+      serverDispatch({
+        type: "SET_CUSTOM",
+        payload: {
+          serverDetails: data.server,
+          channelDetails: data.channel[1],
+        },
+      });
+
+      console.log(data.server);
+    } catch (err) {
+      const errCode = handleError(err, authDispatch);
+      if (errCode === 404) {
+        navigate("/@me/conversations");
+      }
+    }
+  };
+
   useEffect(() => {
-    params.serverId ? setClicked(id) : setClicked(null);
-  }, [params.serverId]);
+    if (!serverDetails) {
+      setClicked(false);
+    } else {
+      if (serverDetails.id !== id) {
+        setClicked(false);
+      } else setClicked(true);
+    }
+  }, [serverDetails, channelDetails]);
 
   return (
     <button
       onClick={() => {
-        id !== serverDetails?.id && navigate(`/servers/${id}`);
+        setClicked(true);
+        fetchChannelData();
       }}
       className={cn("w-full flex items-center justify-center group relative")}
     >
@@ -48,23 +82,17 @@ export const NavItem = ({ name, id, image }) => {
         className={cn(
           "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
           serverDetails?.id !== id && "group-hover:h-[20px]",
-          params.serverId && serverDetails?.id === id ? "h-[36px]" : "h-[8px]",
-          params.serverId &&
-            serverDetails?.id !== params.serverId &&
-            params.serverId === clicked &&
-            "h-[20px]"
+          clicked && serverDetails?.id === id ? "h-[36px]" : "h-[8px]",
+          clicked && serverDetails?.id !== id && "h-[20px]"
         )}
       ></div>
       <ActionTooltip side="right" align="center" label={name}>
         <div
           className={cn(
             "flex h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden",
-            ((params.serverId && serverDetails?.id === id) ||
-              params.serverId === clicked) &&
+            ((clicked && serverDetails?.id === id) || clicked) &&
               "rounded-[16px]",
-            params.serverId !== serverDetails?.id &&
-              params.serverId === clicked &&
-              "translate-y-[1px]"
+            id !== serverDetails?.id && clicked && "translate-y-[1px]"
           )}
         >
           <img className="" src={imageSrc} />
@@ -73,5 +101,3 @@ export const NavItem = ({ name, id, image }) => {
     </button>
   );
 };
-
-// relative flex h-[48px] w-[48px] rounded-[24px] bg-background dark:bg-nutral-700 overflow-hidden

@@ -2,9 +2,10 @@ import useAuth from "@/hooks/useAuth";
 import { get } from "@/services/api-service";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import React, { createContext, useEffect, useReducer } from "react";
+import { useNavigate } from "react-router-dom";
 
 const initialState = {
-  servers: null, // Holds basic details of all the server the user is member of
+  servers: JSON.parse(localStorage.getItem("servers")) || null, // Holds basic details of all the server the user is member of
   serverDetails: null, // Holds the activeServer's comprehensive details
   channelDetails: null,
 };
@@ -75,6 +76,7 @@ export const ServerContextProvider = ({ children }) => {
   const access_token = useAuth("token");
   const [state, dispatch] = useReducer(serverReducer, initialState);
   const profileId = useAuth("id");
+  const navigate = useNavigate();
 
   const fetchServers = async () => {
     try {
@@ -102,7 +104,17 @@ export const ServerContextProvider = ({ children }) => {
       "channelDetails",
       JSON.stringify(state.channelDetails)
     );
+
+    if (state.serverDetails && state.channelDetails) {
+      navigate(
+        `/servers/${state.serverDetails.id}/${state.channelDetails._id}`
+      );
+    }
   }, [state.channelDetails]);
+
+  useEffect(() => {
+    localStorage.setItem("servers", JSON.stringify(state.servers));
+  }, [state.servers]);
 
   useEffect(() => {
     if (access_token && user && profileId) fetchServers();

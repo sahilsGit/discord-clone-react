@@ -1,5 +1,4 @@
 import useAuth from "@/hooks/useAuth";
-import useServer from "@/hooks/useServer";
 import { get } from "@/services/api-service";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +32,7 @@ const RequireAuth = ({ children }) => {
     }
   }, [user, access_token, profileId]);
 
-  return loading ? <p>Loading...</p> : children;
+  return loading ? null : children;
 };
 
 export default RequireAuth;
