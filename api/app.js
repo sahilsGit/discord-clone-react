@@ -24,7 +24,7 @@ export const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Update with your client's URL
+    origin: process.env.BASE, // Update with your client's URL
     credentials: true,
   })
 );
@@ -36,7 +36,7 @@ io.on("connection", (socket) => {
   console.log("A user connected,", socket.id);
 });
 
-app.listen(process.env.PORT || 4000, () => {
+app.listen(process.env.URL, () => {
   console.log("Server is listening at port 4000");
 });
 
