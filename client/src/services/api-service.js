@@ -1,4 +1,4 @@
-const BASE_URL = process.env.REACT_APP_BASE;
+const BASE_URL = import.meta.env.VITE_API;
 
 // Your main stream GET request
 export async function get(

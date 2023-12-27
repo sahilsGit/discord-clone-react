@@ -16,7 +16,7 @@ import { MiscContextProvider } from "./context/Misc-Context";
 import Settings from "./pages/Settings";
 
 function App() {
-  console.log(process.env.REACT_APP_BASE);
+  console.log(import.meta.env.VITE_API);
 
   return (
     // client side routing using "Routes"

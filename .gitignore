@@ -3,3 +3,4 @@ node_modules/
 images/
 resources/
 .vscode/
+.env.production
