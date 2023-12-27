@@ -1,4 +1,4 @@
-const BASE_URL = process.env.BASE;
+const BASE_URL = process.env.REACT_APP_BASE;
 
 // Your main stream GET request
 export async function get(
