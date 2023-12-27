@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:4000/api";
+const BASE_URL = process.env.BASE;
 
 // Your main stream GET request
 export async function get(
