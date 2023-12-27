@@ -109,7 +109,7 @@ export const login = async (req, res, next) => {
       },
       process.env.JWT,
       {
-        expiresIn: "30s", // Token expiration time
+        expiresIn: "5m", // Token expiration time
       }
     ); // Authorize user using the secret key
 
@@ -124,14 +124,14 @@ export const login = async (req, res, next) => {
       },
       process.env.REFRESH,
       {
-        expiresIn: "5m", // Token expiration time
+        expiresIn: "30m", // Token expiration time
       }
     ); // Authorize user using the secret key
 
     const newSession = new Session({
       token: refresh,
       profileId: userProfile._id,
-      expireAt: new Date(Date.now() + 5 * 60 * 1000),
+      expireAt: new Date(Date.now() + 30 * 60 * 1000),
     });
 
     await newSession.save();
@@ -140,7 +140,7 @@ export const login = async (req, res, next) => {
       httpOnly: true,
       path: "/",
       sameSite: "Lax",
-      maxAge: 5 * 60 * 1000,
+      maxAge: 30 * 60 * 1000,
     });
 
     res.status(200).send({

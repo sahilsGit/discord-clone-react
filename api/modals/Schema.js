@@ -23,6 +23,7 @@ const profileSchema = new mongoose.Schema({
 });
 
 profileSchema.index({ servers: 1 });
+profileSchema.index({ servers: 1, _id: 1 });
 
 const sessionSchema = new mongoose.Schema({
   token: { type: String, required: true, unique: true },

@@ -19,6 +19,7 @@ module.exports = {
       fontSize: {
         xxxs: "0.65rem",
         xxs: "0.7rem", // Custom extra-extra-small size
+        md2: "0.9rem",
         xl3: "1.875rem", // Custom extra-large size
         xl4: "2.25rem", // Custom 4 times extra-large size
       },

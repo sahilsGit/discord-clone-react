@@ -70,6 +70,15 @@ export const createChannel = async (req, res, next) => {
 
 export const getChannel = async (req, res) => {
   try {
+    const profile = await Profile.findOne({
+      _id: req.user.profileId,
+      servers: req.params.serverId,
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: "Server not found in profile" });
+    }
+
     const server = await Server.findOne({
       _id: req.params.serverId,
     })

@@ -45,7 +45,7 @@ export const verifyToken = async (req, res, next) => {
           },
           process.env.JWT,
           {
-            expiresIn: "30s", // Token expiration time
+            expiresIn: "5m", // Token expiration time
           }
         );
 
@@ -110,7 +110,7 @@ export const refresh = async (req, res, next) => {
       },
       process.env.JWT,
       {
-        expiresIn: "30s", // Token expiration time
+        expiresIn: "5m", // Token expiration time
       }
     );
 

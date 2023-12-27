@@ -14,16 +14,31 @@ import multer from "multer";
 import { verifyToken } from "./controllers/tokensController.js";
 import logoutRouter from "./routes/logout.js";
 import fs from "fs";
-import { connect } from "./bin/server.js";
+import { connect } from "./bin/db.js";
+import { Server } from "socket.io";
+import http from "http";
 
-connect().then(() => {
-  // Start the Express server and listen on port 4000
-  app.listen(process.env.PORT || 4000, () => {
-    console.log("Server is listening at port 4000");
-  });
-});
+await connect();
 
 export const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Update with your client's URL
+    credentials: true,
+  })
+);
+
+const server = http.createServer(app);
+const io = new Server(server);
+
+io.on("connection", (socket) => {
+  console.log("A user connected,", socket.id);
+});
+
+app.listen(process.env.PORT || 4000, () => {
+  console.log("Server is listening at port 4000");
+});
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -42,13 +57,6 @@ const __dirname = path.dirname(__filename);
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
-
-app.use(
-  cors({
-    origin: "http://localhost:5173", // Update with your client's URL
-    credentials: true,
-  })
-);
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
