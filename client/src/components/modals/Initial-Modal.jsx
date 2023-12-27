@@ -81,9 +81,7 @@ const InitialModal = () => {
     if (avatarImage) {
       try {
         // console.log(formData);
-        const response = await post("/upload", formData, access_token, {
-          Origin: "http://localhost:5173",
-        });
+        const response = await post("/upload", formData, access_token, {});
 
         // Parse the response as JSON
         const data = await handleResponse(

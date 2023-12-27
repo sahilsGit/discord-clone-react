@@ -6,7 +6,6 @@ export async function get(
   token = null,
   headers = {
     "Content-Type": "application/json",
-    Origin: "http://localhost:5173",
   },
   options = { credentials: "include" }
 ) {
@@ -35,7 +34,6 @@ export async function post(
   token = null,
   headers = {
     "Content-Type": "application/json",
-    Origin: "http://localhost:5173",
   },
   options = { credentials: "include" }
 ) {
@@ -65,7 +63,6 @@ export async function update(
   token = null,
   headers = {
     "Content-Type": "application/json",
-    Origin: "http://localhost:5173",
   },
   options = { credentials: "include" }
 ) {
@@ -94,7 +91,6 @@ export async function remove(
   token = null,
   headers = {
     "Content-Type": "application/json",
-    Origin: "http://localhost:5173",
   },
   options = { credentials: "include" }
 ) {

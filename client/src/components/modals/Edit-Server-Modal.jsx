@@ -128,9 +128,7 @@ const EditServerModal = () => {
       formData.append("image", avatarImage);
 
       try {
-        const response = await post("/upload", formData, access_token, {
-          Origin: "http://localhost:5173",
-        });
+        const response = await post("/upload", formData, access_token, {});
 
         const data = await handleResponse(
           response,
