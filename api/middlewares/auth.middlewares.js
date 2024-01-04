@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Session } from "../modals/Schema.js";
+import Session from "../modals/session.modals.js";
 
 export const verifyToken = async (req, res, next) => {
   // Extract tokens from cookies and headers
@@ -64,7 +64,7 @@ export const verifyToken = async (req, res, next) => {
         // Attach decoded JWT payload to the request
         req.user = decoded;
 
-        // Add newAccessToken to the response for client token updation
+        // Add newAccessToken to the response for client token
         res.body = {
           newAccessToken: newAccessToken,
           username: decoded.username,
@@ -80,7 +80,7 @@ export const verifyToken = async (req, res, next) => {
         return res.status(401).send("Invalid Token");
       }
     } else {
-      // Other errors reflect tempering or other suspecious reasons, DON'T ISSUE TOKEN!!
+      // Other errors reflect tempering or other suspicious reasons, DON'T ISSUE TOKEN!!
       return res.status(401).send("Invalid Token");
     }
   }
@@ -129,7 +129,7 @@ export const refresh = async (req, res, next) => {
     // Attach decoded JWT payload to the request
     req.user = decoded;
 
-    // Add newAccessToken to the response for client token updation
+    // Add newAccessToken to the response for client token
     res.body = {
       newAccessToken: newAccessToken,
       username: decoded.username,

@@ -1,43 +1,40 @@
-import { DirectConversation, Profile } from "../modals/Schema.js";
+import DirectConversation from "../modals/directConversation.modals.js";
+import Profile from "../modals/profile.modals.js";
 
-export const findConversation = async (req, res) => {
+export const getOrCreateConversation = async (req, res) => {
   try {
-    // const { profileOneId, profileTwoId } = req.params;
     const profileOneId = req.params.profileOneId;
     const profileTwoId = req.params.profileTwoId;
 
     if (profileOneId === profileTwoId) {
       return res
         .status(201)
-        .send("You can't initiate conversation with yourself");
-    }
-
-    let conversation;
-
-    // Check if a conversation already exists
-    conversation = await DirectConversation.findOne({
-      $or: [
-        { initiatedBy: profileOneId, initiatedFor: profileTwoId },
-        { initiatedBy: profileTwoId, initiatedFor: profileOneId },
-      ],
-    });
-
-    if (!conversation) {
-      // Conversation does not exist, create a new one
-      conversation = new DirectConversation({
-        initiatedBy: profileOneId,
-        initiatedFor: profileTwoId,
-        messages: [], // You can add other necessary fields here
-      });
-
-      console.log("New conversation created");
-
-      // Save the new conversation
-      await conversation.save();
+        .send("You can't initiate a conversation with yourself");
     }
 
     const theirProfile = await Profile.findById(profileTwoId).select(
       "_id name image username"
+    );
+
+    // Use findOneAndUpdate to create or find the conversation
+    const conversation = await DirectConversation.findOneAndUpdate(
+      {
+        $or: [
+          { initiatedBy: profileOneId, initiatedFor: profileTwoId },
+          { initiatedBy: profileTwoId, initiatedFor: profileOneId },
+        ],
+      },
+      {
+        $setOnInsert: {
+          initiatedBy: profileOneId,
+          initiatedFor: profileTwoId,
+          messages: [], // You can add other necessary fields here
+        },
+      },
+      {
+        new: true, // Return the updated document if found or created
+        upsert: true, // Create the document if it doesn't exist
+      }
     );
 
     if (res.body) {
@@ -52,9 +49,10 @@ export const findConversation = async (req, res) => {
         conversation: conversation,
       };
     }
+
     res.status(200).send(res.body);
   } catch (error) {
-    res.status(500).send(error.member);
+    res.status(500).send(error.message);
   }
 };
 

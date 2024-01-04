@@ -14,7 +14,6 @@ const ConversationMain = () => {
       ) : (
         <ConversationHeader />
       )}
-
       <div></div>
       <MnInput />
     </div>

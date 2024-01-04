@@ -16,8 +16,6 @@ import { MiscContextProvider } from "./context/Misc-Context";
 import Settings from "./pages/Settings";
 
 function App() {
-  console.log(import.meta.env.VITE_API);
-
   return (
     // client side routing using "Routes"
     <>

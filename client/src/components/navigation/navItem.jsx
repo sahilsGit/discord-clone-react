@@ -21,7 +21,7 @@ export const NavItem = ({ name, id, image }) => {
   useEffect(() => {
     const getImage = async () => {
       try {
-        const response = await get(`/getImage/${image}`, access_token);
+        const response = await get(`/images/get/${image}`, access_token);
         const imageData = await response.blob();
         const imageUrl = URL.createObjectURL(imageData);
 

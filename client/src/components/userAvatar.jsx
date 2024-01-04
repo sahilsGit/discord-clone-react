@@ -12,7 +12,7 @@ export const UserAvatar = ({ subject, className }) => {
 
   const getImage = async () => {
     try {
-      const response = await get(`/getImage/${subject.image}`, access_token);
+      const response = await get(`/images/get/${subject.image}`, access_token);
 
       const imageData = await response.blob();
       const imageUrl = URL.createObjectURL(imageData);

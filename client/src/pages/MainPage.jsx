@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
 import useServer from "@/hooks/useServer";
@@ -14,10 +14,10 @@ import ChannelSidebar from "@/components/channel/sidebar/channelSidebar";
  * MainPage
  *
  * This component represents the main page of the application.
- * Authenticated users lend here, recieving a "profile" 'type' by default.
+ * Authenticated users lend here, receiving a "profile" 'type' by default.
  * Includes sidebars, and main-content-pane based on the page 'type'.
  * User can either stay or visit one their servers, obtaining a "server" 'type'.
- * Expects authentication details; if missing, it navigates to the hompeage.
+ * Expects authentication details; if missing, it navigates to the homepage.
  *
  */
 

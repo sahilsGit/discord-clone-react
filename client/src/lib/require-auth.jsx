@@ -12,8 +12,6 @@ const RequireAuth = ({ children }) => {
   const authDispatch = useAuth("dispatch");
   const [loading, setLoading] = useState(true);
 
-  console.log("INSIDE REQUIRE AUTH");
-
   useEffect(() => {
     const refreshAuthDetails = async () => {
       try {

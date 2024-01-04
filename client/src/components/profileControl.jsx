@@ -17,7 +17,6 @@ import {
 import { Separator } from "./ui/separator";
 import useServer from "@/hooks/useServer";
 import useMisc from "@/hooks/useMisc";
-import { useNavigate } from "react-router-dom";
 import { useModal } from "@/hooks/useModals";
 
 const ProfileControl = () => {
@@ -27,8 +26,8 @@ const ProfileControl = () => {
   const authDispatch = useAuth("dispatch");
   const serverDispatch = useServer("dispatch");
   const miscDispatch = useMisc("dispatch");
-  const navigate = useNavigate();
   const { onOpen } = useModal();
+  const [aboutMe, setAboutMe] = useState("");
 
   const handleLogout = () => {
     localStorage.clear();
@@ -70,11 +69,24 @@ const ProfileControl = () => {
               />
             </div>
             <div className="pt-1 px-4 flex flex-col pb-7">
-              <div className="px-3 pt-4 pb-3 flex flex-col gap-y-2 rounded-md bg-[#121212] items-center justify-center">
+              <div className="px-3 pt-4 pb-3 flex flex-col gap-y-2 rounded-md bg-[#121212]">
                 <div className="group rounded-sm flex flex-col gap-x-2 w-full">
                   <p className="px-1 text-md2 text-white">{profileName}</p>
                   <p className="pt-1 px-1 text-white text-xs">{username}</p>
                 </div>
+                {aboutMe.length ? (
+                  <>
+                    <Separator className="h-[1px]" />
+                    <div className="flex flex-col gap-y-1 w-full word-break">
+                      <p className="px-1 text-xs uppercase font-semibold text-white">
+                        About me
+                      </p>
+                      <div className="break-words">
+                        <p className="px-1 leading-5 text-white">{aboutMe}</p>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
                 <Separator className="h-[1px]" />
                 <div className="flex flex-col w-full">
                   <div className="group h-[25px] px-2 rounded-sm flex justify-between items-center gap-x-1 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition">
@@ -109,7 +121,6 @@ const ProfileControl = () => {
         className="flex items-center justify-end gap-x-[4px]"
         onClick={() => {
           onOpen("settings", { name: profileName, image: profileImage });
-          setDialogVisiblity(true);
         }}
       >
         <div className="flex items-center justify-center w-[28px] h-[28px] hover:bg-zinc-700/10 dark:hover:bg-zinc-600/50 dark:hover:text-zinc-200 transition rounded-sm text-zinc-400">

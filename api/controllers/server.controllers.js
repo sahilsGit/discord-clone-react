@@ -1,4 +1,7 @@
-import { Server, Profile, Member, Channel } from "../modals/Schema.js";
+import Profile from "../modals/profile.modals.js";
+import Server from "../modals/server.modals.js";
+import Channel from "../modals/channel.modals.js";
+import Member from "../modals/member.modals.js";
 import fs from "fs";
 
 export const createServer = async (req, res, next) => {
@@ -273,7 +276,7 @@ export const updateServerBasics = async (req, res, next) => {
   }
 };
 
-export const findserver = async (req, res, next) => {
+export const findServer = async (req, res, next) => {
   let exists;
   try {
     const server = await Server.findOne({ inviteCode: req.params.inviteCode });

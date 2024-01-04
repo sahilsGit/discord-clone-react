@@ -85,7 +85,12 @@ const ServerCreationModal = () => {
     // Upload image and save it in designated place
     if (avatarImage) {
       try {
-        const response = await post("/upload", formData, access_token, {});
+        const response = await post(
+          "/images/upload",
+          formData,
+          access_token,
+          {}
+        );
 
         // Parse the response as JSON
         const data = await handleResponse(

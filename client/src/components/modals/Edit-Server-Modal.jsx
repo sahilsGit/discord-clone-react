@@ -87,7 +87,7 @@ const EditServerModal = () => {
         if (server) {
           try {
             const response = await get(
-              `/getImage/${server.image}`,
+              `/images/get/${server.image}`,
               access_token
             );
             const imageData = await response.blob();
@@ -128,7 +128,12 @@ const EditServerModal = () => {
       formData.append("image", avatarImage);
 
       try {
-        const response = await post("/upload", formData, access_token, {});
+        const response = await post(
+          "/images/upload",
+          formData,
+          access_token,
+          {}
+        );
 
         const data = await handleResponse(
           response,

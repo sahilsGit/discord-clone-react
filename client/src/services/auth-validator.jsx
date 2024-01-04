@@ -13,7 +13,4 @@ export const registerSchema = z.object({
     message:
       "Please include at least one uppercase, one lowercase, one number, and one special character.",
   }),
-  dobMonth: z.string().min(1).max(2),
-  dobDay: z.string().min(1).max(2),
-  dobYear: z.string().min(4).max(4),
 });

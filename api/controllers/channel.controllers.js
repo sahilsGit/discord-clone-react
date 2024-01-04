@@ -1,4 +1,7 @@
-import { Channel, Member, Profile, Server } from "../modals/Schema.js";
+import Channel from "../modals/channel.modals.js";
+import Profile from "../modals/profile.modals.js";
+import Member from "../modals/member.modals.js";
+import Server from "../modals/server.modals.js";
 
 export const createChannel = async (req, res, next) => {
   try {
