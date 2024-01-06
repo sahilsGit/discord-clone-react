@@ -20,7 +20,6 @@ const roleIconMap = {
 
 const ChannelSidebar = () => {
   const server = useServer("serverDetails");
-  const activeServer = useServer("activeServer");
   const profileId = useAuth("id");
 
   const textChannels = server?.channels.filter(
@@ -36,7 +35,7 @@ const ChannelSidebar = () => {
   );
 
   const members = server?.members.filter(
-    (member) => member.profileId !== activeServer
+    (member) => member.profileId !== profileId
   );
 
   const role = server.members.find((member) => {

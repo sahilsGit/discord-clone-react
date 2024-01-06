@@ -7,9 +7,10 @@ import {
 import { verifyToken } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
+router.use(verifyToken);
 
-router.get("/:serverId/search", verifyToken, searchMember);
-router.put("/:serverId/:memberId", verifyToken, changeRole);
-router.delete("/:serverId/:memberId/remove", verifyToken, removeMember);
+router.get("/:serverId/search", searchMember);
+router.put("/:serverId/:memberId", changeRole);
+router.delete("/:serverId/:memberId/remove", removeMember);
 
 export default router;

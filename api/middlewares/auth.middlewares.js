@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import Session from "../modals/session.modals.js";
 
-export const verifyToken = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   // Extract tokens from cookies and headers
   const accessToken = req.headers["authorization"];
   const refreshToken = req.cookies.refresh_token;
@@ -86,7 +86,7 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
-export const refresh = async (req, res, next) => {
+const refresh = async (req, res, next) => {
   // Extract tokens from cookies and headers
   const accessToken = req.headers["authorization"];
   const refreshToken = req.cookies.refresh_token;
@@ -149,3 +149,5 @@ export const refresh = async (req, res, next) => {
     return res.status(401).send("Invalid Token");
   }
 };
+
+export { verifyToken, refresh };

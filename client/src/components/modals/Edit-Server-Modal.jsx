@@ -45,7 +45,6 @@ const EditServerModal = () => {
   const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
   const access_token = useAuth("token"); // For authorization
   const serverDispatch = useServer("dispatch");
-  const activeServer = useServer("activeServer");
 
   const { server } = data;
 
@@ -200,7 +199,6 @@ const EditServerModal = () => {
       );
 
       await handleResponse(response, authDispatch);
-      serverDispatch({ type: "SET_SERVER_CANDIDATE", payload: activeServer });
     } catch (err) {
       handleError(err, authDispatch);
     }

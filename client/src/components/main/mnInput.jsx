@@ -3,17 +3,20 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-
+import qs from "query-string";
 import { Input } from "@/components/ui/input";
 import { Plus, Smile } from "lucide-react";
 import { useModal } from "@/hooks/useModals";
+import { post } from "@/services/api-service";
+import useAuth from "@/hooks/useAuth";
 
 const formSchema = z.object({
   content: z.string().min(1),
 });
 
-const MnInput = () => {
+const MnInput = ({ type, apiUrl, query }) => {
   const { onOpen } = useModal();
+  const access_token = useAuth("token");
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -25,7 +28,16 @@ const MnInput = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (value) => {
-    console.log(value);
+    try {
+      const url = qs.stringifyUrl({
+        url: apiUrl,
+        query,
+      });
+
+      await post(url, JSON.stringify(value), access_token);
+    } catch (error) {
+      console.log(error);
+    }
 
     // TODO Messages sending logic comes here
   };

@@ -7,7 +7,9 @@ import { verifyToken } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
 
-router.post("/create/:serverId", verifyToken, createChannel);
-router.get("/:serverId/:channelId", verifyToken, getChannel);
+router.use(verifyToken);
+
+router.post("/create/:serverId", createChannel);
+router.get("/:serverId/:channelId", getChannel);
 
 export default router;

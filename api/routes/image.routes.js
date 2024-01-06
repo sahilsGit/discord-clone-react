@@ -9,8 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const router = express.Router(); // Instantiating router
+router.use(verifyToken);
 
-router.get("/get/:imageName", verifyToken, (req, res) => {
+router.get("/get/:imageName", (req, res) => {
   const imageName = req.params.imageName;
   const imagePath = path.join(__dirname, "../public/images", imageName);
 
@@ -22,7 +23,7 @@ router.get("/get/:imageName", verifyToken, (req, res) => {
   res.sendFile(imagePath);
 });
 
-router.post("/upload", verifyToken, upload.single("image"), (req, res) => {
+router.post("/upload", upload.single("image"), (req, res) => {
   const newFilename = req.file.filename;
   res.json({ newFilename });
 });

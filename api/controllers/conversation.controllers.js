@@ -1,5 +1,7 @@
+import Channel from "../modals/channel.modals.js";
 import DirectConversation from "../modals/directConversation.modals.js";
 import Profile from "../modals/profile.modals.js";
+import ServerConversation from "../modals/serverConversation.modals.js";
 
 export const getOrCreateConversation = async (req, res) => {
   try {
@@ -124,3 +126,33 @@ export const getAllConversations = async (req, res) => {
 //     res.status(500).send(error.message);
 //   }
 // };
+
+export const getServerConversation = async (req, res, next) => {
+  const channelId = req.params.channelId;
+  const memberId = req.params.memberId;
+
+  try {
+    const conversationDocument = await Channel.findOne({
+      _id: channelId,
+      members: { $elemMatch: { $eq: memberId } },
+    })
+      .select("conversationId")
+      .populate("conversationId");
+
+    if (!conversationDocument) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+
+    if (res.body) {
+      res.body = {
+        ...res.body,
+        conversation: conversationDocument,
+      };
+    } else {
+      res.body = { conversation: conversationDocument };
+    }
+    res.status(200).send(res.body);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};

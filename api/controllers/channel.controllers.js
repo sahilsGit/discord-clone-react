@@ -6,15 +6,10 @@ import Server from "../modals/server.modals.js";
 export const createChannel = async (req, res, next) => {
   try {
     const { name, type } = req.body;
-    // Validations
-    if (!name) {
+
+    if (!name || !type) {
       return res.send({
-        message: "Server must have a name!",
-      });
-    }
-    if (!type) {
-      return res.send({
-        message: "Channel type must be provided",
+        message: "Server must have a name and a type!",
       });
     }
 
@@ -75,7 +70,7 @@ export const getChannel = async (req, res) => {
   try {
     const profile = await Profile.findOne({
       _id: req.user.profileId,
-      servers: req.params.serverId,
+      servers: { $in: [req.params.serverId] },
     });
 
     if (!profile) {
@@ -92,7 +87,7 @@ export const getChannel = async (req, res) => {
       })
       .populate({
         path: "channels",
-        select: "_id type name",
+        select: "_id type name conversationId",
       });
 
     if (!server) {

@@ -1,4 +1,5 @@
 import MobileToggle from "@/components/mobileToggle";
+import { SocketIndicator } from "@/components/socketIndicator";
 import useMisc from "@/hooks/useMisc";
 import useServer from "@/hooks/useServer";
 import { Hash } from "lucide-react";
@@ -21,7 +22,12 @@ const ChannelHeader = ({ type }) => {
       {(type === "channel" || type === "server") && (
         <Hash className="w-5 h-5 text-zinc-500 dark:text-zinc-400 mr-2" />
       )}
-      <p className="font-semibold text-md text-black dark:text-white">{name}</p>
+      <div className="flex justify-between w-full">
+        <p className="font-semibold text-md text-black dark:text-white">
+          {name}
+        </p>
+        <SocketIndicator />
+      </div>
     </div>
   );
 };

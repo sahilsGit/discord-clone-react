@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "crypto-random-string": "^5.0.0",
-    "zustand": "^4.4.6"
-  }
-}

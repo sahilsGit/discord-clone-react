@@ -11,14 +11,15 @@ import {
 import { verifyToken } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
+router.use(verifyToken);
 
 /* GET users listing. */
-router.get("/:username/getAll", verifyToken, getAll);
-router.post("/:serverId/acceptInvite", verifyToken, acceptInvite);
-router.post("/create", verifyToken, createServer);
-router.get("/:username/:getOne", verifyToken, getOne);
-router.get("/:username/find/:inviteCode", verifyToken, findServer);
-router.put("/:serverId/update/basics", verifyToken, updateServerBasics);
-router.get("/:username/:serverId/members", verifyToken, getMembers);
+router.get("/:username/getAll", getAll);
+router.post("/:serverId/acceptInvite", acceptInvite);
+router.post("/create", createServer);
+router.get("/:username/:getOne", getOne);
+router.get("/:username/find/:inviteCode", findServer);
+router.put("/:serverId/update/basics", updateServerBasics);
+router.get("/:username/:serverId/members", getMembers);
 
 export default router;
