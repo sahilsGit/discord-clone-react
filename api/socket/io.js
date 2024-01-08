@@ -9,6 +9,60 @@ const mountJoinConversationEvent = (socket) => {
   });
 };
 
+const mountChannels = async (socket) => {
+  console.log(socket.profile._id.toString());
+
+  const channels = await Profile.aggregate([
+    {
+      $match: {
+        _id: socket.profile._id,
+      },
+    },
+    {
+      $unwind: "$servers",
+    },
+    {
+      $lookup: {
+        from: "servers",
+        localField: "servers",
+        foreignField: "_id",
+        as: "serverData",
+      },
+    },
+    {
+      $unwind: "$serverData",
+    },
+    {
+      $project: {
+        channels: "$serverData.channels",
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        allChannels: { $addToSet: "$channels" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        allChannels: {
+          $reduce: {
+            input: "$allChannels",
+            initialValue: [],
+            in: { $concatArrays: ["$$value", "$$this"] },
+          },
+        },
+      },
+    },
+  ]);
+
+  channels[0]?.allChannels?.forEach((channel) => {
+    const channelName = channel.toString("hex"); // Convert ObjectId to hexadecimal
+    socket.join(channelName); // Joining all the channels
+  });
+};
+
 const mountParticipantTypingEvent = (socket) => {
   socket.on(ConversationEventEnum.TYPING, async (conversationId) => {
     socket.in(conversationId).emit(ChatEventEnum.TYPING_EVENT, conversationId);
@@ -41,6 +95,8 @@ const initializeSocket = (io) => {
       }
 
       socket.profile = profile;
+
+      mountChannels(socket);
 
       socket.join(socket.profile._id.toString());
       socket.emit(ConversationEventEnum.CONNECTED); // Emit "connection successful" event to the client

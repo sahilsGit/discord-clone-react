@@ -6,6 +6,7 @@ import useAuth from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import useServer from "@/hooks/useServer";
+import useSocket from "@/hooks/useSocket";
 
 export const NavItem = ({ name, id, image }) => {
   const [imageSrc, setImageSrc] = useState(null);
@@ -17,6 +18,7 @@ export const NavItem = ({ name, id, image }) => {
   const servers = useServer("servers");
   const serverDispatch = useServer("dispatch");
   const channelDetails = useServer("channelDetails");
+  const socket = useSocket();
 
   useEffect(() => {
     const getImage = async () => {
@@ -33,6 +35,12 @@ export const NavItem = ({ name, id, image }) => {
 
     getImage();
   }, [image]);
+
+  // useEffect(() => {
+  //   if (!socket) return;
+
+  //   socket.on(MESSAGE_RECEIVED);
+  // }, [socket]);
 
   const fetchChannelData = async () => {
     try {
