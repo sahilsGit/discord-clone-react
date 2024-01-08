@@ -60,7 +60,7 @@ const EditServerModal = () => {
     const fetchFormData = async () => {
       if (server) {
         try {
-          const response = await get(`/getImage/${server.image}`, access_token);
+          const response = await get(`/get/${server.image}`, access_token);
           const responseClone = response.clone();
           const imageData = await responseClone.blob();
 

@@ -148,7 +148,7 @@ export const getOne = async (req, res, next) => {
         path: "members",
         select: "_id profileId role",
         match: { profileId: req.user.profileId },
-        options: { limit: 10 },
+        options: { limit: 1 },
       })
       .populate({
         path: "channels",
@@ -373,7 +373,7 @@ export const getMembers = async (req, res) => {
       path: "members",
       select: "_id profileId role",
       options: {
-        limit: 10,
+        limit: 1,
         skip: skip || 0,
       },
     });

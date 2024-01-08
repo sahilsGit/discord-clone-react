@@ -1,4 +1,3 @@
-// import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,17 +42,18 @@ const MembersScrollArea = ({ searchTerm, results, setResults }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [fetchLog, setFetchLog] = useState("");
   const lastItemRef = useRef();
-  const observer = useRef();
+  const observerRef = useRef();
   const timeoutId = useRef(null);
 
   useEffect(() => {
-    observer.current = new IntersectionObserver(
+    console.log(lastItemRef.current);
+    observerRef.current = new IntersectionObserver(
       async (entries) => {
         const target = entries[0];
+        console.log(entries[0]);
         if (target.isIntersecting && !isLoading) {
           if (searchTerm) {
             try {
-              // console.log("infinite search scroll working");
               const response = await get(
                 `/members/${server.id}/search?term=${searchTerm}&skip=${results.length}`,
                 access_token
@@ -75,6 +75,7 @@ const MembersScrollArea = ({ searchTerm, results, setResults }) => {
               handleError(err, authDispatch);
             }
           } else {
+            console.log("triggering for main");
             try {
               const response = await get(
                 `/servers/${user}/${serverDetails.id}/members?skip=${server.members.length}`,
@@ -97,10 +98,10 @@ const MembersScrollArea = ({ searchTerm, results, setResults }) => {
     );
 
     if (lastItemRef.current) {
-      observer.current.observe(lastItemRef.current);
+      observerRef.current.observe(lastItemRef.current);
     }
 
-    return () => observer.current.disconnect();
+    return () => observerRef.current.disconnect();
   }, [server.members.length, results.length]);
 
   const debouncedSearch = useCallback(
@@ -140,7 +141,7 @@ const MembersScrollArea = ({ searchTerm, results, setResults }) => {
   );
 
   useEffect(() => {
-    setIsLoading(true);
+    searchTerm && setIsLoading(true);
 
     if (searchTerm) {
       debouncedSearch(0);
