@@ -1,4 +1,5 @@
 import {
+  fetchMessages,
   sendDirectMessage,
   sendServerMessage,
 } from "../controllers/messages.controllers.js";
@@ -10,5 +11,6 @@ router.use(verifyToken);
 
 router.post("/direct", sendDirectMessage);
 router.post("/server", sendServerMessage);
+router.get("/fetch", fetchMessages);
 
 export default router;

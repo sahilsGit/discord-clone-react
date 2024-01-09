@@ -25,24 +25,31 @@ const ChIndividualChannel = ({ channel, role, server, type }) => {
 
   const fetchChannelData = async () => {
     try {
-      const response = await get(
-        `/channels/${serverDetails.id}/${channel.id}`,
-        access_token
-      );
+      const [response, messages] = await Promise.all([
+        get(`/channels/${serverDetails.id}/${channel.id}`, access_token),
+        get(`/messages/fetch?channelId=${channel.id}`, access_token),
+      ]);
 
-      const data = await handleResponse(response, authDispatch);
+      const [channelData, messageData] = await Promise.all([
+        handleResponse(response, authDispatch),
+        handleResponse(messages, authDispatch),
+      ]);
+
+      const channelDetails = {
+        ...channelData.channel[1],
+        messages: { data: messageData.messages, cursor: messageData.newCursor },
+      };
 
       serverDispatch({
         type: "SET_CUSTOM",
         payload: {
-          serverDetails: data.server,
-          channelDetails: data.channel[1],
+          serverDetails: channelData.server,
+          channelDetails: channelDetails,
         },
       });
-
-      console.log(data.server);
     } catch (err) {
       const errCode = handleError(err, authDispatch);
+
       if (errCode === 404) {
         navigate("/@me/conversations");
       }

@@ -82,11 +82,8 @@ const MembersScrollArea = ({ searchTerm, results, setResults }) => {
                 access_token
               );
 
-              const data = await handleResponse(
-                response,
-                authDispatch,
-                serverDispatch
-              );
+              const data = await handleResponse(response, authDispatch);
+
               serverDispatch({ type: "ADD_MEMBERS", payload: data.members });
             } catch (err) {
               handleError(err, authDispatch);

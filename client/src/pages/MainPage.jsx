@@ -67,22 +67,28 @@ const MainPage = ({ type }) => {
 
   const fetchChannelData = async () => {
     try {
-      const response = await get(
-        `/channels/${params.serverId}/${params.channelId}`,
-        access_token
-      );
+      const [response, messages] = await Promise.all([
+        get(`/channels/${params.serverId}/${params.channelId}`, access_token),
+        get(`/messages/fetch?channelId=${params.channelId}`, access_token),
+      ]);
 
-      const data = await handleResponse(response, authDispatch);
+      const [channelData, messageData] = await Promise.all([
+        handleResponse(response, authDispatch),
+        handleResponse(messages, authDispatch),
+      ]);
+
+      const channelDetails = {
+        ...channelData.channel[1],
+        messages: { data: messageData.messages, cursor: messageData.newCursor },
+      };
 
       serverDispatch({
         type: "SET_CUSTOM",
         payload: {
-          serverDetails: data.server,
-          channelDetails: data.channel[1],
+          serverDetails: channelData.server,
+          channelDetails: channelDetails,
         },
       });
-
-      console.log(data.server);
     } catch (err) {
       const errCode = handleError(err, authDispatch);
 
@@ -106,6 +112,8 @@ const MainPage = ({ type }) => {
       handleError(err, authDispatch);
     }
   };
+
+  console.log("type", type);
 
   useEffect(() => {
     if (type == "server") {

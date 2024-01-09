@@ -68,7 +68,7 @@ const sendServerMessage = async (req, res, next) => {
       req,
       channelId,
       ConversationEventEnum.MESSAGE_RECEIVED,
-      message.content
+      message
     );
 
     res.status(201).send(message);
@@ -80,8 +80,11 @@ const sendServerMessage = async (req, res, next) => {
 
 const fetchMessages = async (req, res) => {
   const limit = 10;
+
   try {
     const { cursor, channelId, memberId, conversationId } = req.query;
+
+    console.log(cursor);
 
     let query;
 
@@ -90,34 +93,38 @@ const fetchMessages = async (req, res) => {
         .sort({ createdAt: -1 })
         .limit(limit);
     } else {
-      query = ServerMessage.find({ channelId: channelId, memberId: memberId })
+      query = ServerMessage.find({ channelId: channelId })
         .sort({ createdAt: -1 })
         .limit(limit);
     }
 
-    if (cursor) {
+    if (cursor && cursor !== "null" && cursor !== "undefined") {
       query.where({ createdAt: { $lt: cursor } });
     }
 
+    console.log(query);
+
     const messages = await query;
+    console.log(messages);
 
     // New cursor is timestamp of last message returned
     if (res.body) {
       res.body = {
         ...res.body,
         messages,
-        newCursor: messages[messages.length - 1].createdAt,
+        newCursor: messages[messages.length - 1]?.createdAt,
       };
     } else {
       res.body = {
         messages,
-        newCursor: messages[messages.length - 1].createdAt,
+        newCursor: messages[messages.length - 1]?.createdAt,
       };
     }
     res.status(200).send(res.body);
   } catch (error) {
+    console.log(error);
     res.status(500).send(error.message);
   }
 };
 
-export { sendDirectMessage, sendServerMessage };
+export { sendDirectMessage, sendServerMessage, fetchMessages };
