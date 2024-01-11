@@ -46,6 +46,7 @@ const ProfileControl = () => {
                 subject={{ name: profileName, image: profileImage }}
                 className="h-7 w-7 md:h-[30px] md:w-[30px]"
               />
+              {/* <img src={profileImage} alt="" className="h-[30px] w-[30]"></img> */}
               <div className="flex flex-col justify-center items-start text-xxs">
                 <p className="text-white truncate">{profileName}</p>
                 <p>{username}</p>
@@ -67,6 +68,9 @@ const ProfileControl = () => {
                 subject={{ name: profileName, image: profileImage }}
                 className="border-8 border-main09 h-[90px] w-[90px] md:h-[90px] md:w-[90px] absolute top-4 left-4"
               />
+              {/* <div className="h-[30px] w-[30] overflow-hidden">
+                <img src={profileImage.url} alt=""></img>
+              </div> */}
             </div>
             <div className="pt-1 px-4 flex flex-col pb-7">
               <div className="px-3 pt-4 pb-3 flex flex-col gap-y-2 rounded-md bg-[#121212]">

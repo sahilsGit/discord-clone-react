@@ -5,6 +5,7 @@ import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import useServer from "@/hooks/useServer";
 import useSocket from "@/hooks/useSocket";
+import MessageItem from "./MessageItem";
 
 const ChannelMessages = () => {
   const channelDetails = useServer("channelDetails");
@@ -16,11 +17,12 @@ const ChannelMessages = () => {
   const [error, setError] = useState(false);
   const observerRef = useRef();
   const messages = useServer("channelDetails").messages;
-  const cursorRef = useRef(messages.cursor);
   const lastItemRef = useRef();
   const serverDispatch = useServer("dispatch");
   const { socket } = useSocket();
   const [isConnected, setIsConnected] = useState(false);
+
+  console.log(socket);
 
   const CONNECTED_EVENT = "connected";
   const DISCONNECT_EVENT = "disconnect";
@@ -31,7 +33,7 @@ const ChannelMessages = () => {
   const fetchMessages = async () => {
     try {
       const response = await get(
-        `/messages/fetch?memberId=${memberId}&channelId=${channelId}&cursor=${cursorRef.current}`,
+        `/messages/fetch?memberId=${memberId}&channelId=${channelId}&cursor=${messages.cursor}`,
         access_token
       );
 
@@ -45,14 +47,11 @@ const ChannelMessages = () => {
             messages: {
               data: [...channelDetails.messages.data, ...messageData.messages],
               cursor: messageData.newCursor,
+              hasMoreMessages: messageData.hasMoreMessages,
             },
           },
         },
       });
-
-      if (messageData.newCursor) {
-        cursorRef.current = messageData.newCursor;
-      }
     } catch (error) {
       handleError(error, authDispatch);
       setError(true);
@@ -63,18 +62,35 @@ const ChannelMessages = () => {
    * Handles the event when a new message is received.
    */
   const onMessageReceived = (message) => {
-    serverDispatch({
-      type: "SET_CUSTOM",
-      payload: {
-        channelDetails: {
-          ...channelDetails,
-          messages: {
-            data: [message, ...channelDetails.messages.data],
-            cursor: channelDetails.messages.cursor,
-          },
-        },
-      },
-    });
+    if (message.channelId === channelId) {
+      messages.data.length
+        ? serverDispatch({
+            type: "SET_CUSTOM",
+            payload: {
+              channelDetails: {
+                ...channelDetails,
+                messages: {
+                  data: [message, ...channelDetails.messages.data],
+                  cursor: channelDetails.messages.cursor,
+                  hasMoreMessages: channelDetails.messages.hasMoreMessages,
+                },
+              },
+            },
+          })
+        : serverDispatch({
+            type: "SET_CUSTOM",
+            payload: {
+              channelDetails: {
+                ...channelDetails,
+                messages: {
+                  data: [message, ...channelDetails.messages.data],
+                  cursor: message.createdAt,
+                  hasMoreMessages: false,
+                },
+              },
+            },
+          });
+    }
   };
 
   /**
@@ -141,7 +157,7 @@ const ChannelMessages = () => {
       socket.off(STOP_TYPING_EVENT, handleOnSocketStopTyping);
       socket.off(MESSAGE_RECEIVED_EVENT, onMessageReceived);
     };
-  }, [socket, messages.data]);
+  }, [socket]);
 
   const renderMessageItem = (message, index) => (
     <div
@@ -153,7 +169,8 @@ const ChannelMessages = () => {
         }
       }}
     >
-      <div className="h-[100px]">{message.content}</div>
+      {/* <div className="h-[100px]">{message.content}</div> */}
+      <MessageItem message={message} member={message.member} />
     </div>
   );
 
@@ -161,21 +178,21 @@ const ChannelMessages = () => {
     return <p>Something went wrong!</p>;
   }
 
-  if (!messages?.data?.length) {
-    return (
-      <div className="flex-1 flex flex-col py-4 overflow-y-auto">
-        <div className="flex-1" />
-        <MsWelcome type="channel" name={name} />
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full bg-rose-500 flex flex-col-reverse overflow-scroll">
-      {messages?.data?.length &&
-        messages.data.map((message, index) =>
-          renderMessageItem(message, index)
-        )}
+    <div className="flex-1 flex flex-col-reverse overflow-y-auto">
+      {messages?.data?.length && (
+        <div className="flex flex-col-reverse">
+          {messages.data.map((message, index) =>
+            renderMessageItem(message, index)
+          )}
+        </div>
+      )}
+      {(!messages?.data?.length || !messages.hasMoreMessages) && (
+        <div className="flex flex-col pt-3">
+          <div className="flex-1" />
+          <MsWelcome type="channel" name={name} />
+        </div>
+      )}
     </div>
   );
 };

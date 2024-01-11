@@ -82,7 +82,7 @@ const InitialModal = () => {
       try {
         // console.log(formData);
         const response = await post(
-          "/images/upload",
+          "/assets/uploadFile",
           formData,
           access_token,
           {}

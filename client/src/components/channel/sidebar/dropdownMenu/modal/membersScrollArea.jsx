@@ -91,7 +91,7 @@ const MembersScrollArea = ({ searchTerm, results, setResults }) => {
           }
         }
       },
-      { threshold: 1 }
+      { threshold: 0.5 }
     );
 
     if (lastItemRef.current) {

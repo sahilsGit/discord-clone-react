@@ -12,7 +12,7 @@ import { connect } from "./bin/db.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import { initializeSocket } from "./socket/io.js";
-import imageRouter from "./routes/image.routes.js";
+import assetsRouter from "./routes/asset.routes.js";
 
 await connect();
 
@@ -51,20 +51,20 @@ app.use("/api/servers", serverRouter);
 app.use("/api/members", membersRouter);
 app.use("/api/channels", channelsRouter);
 app.use("/api/conversations", conversationsRouter);
-app.use("/api/images", imageRouter);
+app.use("/api/assets", assetsRouter);
 app.use("/api/messages", messagesRouter);
 
 initializeSocket(io);
 
 // error handler
-// app.use(function (err, res) {
-//   const errorStatus = err.status || 500;
-//   const errorMessage = err.errorMessage || "Something went wrong!";
+app.use((error, res) => {
+  const errorStatus = error.status || 500;
+  const errorMessage = error.errorMessage || "Something went wrong!";
 
-//   return res.status(errorStatus).json({
-//     success: false,
-//     status: errorStatus,
-//     message: errorMessage,
-//     stack: err.stack,
-//   });
-// });
+  return res.status(errorStatus).json({
+    success: false,
+    status: errorStatus,
+    message: errorMessage,
+    stack: err.stack,
+  });
+});

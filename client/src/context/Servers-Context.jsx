@@ -2,7 +2,7 @@ import useAuth from "@/hooks/useAuth";
 import { get } from "@/services/api-service";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import React, { createContext, useEffect, useReducer } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const initialState = {
   servers: JSON.parse(localStorage.getItem("servers")) || null, // Holds basic details of all the server the user is member of
@@ -78,6 +78,11 @@ export const ServerContextProvider = ({ children }) => {
   const profileId = useAuth("id");
   const navigate = useNavigate();
 
+  const url = new URL(window.location.href);
+  const segments = url.pathname.split("/");
+  const serverId = segments[2];
+  const channelId = segments[3];
+
   const fetchServers = async () => {
     try {
       const response = await get(`/servers/${user}/getAll`, access_token);
@@ -105,7 +110,15 @@ export const ServerContextProvider = ({ children }) => {
       JSON.stringify(state.channelDetails)
     );
 
-    if (state.serverDetails && state.channelDetails) {
+    console.log(state.channelDetails);
+
+    if (
+      state.serverDetails &&
+      state.channelDetails &&
+      (serverId !== state.serverDetails.id ||
+        channelId !== state.channelDetails._id)
+    ) {
+      console.log("navigating");
       navigate(
         `/servers/${state.serverDetails.id}/${state.channelDetails._id}`
       );

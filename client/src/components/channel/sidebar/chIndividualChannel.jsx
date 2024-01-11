@@ -37,7 +37,11 @@ const ChIndividualChannel = ({ channel, role, server, type }) => {
 
       const channelDetails = {
         ...channelData.channel[1],
-        messages: { data: messageData.messages, cursor: messageData.newCursor },
+        messages: {
+          data: messageData.messages,
+          cursor: messageData.newCursor,
+          hasMoreMessages: messageData.hasMoreMessages,
+        },
       };
 
       serverDispatch({

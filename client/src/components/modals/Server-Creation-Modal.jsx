@@ -86,7 +86,7 @@ const ServerCreationModal = () => {
     if (avatarImage) {
       try {
         const response = await post(
-          "/images/upload",
+          "/assets/uploadFile",
           formData,
           access_token,
           {}

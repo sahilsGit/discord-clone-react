@@ -10,13 +10,13 @@ export const UserAvatar = ({ subject, className }) => {
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
 
+  const image = subject.image || null;
+
   const getImage = async () => {
     try {
-      const response = await get(`/images/get/${subject.image}`, access_token);
-
+      const response = await get(`/assets/getImage/${image}`, access_token);
       const imageData = await response.blob();
       const imageUrl = URL.createObjectURL(imageData);
-
       setImageSrc(imageUrl);
     } catch (err) {
       handleError(err, authDispatch);
@@ -28,7 +28,6 @@ export const UserAvatar = ({ subject, className }) => {
       getImage();
     }
   }, [subject.image]);
-
   console.log(imageSrc);
 
   return (

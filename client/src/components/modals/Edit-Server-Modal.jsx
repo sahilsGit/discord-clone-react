@@ -41,12 +41,16 @@ const EditServerModal = () => {
   const { isOpen, onClose, type, data } = useModal();
   const isModalOpen = isOpen && type === "editServer";
   const authDispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
-  const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
-  const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
+  const [avatarImage, setAvatarImage] = useState(null); // To hold the chosen image before uploading
+  const [imagePreview, setImagePreview] = useState(null); // To preview the chosen image
   const access_token = useAuth("token"); // For authorization
   const serverDispatch = useServer("dispatch");
 
-  const { server } = data;
+  let server;
+
+  if (isModalOpen) {
+    server = data.server;
+  }
 
   // react-hook-from setup with zod resolver
   const form = useForm({
@@ -59,8 +63,13 @@ const EditServerModal = () => {
   useEffect(() => {
     const fetchFormData = async () => {
       if (server) {
+        console.log(server.image);
+
         try {
-          const response = await get(`/get/${server.image}`, access_token);
+          const response = await get(
+            `/assets/getImage/${server.image}`,
+            access_token
+          );
           const responseClone = response.clone();
           const imageData = await responseClone.blob();
 
@@ -86,7 +95,7 @@ const EditServerModal = () => {
         if (server) {
           try {
             const response = await get(
-              `/images/get/${server.image}`,
+              `/assets/getImage/${server.image}`,
               access_token
             );
             const imageData = await response.blob();
@@ -128,7 +137,7 @@ const EditServerModal = () => {
 
       try {
         const response = await post(
-          "/images/upload",
+          "/assets/uploadFile",
           formData,
           access_token,
           {}

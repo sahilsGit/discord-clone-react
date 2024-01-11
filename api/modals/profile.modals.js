@@ -13,16 +13,7 @@ const profileSchema = new mongoose.Schema(
       index: true,
     },
     name: { type: String, required: true },
-    image: {
-      type: {
-        url: String,
-        localPath: String,
-      },
-      default: {
-        url: `https://via.placeholder.com/200x200.png`,
-        localPath: "",
-      },
-    },
+    image: { type: String, default: null },
     email: {
       type: String,
       unique: true,

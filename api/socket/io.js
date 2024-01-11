@@ -2,13 +2,6 @@ import jwt from "jsonwebtoken";
 import Profile from "../modals/profile.modals.js";
 import { ConversationEventEnum } from "../utils/constants.js";
 
-const mountJoinConversationEvent = (socket) => {
-  socket.on(ConversationEventEnum.JOIN_CONVERSATION, async (conversationId) => {
-    console.log(`User joined the conversation`, conversationId);
-    socket.join(conversationId);
-  });
-};
-
 const mountChannels = async (socket) => {
   console.log(socket.profile._id.toString());
 
@@ -61,6 +54,10 @@ const mountChannels = async (socket) => {
     const channelName = channel.toString("hex"); // Convert ObjectId to hexadecimal
     socket.join(channelName); // Joining all the channels
   });
+
+  socket.rooms.forEach((room) => {
+    console.log(`Socket is in room: ${room}`);
+  });
 };
 
 const mountParticipantTypingEvent = (socket) => {
@@ -78,6 +75,7 @@ const mountParticipantStoppedTypingEvent = (socket) => {
 const initializeSocket = (io) => {
   return io.on("connection", async (socket) => {
     try {
+      console.log("authorizing");
       // Extract the access_token out of the auth header
       const access_token = socket.handshake.auth?.access_token;
 

@@ -18,12 +18,11 @@ export const NavItem = ({ name, id, image }) => {
   const servers = useServer("servers");
   const serverDispatch = useServer("dispatch");
   const channelDetails = useServer("channelDetails");
-  const socket = useSocket();
 
   useEffect(() => {
     const getImage = async () => {
       try {
-        const response = await get(`/images/get/${image}`, access_token);
+        const response = await get(`/assets/getImage/${image}`, access_token);
         const imageData = await response.blob();
         const imageUrl = URL.createObjectURL(imageData);
 
@@ -59,8 +58,14 @@ export const NavItem = ({ name, id, image }) => {
 
       const channelDetails = {
         ...channelData.channel[1],
-        messages: { data: messageData.messages, cursor: messageData.newCursor },
+        messages: {
+          data: messageData.messages,
+          cursor: messageData.newCursor,
+          hasMoreMessages: messageData.hasMoreMessages,
+        },
       };
+
+      console.log("chhshahah", channelDetails);
 
       serverDispatch({
         type: "SET_CUSTOM",
