@@ -12,7 +12,6 @@ const INITIAL_STATE = {
 export const MiscContext = createContext(INITIAL_STATE);
 
 const reducer = (state, action) => {
-  console.log(action);
   switch (action.type) {
     case "SET_CONVERSATIONS":
       return {

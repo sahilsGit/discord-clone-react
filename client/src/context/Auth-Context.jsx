@@ -49,7 +49,6 @@ const AuthReducer = (state, action) => {
         error: action.payload, // Set the error message
       };
     case "TOKEN_RECEIVED":
-      console.log(action);
       return {
         access_token: action.payload.access_token,
         user: action.payload.user,

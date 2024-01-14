@@ -1,6 +1,13 @@
 const handleResponse = async (response, authDispatch) => {
   // Success responses
+
   if (response.ok) {
+    const contentLength = response.headers.get("Content-Length");
+
+    if (contentLength == 0) {
+      return;
+    }
+
     try {
       const data = await response.json();
 
@@ -33,7 +40,6 @@ const handleResponse = async (response, authDispatch) => {
 };
 
 const handleError = (error, authDispatch) => {
-  console.log("handle error triggered", error);
   switch (error.status) {
     case 401 || 403:
       localStorage.clear();
@@ -56,7 +62,6 @@ const handleError = (error, authDispatch) => {
       break;
   }
 
-  console.log("returning err with status", error.status);
   return error.status;
 };
 

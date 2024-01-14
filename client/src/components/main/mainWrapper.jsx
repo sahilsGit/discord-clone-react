@@ -1,14 +1,15 @@
 import React from "react";
-import ChannelMain from "./channelMain";
-import ConversationMain from "./conversationMain";
+import MainServer from "./mainServer";
+import MainConversation from "./mainConversation";
 
 const MainWrapper = ({ type }) => {
+  console.log("MAIN_WRAPPER");
   return (
     <div className="h-full">
       {type === "channel" || type === "server" ? (
-        <ChannelMain type={type} />
+        <MainServer type={type} />
       ) : (
-        <ConversationMain />
+        <MainConversation />
       )}
     </div>
   );

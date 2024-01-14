@@ -88,8 +88,6 @@ export const ServerContextProvider = ({ children }) => {
       const response = await get(`/servers/${user}/getAll`, access_token);
       const data = await handleResponse(response, authDispatch);
 
-      console.log("data", data);
-
       const serverIds = Object.keys(data.servers);
 
       if (serverIds.length > 0)
@@ -110,15 +108,12 @@ export const ServerContextProvider = ({ children }) => {
       JSON.stringify(state.channelDetails)
     );
 
-    console.log(state.channelDetails);
-
     if (
       state.serverDetails &&
       state.channelDetails &&
       (serverId !== state.serverDetails.id ||
         channelId !== state.channelDetails._id)
     ) {
-      console.log("navigating");
       navigate(
         `/servers/${state.serverDetails.id}/${state.channelDetails._id}`
       );

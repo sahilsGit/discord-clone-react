@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
-import PageNotFound from "@/pages/PageNotFound";
-import Homepage from "@/pages/Homepage";
-import About from "@/pages/About";
+import NotFoundPage from "@/pages/NotFoundPage";
+import HomePage from "@/pages/HomePage";
+import AboutPage from "@/pages/AboutPage";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ModalProvider } from "@/components/providers/modal-provider";
 
@@ -9,31 +9,47 @@ import { cn } from "@/lib/utils";
 import RequireAuth from "@/lib/require-auth";
 import InitialModal from "@/components/modals/Initial-Modal";
 import MainPage from "@/pages/MainPage";
-import RegistrationForm from "@/pages/Registration";
-import LoginForm from "@/pages/Login";
+import RegistrationPage from "@/pages/RegistrationPage";
+import LoginPage from "@/pages/LoginPage";
 import InvitationPage from "./pages/InvitationPage";
 import { MiscContextProvider } from "./context/Misc-Context";
-import Settings from "./pages/Settings";
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
+  /*
+   * App
+   *
+   * Entry point into the application, navigation routes,
+   * providers and contexts are laid down.
+   *
+   */
+
+  console.log("APP");
+
   return (
-    // client side routing using "Routes"
     <>
       <div className={cn("bg-white dark:bg-[#313338]")}>
+        {/* Applying theme using ThemeProvider */}
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           storageKey="discord-theme"
         >
+          {/* Providing Zustand modals using custom Provider */}
           <ModalProvider />
+
+          {/* Setting up routes using React-router-dom */}
           <Routes>
-            <Route path="/login" element={<LoginForm />} />
-            <Route path="/register" element={<RegistrationForm />} />
-            <Route path="*" element={<PageNotFound />} />
-            <Route path="/" element={<Homepage />} />
-            <Route path="/about" element={<About />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegistrationPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+
+            {/* Protected routes */}
             <Route
               path="/@me/conversations"
+              // Assigning 'type' "messages" to load up messages home
               element={
                 <RequireAuth>
                   <MiscContextProvider>
@@ -47,13 +63,14 @@ function App() {
               element={
                 <RequireAuth>
                   <MiscContextProvider>
-                    <Settings />
+                    <SettingsPage />
                   </MiscContextProvider>
                 </RequireAuth>
               }
             />
             <Route
               path="/@me/conversations/:memberProfileId/:myProfileId"
+              // Assigning 'type' "conversation" to load up a specific direct conversation
               element={
                 <RequireAuth>
                   <MiscContextProvider>
@@ -64,6 +81,7 @@ function App() {
             />
             <Route
               path="/servers/:serverId/:channelId"
+              // Assigning 'type' "channel" to load up a specific channel
               element={
                 <RequireAuth>
                   <MiscContextProvider>
@@ -74,6 +92,7 @@ function App() {
             />
             <Route
               path="/servers/:serverId"
+              // Assigning 'type' "server" to load up a specific server
               element={
                 <RequireAuth>
                   <MiscContextProvider>

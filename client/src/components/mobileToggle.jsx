@@ -4,7 +4,7 @@ import React from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
-import ChannelSidebar from "./channel/sidebar/channelSidebar";
+import ChannelSidebar from "./server/sidebar/serverSidebar";
 
 const MobileToggle = () => {
   return (

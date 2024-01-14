@@ -56,15 +56,15 @@ app.use("/api/messages", messagesRouter);
 
 initializeSocket(io);
 
-// error handler
-app.use((error, res) => {
-  const errorStatus = error.status || 500;
-  const errorMessage = error.errorMessage || "Something went wrong!";
+// // error handler
+// app.use((error, res) => {
+//   const errorStatus = error.status || 500;
+//   const errorMessage = error.message || "Something went wrong!";
 
-  return res.status(errorStatus).json({
-    success: false,
-    status: errorStatus,
-    message: errorMessage,
-    stack: err.stack,
-  });
-});
+//   return res.status(errorStatus).json({
+//     success: false,
+//     status: errorStatus,
+//     message: errorMessage,
+//     stack: error.stack,
+//   });
+// });

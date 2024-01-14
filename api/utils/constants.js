@@ -3,6 +3,7 @@ export const ConversationEventEnum = Object.freeze({
   DISCONNECT: "disconnect",
   JOIN_CONVERSATION: "joinConversation",
   MESSAGE_RECEIVED: "messageReceived",
+  MESSAGE_EDITED: "messageEdited",
   NEW_CONVERSATION: "newConversation",
   SOCKET_ERROR: "socketError",
   STOP_TYPING: "stopTyping",

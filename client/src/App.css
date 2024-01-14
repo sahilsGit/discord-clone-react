@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito&display=swap");
+/* @import url("https://fonts.googleapis.com/css2?family=Nunito&display=swap");
 
 * {
   margin: 0;
@@ -112,4 +112,33 @@ button {
 
 .line {
   display: inline-block;
+} */
+
+/* Add this style for the opening animation */
+@keyframes openAnimation {
+  0% {
+    width: 200px;
+  }
+  100% {
+    width: 400px; /* or the full width you desire */
+  }
+}
+
+/* Apply the animation class when justBrowsing is true */
+.animate-open {
+  animation: openAnimation 0.3s ease-out; /* You can adjust the duration and easing function */
+}
+
+@keyframes openAnimation2 {
+  0% {
+    height: 0;
+  }
+  100% {
+    height: 20px; /* or the full width you desire */
+  }
+}
+
+/* Apply the animation class when justBrowsing is true */
+.animate-open-ver {
+  animation: openAnimation2 0.3s ease-out; /* You can adjust the duration and easing function */
 }

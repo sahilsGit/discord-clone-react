@@ -41,9 +41,11 @@ const commonMessagesPipeline = [
       conversationId: 1,
       deleted: 1,
       createdAt: 1,
+      updatedAt: 1,
       "member.role": 1,
       "member.profile.name": 1,
       "member.profile.image": 1,
+      "member._id": 1,
     },
   },
 ];
@@ -238,4 +240,44 @@ const fetchMessages = async (req, res) => {
   }
 };
 
-export { sendDirectMessage, sendServerMessage, fetchMessages };
+const updateMessage = async (req, res) => {
+  try {
+    const { messageId, memberId } = req.params;
+    const { content } = req.body;
+
+    // Find and update the message in the database
+    const updatedMessage = await ServerMessage.findOneAndUpdate(
+      { _id: messageId, memberId: memberId },
+      { $set: { content: content } }
+    );
+
+    const messageDocument = await ServerMessage.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(messageId) } },
+      ...commonMessagesPipeline,
+    ]);
+
+    // Check if the message was found and updated
+    if (updatedMessage) {
+      const channelId = updatedMessage.channelId.toHexString();
+
+      emitSocketEvent(
+        req,
+        channelId,
+        ConversationEventEnum.MESSAGE_EDITED,
+        messageDocument[0]
+      );
+
+      res.status(200).send(res.body);
+    } else {
+      res
+        .status(404)
+        .json({ success: false, message: "Message not found for update" });
+    }
+  } catch (error) {
+    // Handle errors and respond with an error status
+    console.error("Error updating message:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export { sendDirectMessage, sendServerMessage, fetchMessages, updateMessage };

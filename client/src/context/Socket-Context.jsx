@@ -32,8 +32,6 @@ const SocketContextProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   // const [hasError, setHasError] = useState(false);
 
-  console.log(socket);
-
   // Set up the socket connection when the component mounts
   useEffect(() => {
     const socketInstance = getSocket(access_token);

@@ -22,6 +22,17 @@ module.exports = {
         md2: "0.9rem",
         xl3: "1.875rem", // Custom extra-large size
         xl4: "2.25rem", // Custom 4 times extra-large size
+        xl8: "3.75rem", //
+      },
+      fontFamily: {
+        peace: "peace",
+      },
+      dropShadow: {
+        subtle: "0 6px 8px rgba(0, 0, 0, 0.10)",
+        "4xl": [
+          "0 35px 35px rgba(0, 0, 0, 0.25)",
+          "0 45px 65px rgba(0, 0, 0, 0.15)",
+        ],
       },
       colors: {
         border: "hsl(var(--border))",
