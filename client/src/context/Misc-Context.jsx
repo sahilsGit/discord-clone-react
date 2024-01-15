@@ -12,6 +12,7 @@ const INITIAL_STATE = {
 export const MiscContext = createContext(INITIAL_STATE);
 
 const reducer = (state, action) => {
+  console.log("RC", action);
   switch (action.type) {
     case "SET_CONVERSATIONS":
       return {
@@ -19,6 +20,8 @@ const reducer = (state, action) => {
         allConversations: action.payload,
         loading: false,
       };
+    case "SET_CUSTOM":
+      return { ...state, ...action.payload };
     case "SET_ACTIVE_CONVERSATION":
       return {
         ...state,

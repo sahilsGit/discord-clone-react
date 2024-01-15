@@ -15,21 +15,36 @@ const ConversationItem = ({ conversation, profile }) => {
   const profileId = useAuth("id");
 
   const fetchConversation = async () => {
+    console.log("....fetching from conv. Item");
     try {
-      const response = await get(
-        `/conversations/${profile._id}/${profileId}`,
-        access_token
-      );
+      const [response, messages] = await Promise.all([
+        get(`/conversations/${profile._id}/${profileId}`, access_token),
+        get(
+          `/messages/fetch?memberProfileId=${profile._id}&myProfileId=${profileId}`,
+          access_token
+        ),
+      ]);
 
-      const data = await handleResponse(response, authDispatch);
+      const [conversationsData, messageData] = await Promise.all([
+        handleResponse(response, authDispatch),
+        handleResponse(messages, authDispatch),
+      ]);
 
+      // Populate / Re-populate the conversation's context
       miscDispatch({
         type: "SET_ACTIVE_CONVERSATION",
         payload: {
-          id: data.conversation._id,
-          profileId: data.memberProfile._id,
-          name: data.memberProfile.name,
-          image: data.memberProfile.image ? data.memberProfile.image : null,
+          id: conversationsData.conversation._id,
+          profileId: conversationsData.memberProfile._id,
+          name: conversationsData.memberProfile.name,
+          image: conversationsData.memberProfile.image
+            ? conversationsData.memberProfile.image
+            : null, // For rendering fallback the image
+          messages: {
+            data: messageData.messages,
+            cursor: messageData.newCursor,
+            hasMoreMessages: messageData.hasMoreMessages,
+          },
         },
       });
     } catch (err) {

@@ -14,31 +14,41 @@ const ServerMemberItem = ({ member, server }) => {
   const params = useParams();
   const profileId = useAuth("id");
   const miscDispatch = useMisc("dispatch");
-  const [data, setData] = useState();
 
   const fetchConversation = async () => {
     if (member.profileId === profileId) {
       return;
     }
     try {
-      const response = await get(
-        `/conversations/${member.profileId}/${profileId}`,
-        access_token
-      );
+      const [response, messages] = await Promise.all([
+        get(`/conversations/${member.profileId}/${profileId}`, access_token),
+        get(
+          `/messages/fetch?memberProfileId=${member.profileId}&myProfileId=${profileId}`,
+          access_token
+        ),
+      ]);
 
-      const data = await handleResponse(response, authDispatch);
+      const [conversationsData, messageData] = await Promise.all([
+        handleResponse(response, authDispatch),
+        handleResponse(messages, authDispatch),
+      ]);
 
       miscDispatch({
         type: "SET_ACTIVE_CONVERSATION",
         payload: {
-          id: data.conversation._id,
-          profileId: data.memberProfile._id,
-          name: data.memberProfile.name,
-          image: data.memberProfile.image ? data.memberProfile.image : null,
+          id: conversationsData.conversation._id,
+          profileId: conversationsData.memberProfile._id,
+          name: conversationsData.memberProfile.name,
+          image: conversationsData.memberProfile.image
+            ? conversationsData.memberProfile.image
+            : null, // For rendering fallback the image
+          messages: {
+            data: messageData.messages,
+            cursor: messageData.newCursor,
+            hasMoreMessages: messageData.hasMoreMessages,
+          },
         },
       });
-
-      setData(data);
     } catch (err) {
       handleError(err, authDispatch);
     }

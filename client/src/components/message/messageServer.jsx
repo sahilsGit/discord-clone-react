@@ -12,7 +12,7 @@ const MessageServer = () => {
   const name = channelDetails?.name;
   const authDispatch = useAuth("dispatch");
   const access_token = useAuth("token");
-  const memberId = useServer("serverDetails").myMembership._id;
+  const myMembership = useServer("serverDetails").myMembership;
   const channelId = useServer("channelDetails")._id;
   const [error, setError] = useState(false);
   const observerRef = useRef();
@@ -32,7 +32,7 @@ const MessageServer = () => {
   const fetchMessages = async () => {
     try {
       const response = await get(
-        `/messages/fetch?memberId=${memberId}&channelId=${channelId}&cursor=${messages.cursor}`,
+        `/messages/fetch?memberId=${myMembership._id}&channelId=${channelId}&cursor=${messages.cursor}`,
         access_token
       );
 
@@ -203,7 +203,11 @@ const MessageServer = () => {
       }}
     >
       {/* <div className="h-[100px]">{message.content}</div> */}
-      <MessageItem message={message} />
+      <MessageItem
+        message={message}
+        myDetails={myMembership}
+        sender={message.member}
+      />
     </div>
   );
 

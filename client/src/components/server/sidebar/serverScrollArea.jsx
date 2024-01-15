@@ -2,26 +2,25 @@ import useServer from "@/hooks/useServer";
 import React from "react";
 import { ScrollArea } from "@/components/ui/scrollArea";
 import { Separator } from "@/components/ui/separator";
-import ChSection from "./serverSection";
-import ChIndividualChannel from "./serverChannelItem";
-import ChMember from "./serverMemberItem";
+import ServerSection from "./serverSection";
+import ServerMemberItem from "./serverMemberItem";
+import ServerChannelItem from "./serverChannelItem";
 
-const ChScrollArea = ({ data, role }) => {
-  // console.log("content", data);
+const ServerScrollArea = ({ data, role }) => {
   const server = useServer("serverDetails");
   return (
     <ScrollArea className="px-2 grow">
       <Separator className="bg-zinc-200 dark:bg-zinc-700 round-md mt-2 mb-0.5" />
       {!!data[0].contentArray?.length && (
         <div className="mb-1">
-          <ChSection
+          <ServerSection
             sectionType="channels"
             channelType="TEXT"
             role={role}
             label="Text Channels"
           />
           {data[0].contentArray.map((channel) => (
-            <ChIndividualChannel
+            <ServerChannelItem
               key={channel.id}
               channel={channel}
               role={role}
@@ -33,14 +32,14 @@ const ChScrollArea = ({ data, role }) => {
       )}
       {!!data[1].contentArray?.length && (
         <div className="mb-1">
-          <ChSection
+          <ServerSection
             sectionType="channels"
             channelType="AUDIO"
             role={role}
             label="Voice Channels"
           />
           {data[1].contentArray.map((channel) => (
-            <ChIndividualChannel
+            <ServerChannelItem
               key={channel.id}
               channel={channel}
               role={role}
@@ -52,14 +51,14 @@ const ChScrollArea = ({ data, role }) => {
       )}
       {!!data[2].contentArray?.length && (
         <div className="mb-1">
-          <ChSection
+          <ServerSection
             sectionType="channels"
             channelType="VIDEO"
             role={role}
             label="Video Channels"
           />
           {data[2].contentArray.map((channel) => (
-            <ChIndividualChannel
+            <ServerChannelItem
               key={channel.id}
               channel={channel}
               role={role}
@@ -71,14 +70,14 @@ const ChScrollArea = ({ data, role }) => {
       )}
       {!!data[3].contentArray?.length && (
         <div className="mb-2">
-          <ChSection
+          <ServerSection
             sectionType="members"
             role={role}
             label="Members"
             server={server}
           />
           {data[3].contentArray.map((member) => (
-            <ChMember key={member.id} member={member} server={server} />
+            <ServerMemberItem key={member.id} member={member} server={server} />
           ))}
         </div>
       )}
@@ -86,4 +85,4 @@ const ChScrollArea = ({ data, role }) => {
   );
 };
 
-export default ChScrollArea;
+export default ServerScrollArea;

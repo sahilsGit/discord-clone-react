@@ -3,7 +3,6 @@ import { ActionTooltip } from "../actionTooltip";
 import { UserAvatar } from "../userAvatar";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import useServer from "@/hooks/useServer";
 // import { UserAvatar } from "@/components/user-avatar";
 // import { ActionTooltip } from "@/components/action-tooltip";
 
@@ -35,13 +34,10 @@ const formSchema = z.object({
   content: z.string().min(1),
 });
 
-const MessageItem = ({ message }) => {
+const MessageItem = ({ message, myDetails, sender }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const myMemberId = useServer("serverDetails").myMembership._id;
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
-  const serverDispatch = useServer("dispatch");
-  const channelDetails = useServer("channelDetails");
 
   // const { onOpen } = useModal();
   // const params = useParams();
@@ -81,7 +77,7 @@ const MessageItem = ({ message }) => {
 
     try {
       const response = await update(
-        `/messages/update/${message._id}/${myMemberId}`,
+        `/messages/update/${message._id}/${myDetails._id}`,
         updatedData,
         access_token
       );
@@ -128,9 +124,9 @@ const MessageItem = ({ message }) => {
     });
   }, [message.content]);
 
-  const isAdmin = message.member.role === "ADMIN";
-  const isModerator = message.member.role === "MODERATOR";
-  const isOwner = message.member._id === myMemberId;
+  const isAdmin = sender?.role === "ADMIN";
+  const isModerator = sender?.role === "MODERATOR";
+  const isOwner = sender?._id === myDetails._id;
   const canDeleteMessage =
     !message.deleted && (isAdmin || isModerator || isOwner);
   const canEditMessage = !message.deleted && isOwner;
@@ -142,7 +138,7 @@ const MessageItem = ({ message }) => {
           // onClick={onMemberClick}
           className="cursor-pointer hover:drop-shadow-md transition"
         >
-          <UserAvatar subject={message.member.profile} />
+          <UserAvatar subject={sender?.profile} />
         </div>
         <div className="flex flex-col w-full">
           <div className="flex items-center gap-x-2">
@@ -151,11 +147,13 @@ const MessageItem = ({ message }) => {
                 // onClick={onMemberClick}
                 className="font-semibold text-sm hover:underline cursor-pointer"
               >
-                {message.member.profile.name}
+                {sender.profile.name}
               </p>
-              <ActionTooltip label={message.member.role}>
-                {roleIconMap[message.member.role]}
-              </ActionTooltip>
+              {sender?.role && (
+                <ActionTooltip label={sender?.role}>
+                  {roleIconMap[sender.role]}
+                </ActionTooltip>
+              )}
             </div>
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
               {message.createdAt}

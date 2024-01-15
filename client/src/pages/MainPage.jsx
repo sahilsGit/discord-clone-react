@@ -47,22 +47,43 @@ const MainPage = ({ type }) => {
       return;
     } // No conversation with your own self
 
+    console.log("fetching from mainPage....");
     try {
-      const response = await get(
-        `/conversations/${params.memberProfileId}/${params.myProfileId}`,
-        access_token
-      );
+      const [response, messages] = await Promise.all([
+        get(
+          `/conversations/${params.memberProfileId}/${params.myProfileId}`,
+          access_token
+        ),
+        get(
+          `/messages/fetch?memberProfileId=${params.memberProfileId}&myProfileId=${params.myProfileId}`,
+          access_token
+        ),
+      ]);
 
-      const data = await handleResponse(response, authDispatch); // custom response handler
+      const [conversationsData, messageData] = await Promise.all([
+        handleResponse(response, authDispatch),
+        handleResponse(messages, authDispatch),
+      ]);
+
+      console.log(messageData);
+
+      console.log("mssd", messageData);
 
       // Populate / Re-populate the conversation's context
       miscDispatch({
         type: "SET_ACTIVE_CONVERSATION",
         payload: {
-          id: data.conversation._id,
-          profileId: data.memberProfile._id,
-          name: data.memberProfile.name,
-          image: data.memberProfile.image ? data.memberProfile.image : null, // For rendering fallback the image
+          id: conversationsData.conversation._id,
+          profileId: conversationsData.memberProfile._id,
+          name: conversationsData.memberProfile.name,
+          image: conversationsData.memberProfile.image
+            ? conversationsData.memberProfile.image
+            : null, // For rendering fallback the image
+          messages: {
+            data: messageData.messages,
+            cursor: messageData.newCursor,
+            hasMoreMessages: messageData.hasMoreMessages,
+          },
         },
       });
     } catch (err) {
@@ -182,9 +203,7 @@ const MainPage = ({ type }) => {
         fetchAllConversations();
 
       // Finally fetch the specific conversation if the type is "conversation"
-      if (type === "conversation") {
-        fetchConversation();
-      }
+      type === "conversation" && !activeConversation && fetchConversation();
     }
 
     /*

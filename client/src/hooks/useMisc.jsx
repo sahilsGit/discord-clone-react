@@ -3,7 +3,7 @@ import { MiscContext } from "@/context/Misc-Context";
 
 const useMisc = (value) => {
   switch (value) {
-    case "allconversations":
+    case "allConversations":
       return useContext(MiscContext).allConversations;
     case "activeConversation":
       return useContext(MiscContext).activeConversation;

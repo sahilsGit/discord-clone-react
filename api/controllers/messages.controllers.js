@@ -6,6 +6,7 @@ import ServerMessage from "../modals/serverMessage.modals.js";
 import { emitSocketEvent } from "../socket/io.js";
 import { ConversationEventEnum } from "../utils/constants.js";
 import { getLocalPath, getStaticFilePath } from "../utils/helpers.js";
+import DirectConversation from "../modals/directConversation.modals.js";
 
 const commonMessagesPipeline = [
   {
@@ -50,8 +51,104 @@ const commonMessagesPipeline = [
   },
 ];
 
+const directMessagePipeline = [
+  {
+    $lookup: {
+      from: "profiles",
+      localField: "senderId",
+      foreignField: "_id",
+      as: "sender",
+    },
+  },
+  { $unwind: "$sender" },
+  {
+    $project: {
+      _id: 1,
+      content: 1,
+      fileUrl: 1,
+      senderId: 1,
+      receiverId: 1,
+      conversationId: 1,
+      deleted: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      "sender._id": 1,
+      "sender.name": 1,
+      "sender.image": 1,
+    },
+  },
+];
+
 const sendDirectMessage = async (req, res, next) => {
-  res.status(201).send({ message: "it did hit" });
+  try {
+    const { myProfileId, memberProfileId } = req.query;
+    const { content } = req.body;
+    const messageFiles = [];
+
+    if (req.files && req.files.attachments?.length > 0) {
+      req.files.attachments?.map((attachment) => {
+        messageFiles.push({
+          url: getStaticFilePath(req, attachment.filename),
+          localPath: getLocalPath(attachment.filename),
+        });
+      });
+    }
+
+    // Validate required fields
+    if (!memberProfileId || !myProfileId) {
+      return res.status(400).send({
+        error: "Need memberProfileId and your profileId are required",
+      });
+    }
+
+    // Find the conversation for this channel + server
+    const conversation = await DirectConversation.findOne({
+      $or: [
+        { initiatedBy: memberProfileId, initiatedFor: myProfileId },
+        { initiatedBy: myProfileId, initiatedFor: memberProfileId },
+      ],
+    });
+
+    console.log("ppp", myProfileId);
+
+    // Create the server message
+    const message = new DirectMessage({
+      content,
+      senderId: myProfileId,
+      receiverId: memberProfileId,
+      conversationId: conversation._id,
+    });
+
+    await message.save();
+
+    // Add message to conversation
+    conversation.messages.push(message);
+    await conversation.save();
+
+    const messageDocument = await DirectMessage.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(message._id) } },
+      ...directMessagePipeline,
+    ]);
+
+    emitSocketEvent(
+      req,
+      message.senderId.toHexString(),
+      ConversationEventEnum.MESSAGE_RECEIVED,
+      messageDocument[0]
+    );
+
+    emitSocketEvent(
+      req,
+      message.receiverId.toHexString(),
+      ConversationEventEnum.MESSAGE_RECEIVED,
+      messageDocument[0]
+    );
+
+    res.status(201).send(message);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ error: err.message });
+  }
 };
 
 const sendServerMessage = async (req, res) => {
@@ -125,89 +222,125 @@ const sendServerMessage = async (req, res) => {
   }
 };
 
-// const fetchMessages = async (req, res) => {
-//   const limit = 10;
-
-//   try {
-//     const { cursor, channelId, conversationId } = req.query;
-
-//     console.log(cursor);
-
-//     let query;
-
-//     if (conversationId) {
-//       query = DirectMessage.find({ conversationId: conversationId })
-//         .sort({ createdAt: -1 })
-//         .limit(limit + 1);
-//     } else {
-//       query = ServerMessage.find({ channelId: channelId })
-//         .sort({ createdAt: -1 })
-//         .limit(limit + 1);
-//     }
-
-//     if (cursor && cursor !== "null" && cursor !== "undefined") {
-//       query.where({ createdAt: { $lt: cursor } });
-//     }
-
-//     console.log(query);
-
-//     const messages = await query;
-
-//     const hasMoreDocuments = messages.length > limit;
-//     if (hasMoreDocuments) {
-//       // Remove the extra document fetched for checking
-//       messages.pop();
-//     }
-
-//     // New cursor is timestamp of last message returned
-//     if (res.body) {
-//       res.body = {
-//         ...res.body,
-//         messages,
-//         newCursor: messages[messages.length - 1]?.createdAt,
-//         hasMoreMessages: hasMoreDocuments,
-//       };
-//     } else {
-//       res.body = {
-//         messages,
-//         newCursor: messages[messages.length - 1]?.createdAt,
-//         hasMoreMessages: hasMoreDocuments,
-//       };
-//     }
-//     res.status(200).send(res.body);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send(error.message);
-//   }
-// };
-
 const fetchMessages = async (req, res) => {
+  const { channelId } = req.query;
+
+  // Conditionally choose the appropriate handler based on query params
+  if (channelId) {
+    await fetchServerMessages(req, res); // Call the server messages handler
+  } else {
+    await fetchDirectMessages(req, res); // Call the direct messages handler
+  }
+};
+
+const fetchServerMessages = async (req, res) => {
   const limit = 10;
-  const { cursor, channelId, conversationId } = req.query;
+  const { cursor, channelId } = req.query;
 
   try {
-    let queryPipeline = [];
+    if (!channelId) {
+      res.status(404).send("Can't find conversation without channelId");
+    }
 
-    if (conversationId)
+    const queryPipeline = [
+      { $match: { channelId: new mongoose.Types.ObjectId(channelId) } },
+      ...commonMessagesPipeline,
+    ];
+
+    if (cursor && cursor !== "null" && cursor !== "undefined")
+      queryPipeline.push({ $match: { createdAt: { $lt: new Date(cursor) } } });
+    queryPipeline.push({ $sort: { createdAt: -1 } }, { $limit: limit + 1 });
+
+    let messages = await ServerMessage.aggregate(queryPipeline);
+
+    const hasMoreDocuments = messages.length > limit;
+    if (hasMoreDocuments) {
+      // Remove the extra document fetched for checking
+      messages.pop();
+    }
+
+    // New cursor is timestamp of the last message returned
+    let newCursor;
+
+    if (channelId) newCursor = messages[messages.length - 1]?.createdAt;
+    else newCursor = messages?.createdAt;
+
+    if (res.body) {
+      res.body = {
+        ...res.body,
+        messages,
+        newCursor,
+        hasMoreMessages: hasMoreDocuments,
+      };
+    } else {
+      res.body = {
+        messages,
+        newCursor,
+        hasMoreMessages: hasMoreDocuments,
+      };
+    }
+
+    res.status(200).send(res.body);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message);
+  }
+};
+
+const fetchDirectMessages = async (req, res) => {
+  const limit = 10;
+  const { cursor, conversationId, myProfileId, memberProfileId } = req.query;
+
+  try {
+    if (!conversationId) {
+      if (!myProfileId && !memberProfileId) {
+        res
+          .status(404)
+          .send(
+            "Either ConversationId or profileId of both the persons are need to find the conversation"
+          );
+      }
+    }
+
+    let queryPipeline;
+
+    if (conversationId) {
+      console.log("cvddcdcd", conversationId);
       queryPipeline = [
         {
           $match: {
             conversationId: new mongoose.Types.ObjectId(conversationId),
           },
         },
+        ...directMessagePipeline,
       ];
-    else
+    } else {
       queryPipeline = [
-        { $match: { channelId: new mongoose.Types.ObjectId(channelId) } },
+        {
+          $match: {
+            $or: [
+              {
+                senderId: new mongoose.Types.ObjectId(memberProfileId),
+                receiverId: new mongoose.Types.ObjectId(myProfileId),
+              },
+              {
+                senderId: new mongoose.Types.ObjectId(myProfileId),
+                receiverId: new mongoose.Types.ObjectId(memberProfileId),
+              },
+            ],
+          },
+        },
+        ...directMessagePipeline,
       ];
-
-    queryPipeline = [...queryPipeline, ...commonMessagesPipeline];
+    }
 
     if (cursor && cursor !== "null" && cursor !== "undefined")
       queryPipeline.push({ $match: { createdAt: { $lt: new Date(cursor) } } });
     queryPipeline.push({ $sort: { createdAt: -1 } }, { $limit: limit + 1 });
 
-    const messages = await ServerMessage.aggregate(queryPipeline);
+    console.log(queryPipeline);
+
+    const messages = await DirectMessage.aggregate(queryPipeline);
 
     const hasMoreDocuments = messages.length > limit;
     if (hasMoreDocuments) {
@@ -221,13 +354,13 @@ const fetchMessages = async (req, res) => {
     if (res.body) {
       res.body = {
         ...res.body,
-        messages,
+        messages: messages,
         newCursor,
         hasMoreMessages: hasMoreDocuments,
       };
     } else {
       res.body = {
-        messages,
+        messages: messages,
         newCursor,
         hasMoreMessages: hasMoreDocuments,
       };
@@ -281,3 +414,46 @@ const updateMessage = async (req, res) => {
 };
 
 export { sendDirectMessage, sendServerMessage, fetchMessages, updateMessage };
+
+// db.directmessages.aggregate([
+//   {
+//     $match: {
+//       $or: [
+//         {
+//           senderId: ObjectId("6596af8a1ff3b6447eae0579"),
+//           receiverId: ObjectId("6596afd01ff3b6447eae058a"),
+//         },
+//         {
+//           receiverId: ObjectId("6596afd01ff3b6447eae058a"),
+//           senderId: ObjectId("6596afd01ff3b6447eae058a"),
+//         },
+//       ],
+//     },
+//   },
+//   {
+//     $lookup: {
+//       from: "profiles",
+//       localField: "senderId",
+//       foreignField: "_id",
+//       as: "sender",
+//     },
+//   },
+//   { $unwind: "$sender" },
+//   {
+//     $project: {
+//       _id: 1,
+//       content: 1,
+//       fileUrl: 1,
+//       senderId: 1,
+//       receiverId: 1,
+//       deleted: 1,
+//       createdAt: 1,
+//       updatedAt: 1,
+//       "sender._id": 1,
+//       "sender.name": 1,
+//       "sender.image": 1,
+//     },
+//   },
+//   { $sort: { createdAt: -1 } },
+//   { $limit: 10 + 1 },
+// ]);

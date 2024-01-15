@@ -14,12 +14,12 @@ const directMessageSchema = new mongoose.Schema(
       ],
       default: [],
     },
-    SenderId: {
+    senderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Profile",
       required: true,
     },
-    ReceiverId: {
+    receiverId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Profile",
       required: true,
