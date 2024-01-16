@@ -49,6 +49,7 @@ const ServerSidebar = () => {
         id: channel._id,
         name: channel.name,
         icon: iconMap[channel.type],
+        channelType: channel.type,
       })),
     },
     {
@@ -57,6 +58,7 @@ const ServerSidebar = () => {
         id: channel._id,
         name: channel.name,
         icon: iconMap[channel.type],
+        channelType: channel.type,
       })),
     },
     {
@@ -66,6 +68,7 @@ const ServerSidebar = () => {
         id: channel._id,
         name: channel.name,
         icon: iconMap[channel.type],
+        channelType: channel.type,
       })),
     },
     {

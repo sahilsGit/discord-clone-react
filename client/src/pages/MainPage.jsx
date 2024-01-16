@@ -37,6 +37,8 @@ const MainPage = ({ type }) => {
   const channelDetails = useServer("channelDetails");
   const activeConversation = useMisc("activeConversation");
 
+  const channelType = channelDetails?.type;
+
   // Consume the Auth context using custom hook
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
@@ -240,7 +242,7 @@ const MainPage = ({ type }) => {
         )}
       </div>
       <div className="w-full h-full">
-        <MainWrapper type={type} />
+        <MainWrapper type={type} channelType={channelType} />
       </div>
     </main>
   );

@@ -14,6 +14,7 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import { initializeSocket } from "./socket/io.js";
 import assetsRouter from "./routes/asset.routes.js";
+import { getToken } from "./socket/webRtc.js";
 
 await connect();
 
@@ -55,6 +56,8 @@ app.use("/api/conversations", conversationsRouter);
 app.use("/api/assets", assetsRouter);
 app.use("/api/messages", messagesRouter);
 app.use("/api/profiles", profileRouter);
+
+app.get("/api/getToken", getToken);
 
 initializeSocket(io);
 
