@@ -1,6 +1,8 @@
 const handleResponse = async (response, authDispatch) => {
   // Success responses
 
+  console.log("handle res triggered", response);
+
   if (response.ok) {
     const contentLength = response.headers.get("Content-Length");
 
@@ -20,6 +22,7 @@ const handleResponse = async (response, authDispatch) => {
             profileId: data.profileId,
             name: data.name,
             image: data.image,
+            about: data.about,
           },
         });
       }

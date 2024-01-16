@@ -13,6 +13,7 @@ const profileSchema = new mongoose.Schema(
       index: true,
     },
     name: { type: String, required: true },
+    about: { type: String },
     image: { type: String, default: null },
     email: {
       type: String,

@@ -11,6 +11,7 @@ export const UserAvatar = ({ subject, className }) => {
   const authDispatch = useAuth("dispatch");
 
   const image = subject.image || null;
+  console.log(image);
 
   const getImage = async () => {
     try {
@@ -28,7 +29,8 @@ export const UserAvatar = ({ subject, className }) => {
       getImage();
     }
   }, [subject.image]);
-  // console.log(imageSrc);
+
+  console.log(imageSrc);
 
   return (
     <Avatar className={cn("h-7 w-7 md:h-10 md:w-10", className)}>

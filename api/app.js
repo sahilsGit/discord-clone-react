@@ -6,6 +6,7 @@ import membersRouter from "./routes/member.routes.js";
 import channelsRouter from "./routes/channel.routes.js";
 import conversationsRouter from "./routes/conversation.routes.js";
 import messagesRouter from "./routes/messages.routes.js";
+import profileRouter from "./routes/profile.routes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { connect } from "./bin/db.js";
@@ -53,6 +54,7 @@ app.use("/api/channels", channelsRouter);
 app.use("/api/conversations", conversationsRouter);
 app.use("/api/assets", assetsRouter);
 app.use("/api/messages", messagesRouter);
+app.use("/api/profiles", profileRouter);
 
 initializeSocket(io);
 

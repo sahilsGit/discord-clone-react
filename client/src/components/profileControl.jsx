@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { UserAvatar } from "./userAvatar";
 import useAuth from "@/hooks/useAuth";
 import {
@@ -18,16 +18,20 @@ import { Separator } from "./ui/separator";
 import useServer from "@/hooks/useServer";
 import useMisc from "@/hooks/useMisc";
 import { useModal } from "@/hooks/useModals";
+import { get } from "@/services/api-service";
+import { handleError, handleResponse } from "@/lib/response-handler";
 
 const ProfileControl = () => {
   const profileName = useAuth("name");
-  const profileImage = useAuth("image");
   const username = useAuth("user");
+  const profileImage = useAuth("image");
   const authDispatch = useAuth("dispatch");
   const serverDispatch = useServer("dispatch");
   const miscDispatch = useMisc("dispatch");
   const { onOpen } = useModal();
-  const [aboutMe, setAboutMe] = useState("");
+  const [about, setAbout] = useState("");
+  const [email, setEmail] = useState("");
+  const access_token = useAuth("token");
 
   const handleLogout = () => {
     localStorage.clear();
@@ -35,6 +39,22 @@ const ProfileControl = () => {
     serverDispatch({ type: "RESET_STATE" });
     miscDispatch({ type: "RESET_STATE" });
   };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await get(`/profiles/about`, access_token);
+        const data = await handleResponse(response, authDispatch);
+
+        setAbout(data.about);
+        setEmail(data.email);
+      } catch (err) {
+        handleError(err, authDispatch);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   return (
     <div className="group flex justify-between h-[53px] bg-main09 py-1 px-2">
@@ -61,9 +81,21 @@ const ProfileControl = () => {
           >
             <div className="h-[105px] group">
               <div className="bg-indigo-500 h-[60px] relative"></div>
-              <div className="flex items-center justify-center absolute top-3 right-4 rounded-full h-[28px] text-white bg-main10 opacity-50 hover:opacity-75 w-[28px] transition">
+              <button
+                type="button"
+                onClick={() => {
+                  onOpen("settings", {
+                    name: profileName,
+                    image: profileImage,
+                    username: username,
+                    email: email,
+                    about: about,
+                  });
+                }}
+                className="flex items-center justify-center absolute top-3 right-4 rounded-full h-[28px] text-white bg-main10 opacity-50 hover:opacity-75 w-[28px] transition"
+              >
                 <Pencil className="h-4 w-4" />
-              </div>
+              </button>
               <UserAvatar
                 subject={{ name: profileName, image: profileImage }}
                 className="border-8 border-main09 h-[90px] w-[90px] md:h-[90px] md:w-[90px] absolute top-4 left-4"
@@ -78,7 +110,7 @@ const ProfileControl = () => {
                   <p className="px-1 text-md2 text-white">{profileName}</p>
                   <p className="pt-1 px-1 text-white text-xs">{username}</p>
                 </div>
-                {aboutMe.length ? (
+                {about.length ? (
                   <>
                     <Separator className="h-[1px]" />
                     <div className="flex flex-col gap-y-1 w-full word-break">
@@ -86,7 +118,7 @@ const ProfileControl = () => {
                         About me
                       </p>
                       <div className="break-words">
-                        <p className="px-1 leading-5 text-white">{aboutMe}</p>
+                        <p className="px-1 leading-5 text-white">{about}</p>
                       </div>
                     </div>
                   </>
@@ -124,7 +156,13 @@ const ProfileControl = () => {
       <button
         className="flex items-center justify-end gap-x-[4px]"
         onClick={() => {
-          onOpen("settings", { name: profileName, image: profileImage });
+          onOpen("settings", {
+            name: profileName,
+            image: profileImage,
+            username: username,
+            email: email,
+            about: about,
+          });
         }}
       >
         <div className="flex items-center justify-center w-[28px] h-[28px] hover:bg-zinc-700/10 dark:hover:bg-zinc-600/50 dark:hover:text-zinc-200 transition rounded-sm text-zinc-400">

@@ -56,7 +56,8 @@ const LoginPage = () => {
 
     try {
       const response = await post("/auth/login", JSON.stringify(body));
-      const data = await handleResponse(response, authDispatch);
+      await handleResponse(response, authDispatch);
+
       navigate(from);
     } catch (err) {
       setHasError;

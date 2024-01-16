@@ -138,7 +138,41 @@ button {
   }
 }
 
-/* Apply the animation class when justBrowsing is true */
 .animate-open-ver {
   animation: openAnimation2 0.3s ease-out; /* You can adjust the duration and easing function */
+}
+
+@keyframes flyIn {
+  0% {
+    bottom: -20px;
+  }
+  50% {
+    bottom: 15px;
+  }
+  100% {
+    bottom: 10px; /* or the full width you desire */
+  }
+}
+
+.flyIn {
+  animation: flyIn 0.3s ease-out; /* You can adjust the duration and easing function */
+}
+
+@keyframes flyOut {
+  0% {
+    bottom: 10px;
+    opacity: 100%;
+  }
+  50% {
+    bottom: 35px;
+    opacity: 70%;
+  }
+  100% {
+    bottom: -100px; /* or the full width you desire */
+    opacity: 0;
+  }
+}
+
+.flyOut {
+  animation: flyOut 0.3s ease-out; /* You can adjust the duration and easing function */
 }

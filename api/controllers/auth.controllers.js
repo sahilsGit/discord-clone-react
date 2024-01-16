@@ -158,7 +158,7 @@ export const login = async (req, res, next) => {
       newAccessToken: access_token,
       profileId: userProfile._id,
       name: userProfile.name,
-      image: userProfile.image,
+      image: userProfile.image || null,
     });
   } catch (err) {
     err.status = 500;

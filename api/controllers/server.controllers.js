@@ -261,7 +261,16 @@ export const updateServerBasics = async (req, res, next) => {
 
     if (oldImage) {
       const imagePath = `./public/images/${oldImage}`;
-      fs.unlink(imagePath);
+
+      console.log("Deleting image at path:", imagePath);
+
+      fs.unlink(imagePath, (unlinkErr) => {
+        if (unlinkErr) {
+          console.error("Error deleting image:", unlinkErr);
+        } else {
+          console.log("Image deleted successfully");
+        }
+      });
     }
 
     if (res.body) {

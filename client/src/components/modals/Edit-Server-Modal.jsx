@@ -175,7 +175,7 @@ const EditServerModal = () => {
 
     // console.log("file", file);
     if (file) {
-      setAvatarImage(file); // Set the AvatarImage state with the choose image
+      setAvatarImage(file); // Set the AvatarImage state with the chosen image
     } else {
       handleDeleteImage(); // call delete image
     }
@@ -189,7 +189,7 @@ const EditServerModal = () => {
     if (image) {
       updatedValues["image"] = image;
     }
-    if (server.name != data.name) {
+    if (server.name !== data.name) {
       updatedValues["name"] = data.name;
     }
 

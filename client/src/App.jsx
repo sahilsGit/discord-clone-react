@@ -13,7 +13,6 @@ import RegistrationPage from "@/pages/RegistrationPage";
 import LoginPage from "@/pages/LoginPage";
 import InvitationPage from "./pages/InvitationPage";
 import { MiscContextProvider } from "./context/Misc-Context";
-import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   /*
@@ -54,16 +53,6 @@ function App() {
                 <RequireAuth>
                   <MiscContextProvider>
                     <MainPage type="messages" />
-                  </MiscContextProvider>
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/@me/settings"
-              element={
-                <RequireAuth>
-                  <MiscContextProvider>
-                    <SettingsPage />
                   </MiscContextProvider>
                 </RequireAuth>
               }
