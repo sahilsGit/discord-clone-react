@@ -1,5 +1,5 @@
-import { useContext } from "react";
 import { AuthContext } from "@/context/Auth-Context";
+import { useContext } from "react";
 
 const useAuth = (value) => {
   switch (value) {

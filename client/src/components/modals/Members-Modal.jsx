@@ -5,26 +5,30 @@ import {
   DialogContent,
   DialogDescription,
 } from "@/components/ui/dialog";
-import useServer from "@/hooks/useServer";
 import MembersWrapper from "../server/sidebar/dropdownMenu/member/memberWrapper";
 
 const MembersModal = () => {
-  const { isOpen, onClose, type } = useModal();
+  const { isOpen, onClose, type, data } = useModal();
   const isModalOpen = isOpen && type === "members";
-  const server = useServer("serverDetails");
+
+  let activeServer;
+
+  if (isModalOpen) {
+    activeServer = data.activeServer;
+  }
 
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>
       <DialogContent className="flex flex-col bg-white text-black w-[435px] max-w-[430px] gap-y-3 pt-7 pb-7 pl-4 pr-4">
         <div className="flex flex-col">
           <p className="text-md font-semibold">Manage Members</p>
-          {server?.totalMembersCount == 1 ? (
+          {activeServer?.totalMembersCount == 1 ? (
             <DialogDescription className="text-xs text-zinc-500">
-              {server?.totalMembersCount} Member
+              {activeServer?.totalMembersCount} Member
             </DialogDescription>
           ) : (
             <DialogDescription className="text-xs text-zinc-500">
-              {server?.totalMembersCount} Members
+              {activeServer?.totalMembersCount} Members
             </DialogDescription>
           )}
         </div>

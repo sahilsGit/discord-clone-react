@@ -46,10 +46,10 @@ const EditServerModal = () => {
   const access_token = useAuth("token"); // For authorization
   const serverDispatch = useServer("dispatch");
 
-  let server;
+  let activeServer;
 
   if (isModalOpen) {
-    server = data.server;
+    activeServer = data.activeServer;
   }
 
   // react-hook-from setup with zod resolver
@@ -62,12 +62,12 @@ const EditServerModal = () => {
 
   useEffect(() => {
     const fetchFormData = async () => {
-      if (server) {
-        console.log(server.image);
+      if (activeServer) {
+        console.log(activeServer.image);
 
         try {
           const response = await get(
-            `/assets/getImage/${server.image}`,
+            `/assets/getImage/${activeServer.image}`,
             access_token
           );
           const responseClone = response.clone();
@@ -82,7 +82,7 @@ const EditServerModal = () => {
     };
 
     if (isModalOpen) {
-      form.setValue("name", server.name);
+      form.setValue("name", activeServer.name);
       fetchFormData();
     }
   }, [isModalOpen]);
@@ -92,10 +92,10 @@ const EditServerModal = () => {
   useEffect(() => {
     if (!avatarImage && !imagePreview) {
       const fetchFormData = async () => {
-        if (server) {
+        if (activeServer) {
           try {
             const response = await get(
-              `/assets/getImage/${server.image}`,
+              `/assets/getImage/${activeServer.image}`,
               access_token
             );
             const imageData = await response.blob();
@@ -106,7 +106,7 @@ const EditServerModal = () => {
             handleError(err, authDispatch);
           }
 
-          form.setValue("name", server.name);
+          form.setValue("name", activeServer.name);
         }
       };
       fetchFormData();
@@ -189,7 +189,7 @@ const EditServerModal = () => {
     if (image) {
       updatedValues["image"] = image;
     }
-    if (server.name !== data.name) {
+    if (activeServer.name !== data.name) {
       updatedValues["name"] = data.name;
     }
 
@@ -202,7 +202,7 @@ const EditServerModal = () => {
 
     try {
       const response = await update(
-        `/servers/${server.id}/update/basics`,
+        `/servers/${activeServer.id}/update/basics`,
         updatedValues,
         access_token
       );

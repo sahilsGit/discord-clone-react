@@ -19,27 +19,27 @@ const roleIconMap = {
 };
 
 const ServerSidebar = () => {
-  const server = useServer("serverDetails");
+  const activeServer = useServer("activeServer");
   const profileId = useAuth("id");
 
-  const textChannels = server?.channels.filter(
+  const textChannels = activeServer?.channels.filter(
     (channel) => channel.type === "TEXT"
   );
 
-  const audioChannels = server?.channels.filter(
+  const audioChannels = activeServer?.channels.filter(
     (channel) => channel.type === "AUDIO"
   );
 
-  const videoChannels = server?.channels.filter(
+  const videoChannels = activeServer?.channels.filter(
     (channel) => channel.type === "VIDEO"
   );
 
-  const members = server?.members.filter(
-    (member) => member.profileId !== profileId
+  const members = activeServer?.members.filter(
+    (member) => member.profile?._id !== profileId
   );
 
-  const role = server.members.find((member) => {
-    return member.profileId === profileId;
+  const role = activeServer.members.find((member) => {
+    return member.profile?._id === profileId;
   })?.role;
 
   const data = [
@@ -50,6 +50,7 @@ const ServerSidebar = () => {
         name: channel.name,
         icon: iconMap[channel.type],
         channelType: channel.type,
+        conversationId: channel.conversationId,
       })),
     },
     {
@@ -59,6 +60,7 @@ const ServerSidebar = () => {
         name: channel.name,
         icon: iconMap[channel.type],
         channelType: channel.type,
+        conversationId: channel.conversationId,
       })),
     },
     {
@@ -69,13 +71,14 @@ const ServerSidebar = () => {
         name: channel.name,
         icon: iconMap[channel.type],
         channelType: channel.type,
+        conversationId: channel.conversationId,
       })),
     },
     {
       label: "Members",
       contentArray: members?.map((member) => ({
-        id: member.id,
-        name: member.name,
+        id: member._id,
+        name: member.profile?.name,
         icon: roleIconMap[member.role],
         profileId: member.profileId,
       })),

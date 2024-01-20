@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 const DropdownTrigger = ({ role }) => {
-  const server = useServer("serverDetails");
+  const activeServer = useServer("activeServer");
 
   const { onOpen } = useModal();
   const isAdmin = role === "ADMIN";
@@ -31,7 +31,7 @@ const DropdownTrigger = ({ role }) => {
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none" asChild>
           <button className="w-full text-sm font-semibold flex items-center px-3 h-full border-neutral-200 hover:bg-zinc-700/10 dark:hover:bg-zinc-700/50 transition">
-            <p className="text-left truncate w-[170px]">{server.name}</p>
+            <p className="text-left truncate w-[170px]">{activeServer.name}</p>
             <ChevronDown className="h-4 w-4 ml-auto" />
           </button>
         </DropdownMenuTrigger>
@@ -39,7 +39,7 @@ const DropdownTrigger = ({ role }) => {
           {isModerator && (
             <DropdownMenuItem
               onClick={() => {
-                onOpen("invite", { inviteCode: server.inviteCode });
+                onOpen("invite", { inviteCode: activeServer.inviteCode });
               }}
               className="text-indigo-600 dark:text-indigo-400 px-3 py-2 text-xs cursor-pointer"
             >
@@ -50,7 +50,7 @@ const DropdownTrigger = ({ role }) => {
           {isAdmin && (
             <DropdownMenuItem
               onClick={() => {
-                onOpen("editServer", { server: server });
+                onOpen("editServer", { activeServer: activeServer });
               }}
               className="px-3 py-2 text-xs cursor-pointer"
             >
@@ -61,7 +61,7 @@ const DropdownTrigger = ({ role }) => {
           {isAdmin && (
             <DropdownMenuItem
               onClick={() => {
-                onOpen("members", { server: server });
+                onOpen("members", { activeServer: activeServer });
               }}
               className="px-3 py-2 text-xs cursor-pointer"
             >
@@ -73,7 +73,7 @@ const DropdownTrigger = ({ role }) => {
             <DropdownMenuItem
               className="px-3 py-2 text-xs cursor-pointer"
               onClick={() => {
-                onOpen("createChannel", { server: server });
+                onOpen("createChannel", { activeServer: activeServer });
               }}
             >
               Create Channel

@@ -6,21 +6,24 @@ import { handleError, handleResponse } from "@/lib/response-handler";
 import useServer from "@/hooks/useServer";
 import useSocket from "@/hooks/useSocket";
 import MessageItem from "./messageItem";
+import useMessages from "@/hooks/useMessages";
 
-const MessageServer = () => {
-  const channelDetails = useServer("channelDetails");
-  const name = channelDetails?.name;
+const MessageServer = memo(() => {
+  const activeChannel = useServer("activeChannel");
+  const name = activeChannel?.name;
   const authDispatch = useAuth("dispatch");
   const access_token = useAuth("token");
-  const myMembership = useServer("serverDetails").myMembership;
-  const channelId = useServer("channelDetails")._id;
+  const myMembership = useServer("activeServer").myMembership;
+  const channelId = useServer("activeChannel")._id;
   const [error, setError] = useState(false);
   const observerRef = useRef();
-  const messages = useServer("channelDetails").messages;
   const lastItemRef = useRef();
-  const serverDispatch = useServer("dispatch");
   const { socket } = useSocket();
   const [isConnected, setIsConnected] = useState(false);
+  const cursor = useMessages("cursor");
+  const messages = useMessages("messages");
+  const hasMore = useMessages("hasMore");
+  const messagesDispatch = useMessages("dispatch");
 
   const CONNECTED_EVENT = "connected";
   const DISCONNECT_EVENT = "disconnect";
@@ -31,24 +34,22 @@ const MessageServer = () => {
 
   const fetchMessages = async () => {
     try {
+      console.log("yes for sure");
       const response = await get(
-        `/messages/fetch?memberId=${myMembership._id}&channelId=${channelId}&cursor=${messages.cursor}`,
+        `/messages/fetch?memberId=${myMembership._id}&channelId=${channelId}&cursor=${cursor}`,
         access_token
       );
 
       const messageData = await handleResponse(response, authDispatch);
 
-      serverDispatch({
-        type: "SET_CUSTOM",
+      console.log("got data", messageData);
+
+      messagesDispatch({
+        type: "SET_MESSAGES",
         payload: {
-          channelDetails: {
-            ...channelDetails,
-            messages: {
-              data: [...channelDetails.messages.data, ...messageData.messages],
-              cursor: messageData.newCursor || channelDetails.messages.cursor,
-              hasMoreMessages: messageData.hasMoreMessages,
-            },
-          },
+          messages: [...messages, ...messageData.messages],
+          cursor: messageData.newCursor || cursor,
+          hasMore: messageData.hasMoreMessages,
         },
       });
     } catch (error) {
@@ -62,31 +63,21 @@ const MessageServer = () => {
    */
   const onMessageReceived = (message) => {
     if (message.channelId === channelId) {
-      messages.data.length
-        ? serverDispatch({
-            type: "SET_CUSTOM",
+      messages?.length
+        ? messagesDispatch({
+            type: "SET_MESSAGES",
             payload: {
-              channelDetails: {
-                ...channelDetails,
-                messages: {
-                  data: [message, ...channelDetails.messages.data],
-                  cursor: channelDetails.messages.cursor,
-                  hasMoreMessages: channelDetails.messages.hasMoreMessages,
-                },
-              },
+              messages: [message, ...messages],
+              cursor: cursor,
+              hasMore: hasMore,
             },
           })
-        : serverDispatch({
-            type: "SET_CUSTOM",
+        : messagesDispatch({
+            type: "SET_MESSAGES",
             payload: {
-              channelDetails: {
-                ...channelDetails,
-                messages: {
-                  data: [message, ...channelDetails.messages.data],
-                  cursor: message.createdAt,
-                  hasMoreMessages: false,
-                },
-              },
+              messages: [message, ...messages],
+              cursor: message.createdAt,
+              hasMore: false,
             },
           });
     }
@@ -94,27 +85,22 @@ const MessageServer = () => {
 
   const onMessageEdited = (message) => {
     if (message.channelId === channelId) {
-      const messageIndex = channelDetails.messages.data.findIndex((msg) => {
+      const messageIndex = messages.findIndex((msg) => {
         return msg._id === message._id;
       });
 
       // If the message is found in the array, update it
       if (messageIndex !== -1) {
-        const updatedMessages = [...channelDetails.messages.data];
+        const updatedMessages = [...messages];
         updatedMessages[messageIndex] = message;
 
         // Update the state with the updated message
-        serverDispatch({
-          type: "SET_CUSTOM",
+        messagesDispatch({
+          type: "SET_MESSAGES",
           payload: {
-            channelDetails: {
-              ...channelDetails,
-              messages: {
-                data: updatedMessages,
-                cursor: channelDetails.messages.cursor,
-                hasMoreMessages: channelDetails.messages.hasMoreMessages,
-              },
-            },
+            messages: updatedMessages,
+            cursor: cursor,
+            hasMore: hasMore,
           },
         });
       } else {
@@ -146,7 +132,9 @@ const MessageServer = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       async (entries) => {
+        console.log(entries[0]);
         if (entries[0].isIntersecting) {
+          console.log("fetching");
           fetchMessages();
         }
       },
@@ -162,7 +150,7 @@ const MessageServer = () => {
     return () => {
       observerRef?.current?.disconnect();
     };
-  }, [messages?.data?.length]);
+  }, [messages?.length]);
 
   useEffect(() => {
     if (!socket) return;
@@ -197,7 +185,7 @@ const MessageServer = () => {
       className="group"
       key={message._id}
       ref={(element) => {
-        if (index === messages.data.length - 1) {
+        if (index === messages.length - 1) {
           lastItemRef.current = element;
         }
       }}
@@ -217,14 +205,12 @@ const MessageServer = () => {
 
   return (
     <div className="flex-1 flex flex-col-reverse overflow-y-auto">
-      {messages?.data?.length && (
+      {messages?.length && (
         <div className="flex flex-col-reverse">
-          {messages.data.map((message, index) =>
-            renderMessageItem(message, index)
-          )}
+          {messages?.map((message, index) => renderMessageItem(message, index))}
         </div>
       )}
-      {(!messages?.data?.length || !messages.hasMoreMessages) && (
+      {(!messages?.length || !hasMore) && (
         <div className="flex flex-col pt-3">
           <div className="flex-1" />
           <MessageWelcome type="channel" name={name} />
@@ -232,6 +218,6 @@ const MessageServer = () => {
       )}
     </div>
   );
-};
+});
 
 export default MessageServer;

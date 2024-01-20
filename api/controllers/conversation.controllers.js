@@ -65,25 +65,28 @@ export const getAllConversations = async (req, res) => {
 
     const conversations = await DirectConversation.find({
       $or: [{ initiatedBy: profileId }, { initiatedFor: profileId }],
-    }).populate([
-      {
-        path: "initiatedBy",
-        match: { _id: { $ne: req.user.profileId } },
-        select: "name _id image",
-      },
-      {
-        path: "initiatedFor",
-        match: { _id: { $ne: req.user.profileId } },
-        select: "name _id image",
-      },
-    ]);
+    })
+      .populate([
+        {
+          path: "initiatedBy",
+          match: { _id: { $ne: req.user.profileId } },
+          select: "name _id image",
+        },
+        {
+          path: "initiatedFor",
+          match: { _id: { $ne: req.user.profileId } },
+          select: "name _id image",
+        },
+      ])
+      .select(["_id", "initiatedBy", "initiatedFor"]);
+
     if (res.body) {
       res.body = {
         ...res.body,
-        convProfile: conversations,
+        conversations: conversations,
       };
     } else {
-      res.body = { convProfile: conversations };
+      res.body = { conversations: conversations };
     }
     res.status(200).send(res.body);
   } catch (error) {

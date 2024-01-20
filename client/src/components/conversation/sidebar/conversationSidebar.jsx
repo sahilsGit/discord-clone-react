@@ -15,6 +15,8 @@ import ConversationFriends from "./conversationFriends";
  */
 
 const ConversationSidebar = () => {
+  console.log("conversations Sidebar");
+
   return (
     <div className="flex h-full flex-col">
       <div className="h-[48px]">

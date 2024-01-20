@@ -7,9 +7,6 @@ import {
 import { Track } from "livekit-client";
 
 function VideoCallMain() {
-  console.log("video call main");
-  // `useTracks` returns all camera and screen share tracks. If a user
-  // joins without a published camera track, a placeholder track is returned.
   const tracks = useTracks(
     [
       { source: Track.Source.Camera, withPlaceholder: true },

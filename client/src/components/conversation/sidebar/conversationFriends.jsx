@@ -1,3 +1,4 @@
+import useConversations from "@/hooks/useConversations";
 import useMisc from "@/hooks/useMisc";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
@@ -6,14 +7,14 @@ import { useNavigate } from "react-router-dom";
 
 const ConversationFriends = () => {
   const [clicked, setClicked] = useState(false);
-  const activeConversation = useMisc("activeConversation");
+  const activeConversation = useConversations("activeConversation");
   const navigate = useNavigate();
-  const miscDispatch = useMisc("dispatch");
+  const conversationsDispatch = useConversations("dispatch");
 
   const onClick = () => {
     setClicked(true);
 
-    miscDispatch({ type: "SET_ACTIVE_CONVERSATION", payload: null });
+    conversationsDispatch({ type: "SET_ACTIVE_CONVERSATION", payload: null });
     navigate("/@me/conversations");
   };
 

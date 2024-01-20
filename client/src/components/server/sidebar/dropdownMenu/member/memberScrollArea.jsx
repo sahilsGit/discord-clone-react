@@ -35,15 +35,14 @@ const roleIconMap = {
 const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
-  const server = useServer("serverDetails");
   const serverDispatch = useServer("dispatch");
   const user = useAuth("user");
-  const serverDetails = useServer("serverDetails");
   const [isLoading, setIsLoading] = useState(false);
   const [fetchLog, setFetchLog] = useState("");
   const lastItemRef = useRef();
   const observerRef = useRef();
   const timeoutId = useRef(null);
+  const activeServer = useServer("activeServer");
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -53,7 +52,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
           if (searchTerm) {
             try {
               const response = await get(
-                `/members/${server.id}/search?term=${searchTerm}&skip=${results.length}`,
+                `/members/${activeServer.id}/search?term=${searchTerm}&skip=${results.length}`,
                 access_token
               );
               const data = await handleResponse(
@@ -74,8 +73,9 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
             }
           } else {
             try {
+              console.log("fetching");
               const response = await get(
-                `/servers/${user}/${serverDetails.id}/members?skip=${server.members.length}`,
+                `/servers/${user}/${activeServer.id}/members?skip=${activeServer.members.length}`,
                 access_token
               );
 
@@ -96,7 +96,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
     }
 
     return () => observerRef.current.disconnect();
-  }, [server.members.length, results.length]);
+  }, [activeServer.members.length, results.length]);
 
   const debouncedSearch = useCallback(
     (fetched) => {
@@ -110,7 +110,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
         }
         try {
           const response = await get(
-            `/members/${server.id}/search?term=${searchTerm}&skip=${fetched}`,
+            `/members/${activeServer.id}/search?term=${searchTerm}&skip=${fetched}`,
             access_token
           );
           const data = await handleResponse(
@@ -149,7 +149,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const onRoleChange = async (memberId, role) => {
     try {
       const response = await update(
-        `/members/${serverDetails.id}/${memberId}`,
+        `/members/${activeServer.id}/${memberId}`,
         { role: role },
         access_token
       );
@@ -175,7 +175,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const kickMember = async (memberId) => {
     try {
       const response = await remove(
-        `/members/${serverDetails.id}/${memberId}/remove`,
+        `/members/${activeServer.id}/${memberId}/remove`,
         access_token
       );
       await handleResponse(response, authDispatch);
@@ -192,11 +192,11 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const renderMemberItem = (member, index) => (
     <div
       className="group"
-      key={member.id}
+      key={member._id}
       ref={(element) => {
         if (searchTerm && index === results.length - 1) {
           lastItemRef.current = element;
-        } else if (!searchTerm && index === server.members.length - 1) {
+        } else if (!searchTerm && index === activeServer.members.length - 1) {
           lastItemRef.current = element;
         }
       }}
@@ -205,12 +205,12 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
         <UserAvatar subject={member} />
         <div className="flex flex-col gap-y-0.5">
           <div className="text-xs font-semibold flex">
-            {member.name}
+            {member.profile.name}
             {roleIconMap[member.role]}
           </div>
-          <p className="text-xxs text-zinc-500">{member.email}</p>
+          <p className="text-xxs text-zinc-500">{member.profile.email}</p>
         </div>
-        {server.profileId !== member.profileId && (
+        {activeServer.profileId !== member.profile._id && (
           <div className="ml-auto mr-2">
             <DropdownMenu>
               <DropdownMenuTrigger>
@@ -273,7 +273,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
     <div className="flex flex-col gap-y-3">
       <ScrollArea className="h-[200px]">
         {!searchTerm ? (
-          server?.members.map((member, index) =>
+          activeServer?.members.map((member, index) =>
             renderMemberItem(member, index)
           )
         ) : isLoading ? (

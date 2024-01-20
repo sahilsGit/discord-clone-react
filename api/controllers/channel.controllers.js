@@ -68,83 +68,72 @@ export const createChannel = async (req, res, next) => {
 
 export const getChannel = async (req, res) => {
   try {
-    const profile = await Profile.findOne({
-      _id: req.user.profileId,
-      servers: { $in: [req.params.serverId] },
-    });
+    let channel;
+    let profile;
+
+    [profile, channel] = await Promise.all([
+      Profile.findOne({
+        _id: req.user.profileId,
+        servers: { $in: [req.params.serverId] },
+      }),
+      Channel.findOne({ _id: req.params.channelId }),
+
+      // .populate({
+      //   path: "conversationId",
+      //   populate: {
+      //     path: "messages",
+      //     options: { sort: { createdAt: -1 }, limit: 10 }, // Sort by createdAt in descending order and limit to 10 messages
+      //   },
+      // }),
+    ]);
 
     if (!profile) {
-      return res.status(404).json({ error: "Server not found in profile" });
-    }
-
-    const server = await Server.findOne({
-      _id: req.params.serverId,
-    })
-      .populate({
-        path: "members",
-        select: "_id profileId role",
-        match: { profileId: req.user.profileId },
-        options: { limit: 1 },
-      })
-      .populate({
-        path: "channels",
-        select: "_id type name conversationId",
-      });
-
-    if (!server) {
-      return res.status(404).send({ message: "Server not found" });
-    }
-
-    const doc = await Server.findById({ _id: req.params.serverId });
-    const totalMembersCount = doc.members.length; // Use accurate count
-
-    const populatedMembers = server.members.map(async (member) => {
-      const profile = await Profile.findById(member.profileId).select(
-        "image name email"
+      console.error(
+        "Server not found, either it doesn't exist or you are not a member"
       );
+      return res.status(404).json({
+        error:
+          "Server not found, either it doesn't exist or you are not a member",
+      });
+    }
 
-      return profile
-        ? {
-            email: profile.email,
-            name: profile.name,
-            id: member._id,
-            profileId: member.profileId,
-            role: member.role,
-            image: profile.image || null,
-          }
-        : null;
-    });
+    if (!channel) {
+      channel = await Channel.findOne({ serverId: req.params.serverId }).sort({
+        createdAt: 1,
+      });
+    }
 
-    const serverData = {
-      name: server.name,
-      id: server._id,
-      profileId: server.profileId,
-      inviteCode: server.inviteCode,
-      image: server.image,
-      channels: server.channels,
-      members: await Promise.all(populatedMembers),
-      totalMembersCount,
-      myMembership: server.members.find(
-        (member) => member.profileId.toHexString() === req.user.profileId
-      ),
+    const channelToSend = {
+      _id: channel._id,
+      name: channel.name,
+      type: channel.type,
+      conversationId: channel.conversationId._id,
+      // messages: channel.conversationId.messages,
     };
 
-    const foundChannel = serverData.channels.find(
-      (channelObj) => channelObj._id.toHexString() === req.params.channelId
-    );
-
-    const channelData = foundChannel
-      ? [foundChannel._id, foundChannel]
-      : [serverData.channels[0]._id, serverData.channels[0]];
-
     if (res.body) {
-      res.body = { ...res.body, server: serverData, channel: channelData };
+      res.body = {
+        ...res.body,
+        channel: channelToSend,
+      };
     } else {
-      res.body = { server: serverData, channel: channelData };
+      res.body = { channel: channelToSend };
     }
 
     res.status(200).send(res.body);
   } catch (err) {
+    console.log(err);
     res.status(500).send(err.message);
   }
 };
+
+// {
+//   $project: {
+//     _id: {
+//       $concat: ["Type: ", { $type: "$_id" }],
+//     },
+//     profileId: {
+//       $concat: ["Type: ", { $type: "$$profileId" }],
+//     },
+//   },
+// },

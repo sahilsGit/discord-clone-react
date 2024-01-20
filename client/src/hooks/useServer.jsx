@@ -5,14 +5,16 @@ const useServer = (value) => {
   switch (value) {
     case "servers":
       return useContext(ServerContext).servers;
-    case "serverDetails":
-      return useContext(ServerContext).serverDetails;
-    case "channelDetails":
-      return useContext(ServerContext).channelDetails;
+    case "activeServer":
+      return useContext(ServerContext).activeServer;
+    case "channels":
+      return useContext(ServerContext).channels;
+    case "activeChannel":
+      return useContext(ServerContext).activeChannel;
     case "dispatch":
       return useContext(ServerContext).dispatch;
     default:
-      return useContext(ServerContext).serverDetails;
+      return useContext(ServerContext).activeServer;
   }
 };
 

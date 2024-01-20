@@ -7,7 +7,7 @@ import ServerMemberItem from "./serverMemberItem";
 import ServerChannelItem from "./serverChannelItem";
 
 const ServerScrollArea = ({ data, role }) => {
-  const server = useServer("serverDetails");
+  const server = useServer("activeServer");
   return (
     <ScrollArea className="px-2 grow">
       <Separator className="bg-zinc-200 dark:bg-zinc-700 round-md mt-2 mb-0.5" />

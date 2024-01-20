@@ -9,13 +9,15 @@ import { get } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
 import { handleResponse } from "@/lib/response-handler";
 import { VideoCallMain } from "./videoCallMain";
+import useServer from "@/hooks/useServer";
 
 const serverUrl = import.meta.env.VITE_API_LK_SERVER_URI;
 
-export default function VideoCallWrapper() {
+export default function VideoCallWrapper({ channelId }) {
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
   const [token, setToken] = useState(null);
+  const myMembership = useServer("activeServer").myMembership;
 
   console.log(token);
   console.log(serverUrl);
@@ -23,7 +25,10 @@ export default function VideoCallWrapper() {
   useEffect(() => {
     console.log("fetching tokennnn");
     const getToken = async () => {
-      const response = await get("/getToken", access_token);
+      const response = await get(
+        `/getToken?channelId=${channelId}&memberId=${myMembership._id}`,
+        access_token
+      );
       const data = await handleResponse(response, authDispatch);
 
       setToken(data.token);

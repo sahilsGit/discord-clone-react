@@ -3,6 +3,7 @@ import Server from "../modals/server.modals.js";
 import Channel from "../modals/channel.modals.js";
 import Member from "../modals/member.modals.js";
 import fs from "fs";
+import mongoose from "mongoose";
 
 export const createServer = async (req, res, next) => {
   try {
@@ -126,9 +127,7 @@ export const getAll = async (req, res, next) => {
   }
 };
 
-export const getOne = async (req, res, next) => {
-  const channel = req.query.channel;
-
+export const getOne = async (req, res) => {
   try {
     const profile = await Profile.findOne({
       _id: req.user.profileId,
@@ -139,92 +138,162 @@ export const getOne = async (req, res, next) => {
       return res.status(404).json({ error: "Server not found in profile" });
     }
 
-    console.log("getting one server");
+    const serverRes = await Server.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.params.getOne) },
+      },
+      {
+        $lookup: {
+          from: "channels",
+          localField: "channels",
+          foreignField: "_id",
+          as: "channels",
+        },
+      },
+      {
+        $lookup: {
+          from: "members",
+          let: { serverId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$serverId", "$$serverId"],
+                },
+              },
+            },
+            { $limit: 2 },
+          ],
+          as: "members",
+        },
+      },
+      {
+        $unwind: "$members",
+      },
+      {
+        $lookup: {
+          from: "profiles",
+          localField: "members.profileId",
+          foreignField: "_id",
+          as: "members.profile",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          inviteCode: 1,
+          image: 1,
+          "channels._id": 1,
+          "channels.name": 1,
+          "channels.type": 1,
+          "channels.conversationId": 1,
+          "channels.createdAt": 1,
+          "members.role": 1,
+          "members._id": 1,
+          "members.profile._id": 1,
+          "members.profile.email": 1,
+          "members.profile.name": 1,
+          "members.profile.image": 1,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: { $first: "$name" },
+          inviteCode: { $first: "$inviteCode" },
+          image: { $first: "$image" },
+          channels: { $first: "$channels" },
+          members: {
+            $push: {
+              _id: "$members._id",
+              role: "$members.role",
+              profile: { $arrayElemAt: ["$members.profile", 0] },
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "members",
+          let: {
+            serverId: "$_id",
+            profileId: new mongoose.Types.ObjectId(req.user.profileId),
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$serverId", "$$serverId"] },
+                    { $eq: ["$profileId", "$$profileId"] },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                role: 1,
+                profileId: 1,
+              },
+            },
+          ],
+          as: "myMembership",
+        },
+      },
+      {
+        $lookup: {
+          from: "profiles",
+          let: { profileId: "$myMembership.profileId" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", { $arrayElemAt: ["$$profileId", 0] }] },
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                image: 1,
+              },
+            },
+          ],
+          as: "profile",
+        },
+      },
+    ]);
 
-    const server = await Server.findOne({
-      _id: req.params.getOne,
-    })
-      .populate({
-        path: "members",
-        select: "_id profileId role",
-        match: { profileId: req.user.profileId },
-        options: { limit: 1 },
-      })
-      .populate({
-        path: "channels",
-        select: "_id type name",
-      });
+    const server = serverRes[0];
 
-    console.log("serversss", server);
+    const serverDocument = await Server.findById({ _id: req.params.getOne });
+    const totalMembersCount = serverDocument.members.length; // Use accurate count
 
-    const doc = await Server.findById({ _id: req.params.getOne });
-    const totalMembersCount = doc.members.length;
-
-    if (!server) {
-      return res.status(404).send({ message: "Server not found" });
-    }
-
-    const sendMemberWithImage = async (member) => {
-      const profile = await Profile.findById(member.profileId).select(
-        "image name email"
-      );
-
-      if (!profile) {
-        return null;
-      }
-
-      return {
-        email: profile.email,
-        name: profile.name,
-        id: member._id,
-        profileId: member.profileId,
-        role: member.role,
-        image: profile.image ? profile.image : null,
-      };
-    };
-
-    const populatedMembers = await Promise.all(
-      server.members.map(sendMemberWithImage)
-    );
+    const myMembershipProcessed = server.myMembership[0];
+    myMembershipProcessed.profile = server.profile[0];
 
     const serverData = {
       name: server.name,
       id: server._id,
-      profileId: server.profileId,
+      // profileId: server.profileId,
       inviteCode: server.inviteCode,
       image: server.image,
       channels: server.channels,
-      members: populatedMembers,
-      totalMembersCount: totalMembersCount,
+      members: server.members,
+      totalMembersCount,
+      myMembership: myMembershipProcessed,
     };
 
-    let channelData;
-
-    if (channel) {
-      const foundChannel = serverData.channels.find(
-        (channelObj) => channelObj._id.toHexString() === channel
-      );
-
-      if (foundChannel) {
-        channelData = [foundChannel._id, foundChannel];
-      } else {
-        channelData = [serverData.channels[0]._id, serverData.channels[0]];
-      }
-    } else {
-      channelData = [serverData.channels[0]._id, serverData.channels[0]];
-    }
-
-    console.log("channelData", channelData);
-
     if (res.body) {
-      res.body = { ...res.body, server: serverData, channel: channelData };
+      res.body = { ...res.body, server: serverData };
     } else {
-      res.body = { server: serverData, channel: channelData };
+      res.body = { server: serverData };
     }
 
     res.status(200).send(res.body);
   } catch (err) {
-    // console.error(err);
+    console.error(err);
     res.status(500).send(err.message);
   }
 };
@@ -376,54 +445,78 @@ export const getMembers = async (req, res) => {
   const { skip } = req.query;
 
   try {
-    const server = await Server.findOne({
-      _id: req.params.serverId,
-    }).populate({
-      path: "members",
-      select: "_id profileId role",
-      options: {
-        limit: 1,
-        skip: skip || 0,
+    const populatedMembers = await Server.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.params.serverId) },
       },
-    });
+      {
+        $lookup: {
+          from: "members",
+          let: { serverId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$serverId", "$$serverId"],
+                },
+              },
+            },
+            { $skip: parseInt(skip) || 0 },
+            { $limit: 2 },
+          ],
+          as: "members",
+        },
+      },
+      {
+        $unwind: "$members",
+      },
+      {
+        $lookup: {
+          from: "profiles",
+          localField: "members.profileId",
+          foreignField: "_id",
+          as: "members.profile",
+        },
+      },
+      {
+        $project: {
+          "members.role": 1,
+          "members._id": 1,
+          "members.profile._id": 1,
+          "members.profile.email": 1,
+          "members.profile.name": 1,
+          "members.profile.image": 1,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          members: {
+            $push: {
+              _id: "$members._id",
+              role: "$members.role",
+              profile: { $arrayElemAt: ["$members.profile", 0] },
+            },
+          },
+        },
+      },
+    ]);
 
-    if (!server) {
-      res.status(404).send({ message: "Server not found" });
+    console.log(!populatedMembers.length);
+
+    if (!populatedMembers.length) {
+      return res.status(201).send("That's it, no more members to fetch!");
     }
 
-    const sendMemberWithImage = async (member) => {
-      const profile = await Profile.findById(member.profileId).select(
-        "image name email"
-      );
-
-      if (!profile) {
-        return null;
-      }
-
-      return {
-        email: profile.email,
-        name: profile.name,
-        id: member._id,
-        profileId: member.profileId,
-        role: member.role,
-        image: profile.image ? profile.image : null,
-      };
-    };
-
-    // Use Promise.all to initiate parallel fetching of member details and images
-    const populatedMembers = await Promise.all(
-      server.members.map(sendMemberWithImage)
-    );
-
     if (res.body) {
-      res.body = { ...res.body, members: populatedMembers };
+      res.body = { ...res.body, members: populatedMembers[0].members };
     } else {
-      res.body = { members: populatedMembers };
+      res.body = { members: populatedMembers[0].members };
     }
 
     res.status(200).send(res.body);
   } catch (err) {
-    // console.error(err);
+    console.error(err);
     res.status(500).send("Server Error");
   }
 };

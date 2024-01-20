@@ -84,25 +84,25 @@ const MessageItem = ({ message, myDetails, sender }) => {
 
       await handleResponse(response, authDispatch);
 
-      // const messageIndex = channelDetails.messages.data.findIndex(
+      // const messageIndex = activeChannel.messages.data.findIndex(
       //   (msg) => msg._id === message._id
       // );
 
       // // If the message is found in the array, update it
       // if (messageIndex !== -1) {
-      //   const updatedMessages = [...channelDetails.messages.data];
+      //   const updatedMessages = [...activeChannel.messages.data];
       //   updatedMessages[messageIndex] = data.message;
 
       //   // Update the state with the updated message
       //   serverDispatch({
       //     type: "SET_CUSTOM",
       //     payload: {
-      //       channelDetails: {
-      //         ...channelDetails,
+      //       activeChannel: {
+      //         ...activeChannel,
       //         messages: {
       //           data: updatedMessages,
-      //           cursor: channelDetails.messages.cursor,
-      //           hasMoreMessages: channelDetails.messages.hasMoreMessages,
+      //           cursor: activeChannel.messages.cursor,
+      //           hasMoreMessages: activeChannel.messages.hasMoreMessages,
       //         },
       //       },
       //     },

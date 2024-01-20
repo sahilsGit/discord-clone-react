@@ -12,7 +12,7 @@ import MainPage from "@/pages/MainPage";
 import RegistrationPage from "@/pages/RegistrationPage";
 import LoginPage from "@/pages/LoginPage";
 import InvitationPage from "./pages/InvitationPage";
-import { MiscContextProvider } from "./context/Misc-Context";
+import { ConversationsContextProvider } from "./context/Conversations-Context";
 
 function App() {
   /*
@@ -51,9 +51,9 @@ function App() {
               // Assigning 'type' "messages" to load up messages home
               element={
                 <RequireAuth>
-                  <MiscContextProvider>
+                  <ConversationsContextProvider>
                     <MainPage type="messages" />
-                  </MiscContextProvider>
+                  </ConversationsContextProvider>
                 </RequireAuth>
               }
             />
@@ -62,9 +62,9 @@ function App() {
               // Assigning 'type' "conversation" to load up a specific direct conversation
               element={
                 <RequireAuth>
-                  <MiscContextProvider>
+                  <ConversationsContextProvider>
                     <MainPage type="conversation" />
-                  </MiscContextProvider>
+                  </ConversationsContextProvider>
                 </RequireAuth>
               }
             />
@@ -73,9 +73,9 @@ function App() {
               // Assigning 'type' "channel" to load up a specific channel
               element={
                 <RequireAuth>
-                  <MiscContextProvider>
+                  <ConversationsContextProvider>
                     <MainPage type="channel" />
-                  </MiscContextProvider>
+                  </ConversationsContextProvider>
                 </RequireAuth>
               }
             />
@@ -84,9 +84,9 @@ function App() {
               // Assigning 'type' "server" to load up a specific server
               element={
                 <RequireAuth>
-                  <MiscContextProvider>
+                  <ConversationsContextProvider>
                     <MainPage type="server" />
-                  </MiscContextProvider>
+                  </ConversationsContextProvider>
                 </RequireAuth>
               }
             />

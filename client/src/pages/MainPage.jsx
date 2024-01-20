@@ -1,15 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
 import useServer from "@/hooks/useServer";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { get } from "@/services/api-service";
-import useMisc from "@/hooks/useMisc";
 import ConversationSidebar from "@/components/conversation/sidebar/conversationSidebar";
 import MainWrapper from "@/components/main/mainWrapper";
 import ServerSidebar from "@/components/server/sidebar/serverSidebar";
-
+import useConversations from "@/hooks/useConversations";
+import { useLocation } from "react-router-dom";
 /*
  * MainPage
  *
@@ -25,107 +25,59 @@ const MainPage = ({ type }) => {
   const params = useParams();
   const navigate = useNavigate();
 
-  console.log("MAINPAGE");
-
   // Consume the Servers context using custom hook
-  const serverDetails = useServer("serverDetails");
+  const profileId = useAuth("id");
+  const activeServer = useServer("activeServer");
   const serverDispatch = useServer("dispatch");
   const servers = useServer("servers");
-  const allConversations = useMisc("allConversations");
-  const miscDispatch = useMisc("dispatch");
-  const profileId = useAuth("id");
-  const channelDetails = useServer("channelDetails");
-  const activeConversation = useMisc("activeConversation");
-
-  const channelType = channelDetails?.type;
-
-  // Consume the Auth context using custom hook
+  const conversations = useConversations("conversations");
+  const activeConversation = useConversations("activeConversation");
+  const conversationsDispatch = useConversations("dispatch");
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
+  const user = useAuth("user");
 
-  // Fetches a specific direct conversation details and populates the conversation's context
-  const fetchConversation = async () => {
-    if (params.memberProfileId === params.myProfileId) {
-      return;
-    } // No conversation with your own self
-
-    console.log("fetching from mainPage....");
-    try {
-      const [response, messages] = await Promise.all([
-        get(
-          `/conversations/${params.memberProfileId}/${params.myProfileId}`,
-          access_token
-        ),
-        get(
-          `/messages/fetch?memberProfileId=${params.memberProfileId}&myProfileId=${params.myProfileId}`,
-          access_token
-        ),
-      ]);
-
-      const [conversationsData, messageData] = await Promise.all([
-        handleResponse(response, authDispatch),
-        handleResponse(messages, authDispatch),
-      ]);
-
-      console.log(messageData);
-
-      console.log("mssd", messageData);
-
-      // Populate / Re-populate the conversation's context
-      miscDispatch({
-        type: "SET_ACTIVE_CONVERSATION",
-        payload: {
-          id: conversationsData.conversation._id,
-          profileId: conversationsData.memberProfile._id,
-          name: conversationsData.memberProfile.name,
-          image: conversationsData.memberProfile.image
-            ? conversationsData.memberProfile.image
-            : null, // For rendering fallback the image
-          messages: {
-            data: messageData.messages,
-            cursor: messageData.newCursor,
-            hasMoreMessages: messageData.hasMoreMessages,
-          },
-        },
-      });
-    } catch (err) {
-      handleError(err, authDispatch);
-    }
-  };
+  const location = useLocation();
+  const { channel } = location.state || {};
 
   const fetchChannelData = async () => {
-    /*
-     *
-     Fetches channel data and 10 recent messages for loading the server-channel page
-     *
-     */
     try {
-      const [response, messages] = await Promise.all([
-        get(`/channels/${params.serverId}/${params.channelId}`, access_token),
-        get(`/messages/fetch?channelId=${params.channelId}`, access_token),
-      ]);
+      if (!activeServer || activeServer?.id !== params.serverId) {
+        const [response, server] = await Promise.all([
+          get(`/channels/${params.serverId}/${params.channelId}`, access_token),
+          get(`/servers/${user}/${params.serverId}`, access_token),
+        ]);
 
-      const [channelData, messageData] = await Promise.all([
-        handleResponse(response, authDispatch),
-        handleResponse(messages, authDispatch),
-      ]);
+        const [channelData, serverData] = await Promise.all([
+          handleResponse(response, authDispatch),
+          handleResponse(server, authDispatch),
+        ]);
 
-      const channelDetails = {
-        ...channelData.channel[1],
-        messages: {
-          data: messageData.messages,
-          cursor: messageData.newCursor,
-          hasMoreMessages: messageData.hasMoreMessages,
-        },
-      }; // Set cursor and hasMoreMessages props for pagination
+        // const sortedChannels = server.channels.sort(
+        //   (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        // );
 
-      serverDispatch({
-        type: "SET_CUSTOM",
-        payload: {
-          serverDetails: channelData.server,
-          channelDetails: channelDetails,
-        },
-      }); // Re-populate the newly fetched data
+        serverDispatch({
+          type: "SET_CUSTOM",
+          payload: {
+            channels: serverData.server.channels,
+            activeServer: serverData.server,
+            activeChannel: channelData.channel,
+          },
+        });
+      } else {
+        const response = await get(
+          `/channels/${params.serverId}/${params.channelId}`,
+          access_token
+        );
+
+        const channelData = await handleResponse(response, authDispatch);
+
+        serverDispatch({
+          type: "SET_ACTIVE_CHANNEL",
+          payload: channelData.channel,
+        });
+      }
     } catch (err) {
       const errCode = handleError(err, authDispatch);
 
@@ -146,9 +98,9 @@ const MainPage = ({ type }) => {
       const data = await handleResponse(response, authDispatch);
 
       // Populate / Re-populate the conversations context
-      miscDispatch({
+      conversationsDispatch({
         type: "SET_CONVERSATIONS",
-        payload: data.convProfile,
+        payload: data.conversations,
       });
     } catch (err) {
       handleError(err, authDispatch);
@@ -156,18 +108,25 @@ const MainPage = ({ type }) => {
   };
 
   useEffect(() => {
-    /*
-     *
-     This component expects the context to be already populated with all of the required 
-     data beforehand. When any of the dependencies change, the context does the fetching, re-populates the context and re-renders this page with fresh data. This is done to 
-     eliminate the need for having a loading state in between fetches. This makes the UI 
-     feel more responsive. 
+    const fetchServers = async () => {
+      try {
+        const response = await get(`/servers/${user}/getAll`, access_token);
+        const data = await handleResponse(response, authDispatch);
 
-     So, all the fetching here in this component is reactive in nature, if anything's missing 
-     then it's fetched.  
-     * 
-     */
+        const serverIds = Object.keys(data.servers);
 
+        if (serverIds.length > 0)
+          serverDispatch({ type: "SET_SERVERS", payload: data.servers });
+        else serverDispatch({ type: "SET_SERVERS", payload: [] });
+      } catch (err) {
+        handleError(err, authDispatch);
+      }
+    };
+
+    servers === null && fetchServers();
+  }, []);
+
+  useEffect(() => {
     if (type == "server") {
       /* 
        *
@@ -179,33 +138,39 @@ const MainPage = ({ type }) => {
         `/servers/${params.serverId}/${servers[params.serverId].channels[0]}`
       );
     } else if (type == "channel") {
+      if (channel) {
+        serverDispatch({
+          type: "SET_ACTIVE_CHANNEL",
+          payload: channel,
+        });
+
+        return;
+      }
       /*
        *
-       Fetch the channelData if it doesn't exist
+       Fetch the channelData and initial messages they don't exist
        *
        */
-      params.channelId && !channelDetails && fetchChannelData();
+      fetchChannelData();
     } else {
       /* 
        *
        This means the type is either "conversation" or "messages", 
-       anyway, flush the serverDetails and channelDetails to avoid stale data
+       anyway, flush the activeServer and activeChannel to avoid stale data
        *
        */
-      serverDispatch({
-        type: "SET_CUSTOM",
-        payload: {
-          serverDetails: null,
-          channelDetails: null,
-        },
-      });
+      activeServer &&
+        serverDispatch({
+          type: "SET_CUSTOM",
+          payload: {
+            activeServer: null,
+            activeChannel: null,
+            channels: null,
+          },
+        });
 
-      // We do require allConversations in either of the cases
-      if (!allConversations || !allConversations?.length)
-        fetchAllConversations();
-
-      // Finally fetch the specific conversation if the type is "conversation"
-      type === "conversation" && !activeConversation && fetchConversation();
+      // This means conversations hasn't been fetched yet.
+      conversations === null && fetchAllConversations();
     }
 
     /*
@@ -214,25 +179,69 @@ const MainPage = ({ type }) => {
 
      type: Need to render different stuff for different "type"s
      params.serverId: User has switched the server, need to fetch everything again
-     params.channelId: User has switched the channel, need to fetch new channelDetails
-     params.memberProfileId: User has switched the conversation, need new conversation's details
+     params.channelId: User has switched the channel, need to fetch new activeChannel
      *
      */
-  }, [type, params.serverId, params.channelId, params.memberProfileId]);
+  }, [type, params.serverId, params.channelId]);
 
   // TODO loading state when the context is empty, so there's nothing to show
-  if (
-    (params.channelId && !channelDetails) ||
-    (params.serverId && !serverDetails) ||
-    (params.memberProfileId && !activeConversation && !allConversations)
-  ) {
-    return null;
+
+  // if (
+  //   (params.channelId && !activeChannel) ||
+  //   (params.serverId && !activeServer) ||
+  //   (params.memberProfileId && !activeConversation && !conversations)
+  // ) {
+  //   return null;
+  // }
+
+  if ((type === "channel" || type === "server") && !activeServer) {
+    return activeConversation ? (
+      <>
+        <main className="h-screen flex w-screen">
+          <div className="h-full w-[72px] bg-main10 flex-shrink-0">
+            <NavigationSidebar
+              servers={servers}
+              activeConversation={activeConversation}
+              activeServer={activeServer}
+            />
+          </div>
+          <div className="w-[240px] bg-main08 flex-shrink-0 ">
+            <ConversationSidebar />
+          </div>
+          <div className="w-full h-full">
+            <MainWrapper type="conversation" />
+          </div>
+        </main>
+      </>
+    ) : conversations !== null && conversations !== "undefined" ? (
+      <>
+        <main className="h-screen flex w-screen">
+          <div className="h-full w-[72px] bg-main10 flex-shrink-0">
+            <NavigationSidebar
+              servers={servers}
+              activeConversation={activeConversation}
+              activeServer={activeServer}
+            />
+          </div>
+          <div className="w-[240px] bg-main08 flex-shrink-0 ">
+            <ConversationSidebar />
+          </div>
+          <div className="w-full h-full">
+            <MainWrapper type="messages" />
+          </div>
+        </main>
+      </>
+    ) : null;
   }
 
   return (
     <main className="h-screen flex w-screen">
       <div className="h-full w-[72px] bg-main10 flex-shrink-0">
-        <NavigationSidebar />
+        <NavigationSidebar
+          servers={servers}
+          activeConversation={activeConversation}
+          activeServer={activeServer}
+        />
       </div>
       <div className="w-[240px] bg-main08 flex-shrink-0 ">
         {type === "conversation" || type === "messages" ? (
@@ -242,7 +251,7 @@ const MainPage = ({ type }) => {
         )}
       </div>
       <div className="w-full h-full">
-        <MainWrapper type={type} channelType={channelType} />
+        <MainWrapper type={type} />
       </div>
     </main>
   );

@@ -1,17 +1,22 @@
 import React from "react";
 import MainServer from "./mainServer";
 import MainConversation from "./mainConversation";
+import { MessagesContextProvider } from "@/context/Messages-Context";
+import { DirectMessagesContextProvider } from "@/context/DirectMessages-Context";
 
-const MainWrapper = ({ type, channelType }) => {
-  console.log("MAIN_WRAPPER");
+const MainWrapper = ({ type }) => {
+  console.log("main Wrapper");
 
-  console.log(type);
   return (
     <div className="h-full">
       {type === "channel" || type === "server" ? (
-        <MainServer type={type} channelType={channelType} />
+        <MessagesContextProvider>
+          <MainServer type={type} />
+        </MessagesContextProvider>
       ) : (
-        <MainConversation type={type} />
+        <DirectMessagesContextProvider>
+          <MainConversation type={type} />
+        </DirectMessagesContextProvider>
       )}
     </div>
   );

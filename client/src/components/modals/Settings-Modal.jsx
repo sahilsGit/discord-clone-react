@@ -20,6 +20,7 @@ import "../../App.css";
 
 const SettingsModal = () => {
   const { isOpen, onClose, type, data } = useModal();
+  console.log(isOpen, type);
   const isModalOpen = isOpen && type === "settings";
   const username = useAuth("user");
   const [avatarImage, setAvatarImage] = useState(null);
@@ -28,10 +29,10 @@ const SettingsModal = () => {
   const access_token = useAuth("token");
   const [hasChanged, setHasChanged] = useState(true);
 
-  console.log(hasChanged);
+  // console.log(hasChanged);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isModalOpen) {
       form.setValue("name", data.name);
       form.setValue("about", data.about);
       form.setValue("email", data.email);
@@ -95,7 +96,7 @@ const SettingsModal = () => {
       setImagePreview(null);
     }
 
-    isOpen ? setHasChanged(true) : setHasChanged(!hasChanged);
+    isModalOpen ? setHasChanged(true) : setHasChanged(!hasChanged);
   }, [avatarImage]);
 
   const uploadImage = async () => {

@@ -1,60 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import useAuth from "@/hooks/useAuth";
-import useMisc from "@/hooks/useMisc";
 import { UserAvatar } from "@/components/userAvatar";
-import { get } from "@/services/api-service";
-import { handleError, handleResponse } from "@/lib/response-handler";
+import { useNavigate } from "react-router-dom";
+import useConversations from "@/hooks/useConversations";
 
 const ConversationItem = ({ conversation, profile }) => {
   const [clicked, setClicked] = useState(false);
-  const activeConversation = useMisc("activeConversation");
-  const access_token = useAuth("token");
-  const authDispatch = useAuth("dispatch");
-  const miscDispatch = useMisc("dispatch");
+  const activeConversation = useConversations("activeConversation");
   const profileId = useAuth("id");
+  const navigate = useNavigate();
 
-  const fetchConversation = async () => {
-    console.log("....fetching from conv. Item");
-    try {
-      const [response, messages] = await Promise.all([
-        get(`/conversations/${profile._id}/${profileId}`, access_token),
-        get(
-          `/messages/fetch?memberProfileId=${profile._id}&myProfileId=${profileId}`,
-          access_token
-        ),
-      ]);
-
-      const [conversationsData, messageData] = await Promise.all([
-        handleResponse(response, authDispatch),
-        handleResponse(messages, authDispatch),
-      ]);
-
-      // Populate / Re-populate the conversation's context
-      miscDispatch({
-        type: "SET_ACTIVE_CONVERSATION",
-        payload: {
-          id: conversationsData.conversation._id,
-          profileId: conversationsData.memberProfile._id,
-          name: conversationsData.memberProfile.name,
-          image: conversationsData.memberProfile.image
-            ? conversationsData.memberProfile.image
-            : null, // For rendering fallback the image
-          messages: {
-            data: messageData.messages,
-            cursor: messageData.newCursor,
-            hasMoreMessages: messageData.hasMoreMessages,
-          },
-        },
-      });
-    } catch (err) {
-      handleError(err, authDispatch);
-    }
+  const conversationCache = {
+    id: conversation._id,
+    profileId: profile._id,
+    name: profile.name,
+    image: profile.image || null,
   };
 
   const onClick = () => {
     setClicked(true);
-    fetchConversation();
+    navigate(`/@me/conversations/${profile._id}/${profileId}`, {
+      state: {
+        activeConversationCache: conversationCache,
+      },
+    });
   };
 
   useEffect(() => {

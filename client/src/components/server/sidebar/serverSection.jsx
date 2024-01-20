@@ -6,7 +6,7 @@ import React from "react";
 
 const ServerSection = ({ sectionType, channelType, role, label }) => {
   const { onOpen } = useModal();
-  const server = useServer("serverDetails");
+  const activeServer = useServer("activeServer");
   return (
     <div className="flex items-center justify-between pt-3 py-1.5 pr-1">
       <p className="text-xs uppercase font-semibold text-zinc-500 dark:text-zinc-400">
@@ -18,7 +18,7 @@ const ServerSection = ({ sectionType, channelType, role, label }) => {
             className="text-zinc-500 flex hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition"
             onClick={() =>
               onOpen("createChannel", {
-                server: server,
+                activeServer: activeServer,
                 channelType: channelType,
               })
             }
@@ -31,7 +31,7 @@ const ServerSection = ({ sectionType, channelType, role, label }) => {
         <ActionTooltip label="Manage members" side="top">
           <button
             className="text-zinc-500 flex hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition"
-            onClick={() => onOpen("members", { server: server })}
+            onClick={() => onOpen("members", { activeServer: activeServer })}
           >
             <Settings className="h-4 w-4" />
           </button>

@@ -6,6 +6,7 @@ import MemberSearchBar from "./memberSearchBar";
 const MemberWrapper = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState("");
+
   const handleSearchTermChange = (term) => {
     setSearchTerm(term);
   };

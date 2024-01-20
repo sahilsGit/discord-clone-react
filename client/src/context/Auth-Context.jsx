@@ -12,7 +12,7 @@ const INITIAL_STATE = {
 };
 
 // Create an AuthContext to provide authentication state to the rest of the application
-export const AuthContext = createContext(INITIAL_STATE);
+const AuthContext = createContext(INITIAL_STATE);
 
 // Reducer function for managing authentication state
 const AuthReducer = (state, action) => {
@@ -74,7 +74,7 @@ const AuthReducer = (state, action) => {
 };
 
 // AuthContextProvider component to wrap the application and provide authentication context
-export const AuthContextProvider = ({ children }) => {
+const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
 
   // Store the user in local storage whenever it changes
@@ -94,3 +94,5 @@ export const AuthContextProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export { AuthContext, AuthContextProvider };

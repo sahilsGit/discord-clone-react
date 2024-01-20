@@ -21,7 +21,6 @@ const HomePage = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || "/@me/conversations";
   const [justBrowsing, setJustBrowsing] = useState(false); // When users browse discord without registering
-
   const [displayName, setDisplayName] = useState("");
 
   // Fetch user and access token from custom auth hook

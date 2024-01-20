@@ -3,9 +3,7 @@ import { cn } from "@/lib/utils";
 import { Edit, Hash, Lock, Mic, Trash, Video } from "lucide-react";
 import { ActionTooltip } from "@/components/actionTooltip";
 import useServer from "@/hooks/useServer";
-import { get } from "@/services/api-service";
-import { handleError, handleResponse } from "@/lib/response-handler";
-import useAuth from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const iconMap = {
   TEXT: Hash,
@@ -13,55 +11,27 @@ const iconMap = {
   VIDEO: Video,
 };
 
-const ServerChannelItem = ({ channel, role, server, type }) => {
+const ServerChannelItem = ({ channel, role, type }) => {
   const Icon = iconMap[type];
-  const channelDetails = useServer("channelDetails");
+  const activeChannel = useServer("activeChannel");
   const [clicked, setClicked] = useState(false);
-  const access_token = useAuth("token");
-  const serverDispatch = useServer("dispatch");
-  const serverDetails = useServer("serverDetails");
-  const authDispatch = useAuth("dispatch");
+  const activeServer = useServer("activeServer");
+  const navigate = useNavigate();
 
-  const fetchChannelData = async () => {
-    try {
-      const [response, messages] = await Promise.all([
-        get(`/channels/${serverDetails.id}/${channel.id}`, access_token),
-        get(`/messages/fetch?channelId=${channel.id}`, access_token),
-      ]);
-
-      const [channelData, messageData] = await Promise.all([
-        handleResponse(response, authDispatch),
-        handleResponse(messages, authDispatch),
-      ]);
-
-      const channelDetails = {
-        ...channelData.channel[1],
-        messages: {
-          data: messageData.messages,
-          cursor: messageData.newCursor,
-          hasMoreMessages: messageData.hasMoreMessages,
-        },
-      };
-
-      serverDispatch({
-        type: "SET_CUSTOM",
-        payload: {
-          serverDetails: channelData.server,
-          channelDetails: channelDetails,
-        },
-      });
-    } catch (err) {
-      const errCode = handleError(err, authDispatch);
-
-      if (errCode === 404) {
-        navigate("/@me/conversations");
-      }
-    }
+  const channelCache = {
+    _id: channel.id,
+    conversationId: channel.conversationId,
+    name: channel.name,
+    type: channel.channelType,
   };
 
   const onClick = () => {
     setClicked(true);
-    fetchChannelData();
+    navigate(`/servers/${activeServer.id}/${channel.id}`, {
+      state: {
+        channel: channelCache,
+      },
+    });
   };
 
   const onAction = (e, action) => {
@@ -70,20 +40,16 @@ const ServerChannelItem = ({ channel, role, server, type }) => {
   };
 
   useEffect(() => {
-    if (
-      !serverDetails ||
-      !channelDetails ||
-      channelDetails._id !== channel.id
-    ) {
+    if (!activeServer || !activeChannel || activeChannel._id !== channel.id) {
       setClicked(false);
     }
-  }, [channelDetails, serverDetails]);
+  }, [activeChannel, activeServer]);
 
   return (
     <button
       className={cn(
         "group px-2 py-1 rounded-sm flex items-center gap-x-2 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition mb-1",
-        (channelDetails._id === channel.id || clicked) &&
+        (activeChannel._id === channel.id || clicked) &&
           "bg-zinc-700/20 dark:bg-zinc-700"
       )}
       onClick={onClick}
@@ -92,9 +58,9 @@ const ServerChannelItem = ({ channel, role, server, type }) => {
       <p
         className={cn(
           "line-clamp-1 font-semibold text-sm transition",
-          channelDetails?._id !== channel.id &&
+          activeChannel?._id !== channel.id &&
             "text-primary dark:text-zinc-300 dark:text-zinc-300",
-          channelDetails?._id === channel.id && "text-primary dark:text-white"
+          activeChannel?._id === channel.id && "text-primary dark:text-white"
         )}
       >
         {channel.name}

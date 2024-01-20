@@ -1,12 +1,12 @@
 import { ActionTooltip } from "@/components/actionTooltip";
 import { ScrollArea } from "@/components/ui/scrollArea";
-import useMisc from "@/hooks/useMisc";
 import { Plus } from "lucide-react";
 import React from "react";
 import ConversationItem from "./conversationItem";
+import useConversations from "@/hooks/useConversations";
 
 const ConversationScrollArea = () => {
-  const allConversations = useMisc("allConversations");
+  const conversations = useConversations("conversations");
 
   return (
     <>
@@ -27,9 +27,9 @@ const ConversationScrollArea = () => {
         </div>
       </div>
       <ScrollArea className="px-2 grow">
-        {allConversations?.length && (
+        {conversations?.length && (
           <div className="mb-1">
-            {allConversations
+            {conversations
               .filter(
                 (conversation) =>
                   conversation.initiatedBy || conversation.initiatedFor

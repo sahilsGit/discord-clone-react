@@ -57,11 +57,12 @@ const ChannelCreationModal = () => {
   // For conditionally rendering the dialog
   const { isOpen, onClose, type, data } = useModal();
   const isModalOpen = isOpen && type === "createChannel";
+
   let serverId;
   let channelType;
 
   if (isModalOpen) {
-    serverId = data.server.id;
+    serverId = data.activeServer.id;
     channelType = data.channelType;
   }
 

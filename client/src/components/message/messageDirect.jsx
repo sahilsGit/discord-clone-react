@@ -3,10 +3,10 @@ import MessageWelcome from "./messageWelcome";
 import { get } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
-import useServer from "@/hooks/useServer";
 import useSocket from "@/hooks/useSocket";
 import MessageItem from "./messageItem";
-import useMisc from "@/hooks/useMisc";
+import useDirectMessages from "@/hooks/useDirectMessages";
+import useConversations from "@/hooks/useConversations";
 
 const MessageDirect = () => {
   const authDispatch = useAuth("dispatch");
@@ -14,11 +14,9 @@ const MessageDirect = () => {
   const [error, setError] = useState(false);
   const observerRef = useRef();
   const lastItemRef = useRef();
-  const serverDispatch = useServer("dispatch");
   const { socket } = useSocket();
   const [isConnected, setIsConnected] = useState(false);
   const profileId = useAuth("id");
-  const miscDispatch = useMisc("dispatch");
 
   const CONNECTED_EVENT = "connected";
   const DISCONNECT_EVENT = "disconnect";
@@ -26,38 +24,28 @@ const MessageDirect = () => {
   const STOP_TYPING_EVENT = "stopTyping";
   const MESSAGE_RECEIVED_EVENT = "messageReceived";
   const MESSAGE_EDITED_EVENT = "messageEdited";
-  const activeConversation = useMisc("activeConversation");
-  const messages = activeConversation.messages;
-
-  const name = activeConversation?.name;
+  const activeConversation = useConversations("activeConversation");
+  const messages = useDirectMessages("messages");
+  const cursor = useDirectMessages("cursor");
+  const hasMore = useDirectMessages("hasMore");
+  const directMessagesDispatch = useDirectMessages("dispatch");
+  const name = activeConversation?.theirName;
 
   const fetchMessages = async () => {
-    console.log("...fetching from messageDirect");
     try {
       const response = await get(
-        `/messages/fetch?conversationId=${activeConversation.id}&cursor=${messages.cursor}`,
+        `/messages/fetch?conversationId=${activeConversation._id}&cursor=${cursor}`,
         access_token
       );
 
       const messageData = await handleResponse(response, authDispatch);
 
-      console.log("mmssdata", messageData);
-
-      miscDispatch({
-        type: "SET_CUSTOM",
+      directMessagesDispatch({
+        type: "SET_MESSAGES",
         payload: {
-          activeConversation: {
-            ...activeConversation,
-            messages: {
-              data: [
-                ...activeConversation.messages.data,
-                ...messageData.messages,
-              ],
-              cursor:
-                messageData.newCursor || activeConversation.messages.cursor,
-              hasMoreMessages: messageData.hasMoreMessages,
-            },
-          },
+          messages: [...messages, ...messageData.messages],
+          cursor: messageData.newCursor || cursor,
+          hasMore: messageData.hasMoreMessages,
         },
       });
     } catch (error) {
@@ -70,61 +58,45 @@ const MessageDirect = () => {
    * Handles the event when a new message is received.
    */
   const onMessageReceived = (message) => {
-    console.log("hiiiiiitttt");
     if (message.senderId === profileId || message.receiverId === profileId) {
-      messages.data.length
-        ? miscDispatch({
-            type: "SET_CUSTOM",
+      messages.length
+        ? directMessagesDispatch({
+            type: "SET_MESSAGES",
             payload: {
-              activeConversation: {
-                ...activeConversation,
-                messages: {
-                  data: [message, ...activeConversation.messages.data],
-                  cursor: activeConversation.messages.cursor,
-                  hasMoreMessages: activeConversation.messages.hasMoreMessages,
-                },
-              },
+              messages: [message, ...messages],
+              cursor: cursor,
+              hasMore: hasMore,
             },
           })
-        : miscDispatch({
-            type: "SET_CUSTOM",
+        : directMessagesDispatch({
+            type: "SET_MESSAGES",
             payload: {
-              activeConversation: {
-                ...activeConversation,
-                messages: {
-                  data: [message, ...activeConversation.messages.data],
-                  cursor: message.createdAt,
-                  hasMoreMessages: false,
-                },
-              },
+              messages: [message, ...messages],
+              cursor: message.createdAt,
+              hasMore: false,
             },
           });
     }
   };
 
   const onMessageEdited = (message) => {
-    if (message.conversationId === activeConversation.id) {
-      const messageIndex = activeConversation.messages.data.findIndex((msg) => {
+    if (message.conversationId === activeConversation._id) {
+      const messageIndex = messages.findIndex((msg) => {
         return msg._id === message._id;
       });
 
       // If the message is found in the array, update it
       if (messageIndex !== -1) {
-        const updatedMessages = [...activeConversation.messages.data];
+        const updatedMessages = [...messages];
         updatedMessages[messageIndex] = message;
 
         // Update the state with the updated message
-        miscDispatch({
-          type: "SET_CUSTOM",
+        directMessagesDispatch({
+          type: "SET_MESSAGES",
           payload: {
-            activeConversation: {
-              ...activeConversation,
-              messages: {
-                data: updatedMessages,
-                cursor: activeConversation.messages.cursor,
-                hasMoreMessages: activeConversation.messages.hasMoreMessages,
-              },
-            },
+            messages: updatedMessages,
+            cursor: cursor,
+            hasMore: hasMore,
           },
         });
       } else {
@@ -172,7 +144,7 @@ const MessageDirect = () => {
     return () => {
       observerRef?.current?.disconnect();
     };
-  }, [messages?.data?.length]);
+  }, [messages?.length]);
 
   useEffect(() => {
     if (!socket) return;
@@ -207,7 +179,7 @@ const MessageDirect = () => {
       className="group"
       key={message._id}
       ref={(element) => {
-        if (index === messages.data.length - 1) {
+        if (index === messages.length - 1) {
           lastItemRef.current = element;
         }
       }}
@@ -229,14 +201,12 @@ const MessageDirect = () => {
 
   return (
     <div className="flex-1 flex flex-col-reverse overflow-y-auto">
-      {messages?.data?.length && (
+      {messages?.length && (
         <div className="flex flex-col-reverse">
-          {messages.data.map((message, index) =>
-            renderMessageItem(message, index)
-          )}
+          {messages?.map((message, index) => renderMessageItem(message, index))}
         </div>
       )}
-      {(!messages?.data?.length || !messages.hasMoreMessages) && (
+      {(!messages?.length || !hasMore) && (
         <div className="flex flex-col pt-3">
           <div className="flex-1" />
           <MessageWelcome type="conversation" name={name} />

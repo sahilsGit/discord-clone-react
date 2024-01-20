@@ -110,7 +110,7 @@ const ProfileControl = () => {
                   <p className="px-1 text-md2 text-white">{profileName}</p>
                   <p className="pt-1 px-1 text-white text-xs">{username}</p>
                 </div>
-                {about.length ? (
+                {about?.length ? (
                   <>
                     <Separator className="h-[1px]" />
                     <div className="flex flex-col gap-y-1 w-full word-break">
