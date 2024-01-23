@@ -2,24 +2,20 @@ import MainInput from "./mainInput";
 import ServerHeader from "../server/header/serverHeader";
 import useServer from "@/hooks/useServer";
 import MessageServer from "../message/messageServer";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import VideoCallWrapper from "../videoCall/videoCallWrapper";
-import useAuth from "@/hooks/useAuth";
-import useMessages from "@/hooks/useMessages";
-import { handleError, handleResponse } from "@/lib/response-handler";
-import { get } from "@/services/api-service";
+import useChannels from "@/hooks/useChannels";
 
 const MainServer = ({ type }) => {
-  const memberId = useServer("activeServer").myMembership._id;
-  const channelId = useServer("activeChannel")._id;
-  const channelType = useServer("activeChannel").type;
   const [key, setKey] = useState(0);
-  const access_token = useAuth("token");
-  const messages = useMessages("messages");
-  const authDispatch = useAuth("dispatch");
-  const activeChannel = useServer("activeChannel");
-  const messagesDispatch = useMessages("dispatch");
-  const [loading, setLoading] = useState(true);
+  const messages = useChannels("messages");
+  const activeChannel = useChannels("activeChannel");
+  const cursor = useChannels("cursor");
+  const hasMore = useChannels("hasMore");
+  const memberId = useServer("activeServer").myMembership._id;
+
+  const channelId = activeChannel?._id;
+  const channelType = activeChannel?.type;
 
   // To un-mount & re-mount component
   // useEffect(() => {
@@ -27,32 +23,32 @@ const MainServer = ({ type }) => {
   //   channelId && setKey(key + 1);
   // }, [channelId]);
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await get(
-          `/messages/fetch?memberId=${memberId}&channelId=${channelId}`,
-          access_token
-        );
-        const messageData = await handleResponse(response, authDispatch);
+  // useEffect(() => {
+  //   const fetchMessages = async () => {
+  //     try {
+  //       const response = await get(
+  //         `/messages/fetch?memberId=${memberId}&channelId=${channelId}`,
+  //         access_token
+  //       );
+  //       const messageData = await handleResponse(response, authDispatch);
 
-        messagesDispatch({
-          type: "SET_MESSAGES",
-          payload: {
-            messages: messageData.messages,
-            cursor: messageData.newCursor,
-            hasMore: messageData.hasMoreMessages,
-          },
-        });
-        setLoading(false);
-      } catch (error) {
-        handleError(error, authDispatch);
-        // setError(true);
-      }
-    };
+  //       messagesDispatch({
+  //         type: "SET_MESSAGES",
+  //         payload: {
+  //           messages: messageData.messages,
+  //           cursor: messageData.newCursor,
+  //           hasMore: messageData.hasMoreMessages,
+  //         },
+  //       });
+  //       setLoading(false);
+  //     } catch (error) {
+  //       handleError(error, authDispatch);
+  //       // setError(true);
+  //     }
+  //   };
 
-    fetchMessages();
-  }, [activeChannel]);
+  //   fetchMessages();
+  // }, [activeChannel]);
 
   if (messages === "null" || !activeChannel) {
     return null;
@@ -60,10 +56,15 @@ const MainServer = ({ type }) => {
 
   return (
     <div className="bg-white dark:bg-[#313338] flex flex-col justify-between h-full">
-      <ServerHeader type={type} />
+      <ServerHeader type={type} activeChannel={activeChannel} />
       {channelType === "TEXT" && (
         <>
-          <MessageServer />
+          <MessageServer
+            activeChannel={activeChannel}
+            messages={messages}
+            cursor={cursor}
+            hasMore={hasMore}
+          />
           <MainInput
             type="channel"
             apiUrl="/messages/server"

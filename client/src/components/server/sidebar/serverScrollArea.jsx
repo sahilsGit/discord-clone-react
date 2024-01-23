@@ -1,13 +1,12 @@
 import useServer from "@/hooks/useServer";
-import React from "react";
+import React, { memo } from "react";
 import { ScrollArea } from "@/components/ui/scrollArea";
 import { Separator } from "@/components/ui/separator";
 import ServerSection from "./serverSection";
 import ServerMemberItem from "./serverMemberItem";
 import ServerChannelItem from "./serverChannelItem";
 
-const ServerScrollArea = ({ data, role }) => {
-  const server = useServer("activeServer");
+const ServerScrollArea = memo(({ data, role, activeServer }) => {
   return (
     <ScrollArea className="px-2 grow">
       <Separator className="bg-zinc-200 dark:bg-zinc-700 round-md mt-2 mb-0.5" />
@@ -25,7 +24,7 @@ const ServerScrollArea = ({ data, role }) => {
               channel={channel}
               role={role}
               type="TEXT"
-              server={server}
+              activeServer={activeServer}
             />
           ))}
         </div>
@@ -44,7 +43,7 @@ const ServerScrollArea = ({ data, role }) => {
               channel={channel}
               role={role}
               type="AUDIO"
-              server={server}
+              activeServer={activeServer}
             />
           ))}
         </div>
@@ -63,7 +62,7 @@ const ServerScrollArea = ({ data, role }) => {
               channel={channel}
               role={role}
               type="VIDEO"
-              server={server}
+              activeServer={activeServer}
             />
           ))}
         </div>
@@ -74,15 +73,19 @@ const ServerScrollArea = ({ data, role }) => {
             sectionType="members"
             role={role}
             label="Members"
-            server={server}
+            activeServer={activeServer}
           />
           {data[3].contentArray.map((member) => (
-            <ServerMemberItem key={member.id} member={member} server={server} />
+            <ServerMemberItem
+              key={member.id}
+              member={member}
+              activeServer={activeServer}
+            />
           ))}
         </div>
       )}
     </ScrollArea>
   );
-};
+});
 
 export default ServerScrollArea;

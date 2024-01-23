@@ -223,7 +223,7 @@ const sendServerMessage = async (req, res) => {
 };
 
 const fetchMessages = async (req, res) => {
-  const { channelId } = req.query;
+  const channelId = req.query.channelId || req.params.channelId;
 
   // Conditionally choose the appropriate handler based on query params
   if (channelId) {

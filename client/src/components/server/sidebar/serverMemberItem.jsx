@@ -1,9 +1,6 @@
 import { UserAvatar } from "@/components/userAvatar";
 import useAuth from "@/hooks/useAuth";
-import useMisc from "@/hooks/useMisc";
-import { handleError, handleResponse } from "@/lib/response-handler";
 import { cn } from "@/lib/utils";
-import { get } from "@/services/api-service";
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -13,58 +10,57 @@ const ServerMemberItem = ({ member, server }) => {
 
   const params = useParams();
   const profileId = useAuth("id");
-  const miscDispatch = useMisc("dispatch");
 
-  const fetchConversation = async () => {
-    if (member.profileId === profileId) {
-      return;
-    }
-    try {
-      const [response, messages] = await Promise.all([
-        get(`/conversations/${member.profileId}/${profileId}`, access_token),
-        get(
-          `/messages/fetch?memberProfileId=${member.profileId}&myProfileId=${profileId}`,
-          access_token
-        ),
-      ]);
+  // const fetchConversation = async () => {
+  //   if (member.profileId === profileId) {
+  //     return;
+  //   }
+  //   try {
+  //     const [response, messages] = await Promise.all([
+  //       get(`/conversations/${member.profileId}/${profileId}`, access_token),
+  //       get(
+  //         `/messages/fetch?memberProfileId=${member.profileId}&myProfileId=${profileId}`,
+  //         access_token
+  //       ),
+  //     ]);
 
-      const [conversationsData, messageData] = await Promise.all([
-        handleResponse(response, authDispatch),
-        handleResponse(messages, authDispatch),
-      ]);
+  //     const [conversationsData, messageData] = await Promise.all([
+  //       handleResponse(response, authDispatch),
+  //       handleResponse(messages, authDispatch),
+  //     ]);
 
-      miscDispatch({
-        type: "SET_ACTIVE_CONVERSATION",
-        payload: {
-          id: conversationsData.conversation._id,
-          profileId: conversationsData.memberProfile._id,
-          name: conversationsData.memberProfile.name,
-          image: conversationsData.memberProfile.image
-            ? conversationsData.memberProfile.image
-            : null, // For rendering fallback the image
-          messages: {
-            data: messageData.messages,
-            cursor: messageData.newCursor,
-            hasMoreMessages: messageData.hasMoreMessages,
-          },
-        },
-      });
-    } catch (err) {
-      handleError(err, authDispatch);
-    }
-  };
+  //     miscDispatch({
+  //       type: "SET_ACTIVE_CONVERSATION",
+  //       payload: {
+  //         id: conversationsData.conversation._id,
+  //         profileId: conversationsData.memberProfile._id,
+  //         name: conversationsData.memberProfile.name,
+  //         image: conversationsData.memberProfile.image
+  //           ? conversationsData.memberProfile.image
+  //           : null, // For rendering fallback the image
+  //         messages: {
+  //           data: messageData.messages,
+  //           cursor: messageData.newCursor,
+  //           hasMoreMessages: messageData.hasMoreMessages,
+  //         },
+  //       },
+  //     });
+  //   } catch (err) {
+  //     handleError(err, authDispatch);
+  //   }
+  // };
 
-  const onClick = () => {
-    if (member.profileId === profileId) {
-      return;
-    }
+  // const onClick = () => {
+  //   if (member.profileId === profileId) {
+  //     return;
+  //   }
 
-    fetchConversation();
-  };
+  //   fetchConversation();
+  // };
 
   return (
     <button
-      onClick={onClick}
+      // onClick={onClick}
       className={cn(
         "group px-2 py-1 rounded-sm flex items-center gap-x-2 w-full hover:bg-zinc-700/10 dark:hover:bg-zinc-700/50 transition mb-1",
         params?.memberProfileId === member.profileId &&

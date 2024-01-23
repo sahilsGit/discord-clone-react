@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Edit, Hash, Lock, Mic, Trash, Video } from "lucide-react";
 import { ActionTooltip } from "@/components/actionTooltip";
-import useServer from "@/hooks/useServer";
 import { useNavigate } from "react-router-dom";
+import useChannels from "@/hooks/useChannels";
 
 const iconMap = {
   TEXT: Hash,
@@ -11,11 +11,10 @@ const iconMap = {
   VIDEO: Video,
 };
 
-const ServerChannelItem = ({ channel, role, type }) => {
+const ServerChannelItem = ({ channel, role, type, activeServer }) => {
   const Icon = iconMap[type];
-  const activeChannel = useServer("activeChannel");
+  const activeChannel = useChannels("activeChannel");
   const [clicked, setClicked] = useState(false);
-  const activeServer = useServer("activeServer");
   const navigate = useNavigate();
 
   const channelCache = {

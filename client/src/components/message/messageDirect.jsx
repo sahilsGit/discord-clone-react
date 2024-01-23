@@ -5,10 +5,15 @@ import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import useSocket from "@/hooks/useSocket";
 import MessageItem from "./messageItem";
-import useDirectMessages from "@/hooks/useDirectMessages";
 import useConversations from "@/hooks/useConversations";
 
-const MessageDirect = () => {
+const MessageDirect = ({
+  key,
+  activeConversation,
+  messages,
+  cursor,
+  hasMore,
+}) => {
   const authDispatch = useAuth("dispatch");
   const access_token = useAuth("token");
   const [error, setError] = useState(false);
@@ -24,11 +29,7 @@ const MessageDirect = () => {
   const STOP_TYPING_EVENT = "stopTyping";
   const MESSAGE_RECEIVED_EVENT = "messageReceived";
   const MESSAGE_EDITED_EVENT = "messageEdited";
-  const activeConversation = useConversations("activeConversation");
-  const messages = useDirectMessages("messages");
-  const cursor = useDirectMessages("cursor");
-  const hasMore = useDirectMessages("hasMore");
-  const directMessagesDispatch = useDirectMessages("dispatch");
+  const conversationsDispatch = useConversations("dispatch");
   const name = activeConversation?.theirName;
 
   const fetchMessages = async () => {
@@ -40,7 +41,7 @@ const MessageDirect = () => {
 
       const messageData = await handleResponse(response, authDispatch);
 
-      directMessagesDispatch({
+      conversationsDispatch({
         type: "SET_MESSAGES",
         payload: {
           messages: [...messages, ...messageData.messages],
@@ -60,7 +61,7 @@ const MessageDirect = () => {
   const onMessageReceived = (message) => {
     if (message.senderId === profileId || message.receiverId === profileId) {
       messages.length
-        ? directMessagesDispatch({
+        ? conversationsDispatch({
             type: "SET_MESSAGES",
             payload: {
               messages: [message, ...messages],
@@ -68,7 +69,7 @@ const MessageDirect = () => {
               hasMore: hasMore,
             },
           })
-        : directMessagesDispatch({
+        : conversationsDispatch({
             type: "SET_MESSAGES",
             payload: {
               messages: [message, ...messages],
@@ -91,7 +92,7 @@ const MessageDirect = () => {
         updatedMessages[messageIndex] = message;
 
         // Update the state with the updated message
-        directMessagesDispatch({
+        conversationsDispatch({
           type: "SET_MESSAGES",
           payload: {
             messages: updatedMessages,

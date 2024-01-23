@@ -1,20 +1,15 @@
 import MobileToggle from "@/components/mobileToggle";
 import { SocketIndicator } from "@/components/socketIndicator";
-import useConversations from "@/hooks/useConversations";
-import useMisc from "@/hooks/useMisc";
-import useServer from "@/hooks/useServer";
 import { Hash } from "lucide-react";
-import React from "react";
+import React, { memo } from "react";
 
-const ServerHeader = ({ type }) => {
-  const activeChannel = useServer("activeChannel");
-  const activeConversation = useConversations("activeConversation");
+const ServerHeader = memo(({ type, activeChannel, activeConversation }) => {
   let name;
 
-  if (type === "channel" || type === "server") {
+  if (type === "channel") {
     name = activeChannel.name;
   } else {
-    name = activeConversation.name;
+    name = activeConversation.theirName;
   }
 
   return (
@@ -31,6 +26,6 @@ const ServerHeader = ({ type }) => {
       </div>
     </div>
   );
-};
+});
 
 export default ServerHeader;

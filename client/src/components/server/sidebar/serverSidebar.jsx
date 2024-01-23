@@ -1,10 +1,10 @@
 import DropdownTrigger from "./dropdownMenu/dropDownTrigger";
 import { Hash, Mic, ShieldAlert, ShieldCheck, Video } from "lucide-react";
-import useServer from "@/hooks/useServer";
 import useAuth from "@/hooks/useAuth";
 import ProfileControl from "@/components/profileControl";
 import ServerScrollArea from "./serverScrollArea";
 import ServerSearch from "./serverSearch";
+import { memo } from "react";
 
 const iconMap = {
   TEXT: <Hash className="mr-2 h-4 w-4" />,
@@ -18,21 +18,12 @@ const roleIconMap = {
   ADMIN: <ShieldAlert className="h-4 w-4 mr-2 text-rose-500" />,
 };
 
-const ServerSidebar = () => {
-  const activeServer = useServer("activeServer");
+const ServerSidebar = memo(({ activeServer, channels }) => {
   const profileId = useAuth("id");
 
-  const textChannels = activeServer?.channels.filter(
-    (channel) => channel.type === "TEXT"
-  );
-
-  const audioChannels = activeServer?.channels.filter(
-    (channel) => channel.type === "AUDIO"
-  );
-
-  const videoChannels = activeServer?.channels.filter(
-    (channel) => channel.type === "VIDEO"
-  );
+  const textChannels = channels.filter((channel) => channel.type === "TEXT");
+  const audioChannels = channels.filter((channel) => channel.type === "AUDIO");
+  const videoChannels = channels.filter((channel) => channel.type === "VIDEO");
 
   const members = activeServer?.members.filter(
     (member) => member.profile?._id !== profileId
@@ -91,12 +82,12 @@ const ServerSidebar = () => {
         <DropdownTrigger role={role} />
       </div>
       <ServerSearch data={data} />
-      <ServerScrollArea data={data} role={role} />
+      <ServerScrollArea data={data} role={role} activeServer={activeServer} />
       <div className="h-53px">
         <ProfileControl />
       </div>
     </div>
   );
-};
+});
 
 export default ServerSidebar;

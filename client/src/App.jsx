@@ -13,6 +13,7 @@ import RegistrationPage from "@/pages/RegistrationPage";
 import LoginPage from "@/pages/LoginPage";
 import InvitationPage from "./pages/InvitationPage";
 import { ConversationsContextProvider } from "./context/Conversations-Context";
+import { ChannelsContextProvider } from "./context/Channels-Context";
 
 function App() {
   /*
@@ -51,9 +52,11 @@ function App() {
               // Assigning 'type' "messages" to load up messages home
               element={
                 <RequireAuth>
-                  <ConversationsContextProvider>
-                    <MainPage type="messages" />
-                  </ConversationsContextProvider>
+                  <ChannelsContextProvider>
+                    <ConversationsContextProvider>
+                      <MainPage type="conversation" />
+                    </ConversationsContextProvider>
+                  </ChannelsContextProvider>
                 </RequireAuth>
               }
             />
@@ -62,9 +65,11 @@ function App() {
               // Assigning 'type' "conversation" to load up a specific direct conversation
               element={
                 <RequireAuth>
-                  <ConversationsContextProvider>
-                    <MainPage type="conversation" />
-                  </ConversationsContextProvider>
+                  <ChannelsContextProvider>
+                    <ConversationsContextProvider>
+                      <MainPage type="conversation" />
+                    </ConversationsContextProvider>
+                  </ChannelsContextProvider>
                 </RequireAuth>
               }
             />
@@ -73,9 +78,11 @@ function App() {
               // Assigning 'type' "channel" to load up a specific channel
               element={
                 <RequireAuth>
-                  <ConversationsContextProvider>
-                    <MainPage type="channel" />
-                  </ConversationsContextProvider>
+                  <ChannelsContextProvider>
+                    <ConversationsContextProvider>
+                      <MainPage type="channel" />
+                    </ConversationsContextProvider>
+                  </ChannelsContextProvider>
                 </RequireAuth>
               }
             />
@@ -84,9 +91,11 @@ function App() {
               // Assigning 'type' "server" to load up a specific server
               element={
                 <RequireAuth>
-                  <ConversationsContextProvider>
-                    <MainPage type="server" />
-                  </ConversationsContextProvider>
+                  <ChannelsContextProvider>
+                    <ConversationsContextProvider>
+                      <MainPage type="channel" />
+                    </ConversationsContextProvider>
+                  </ChannelsContextProvider>
                 </RequireAuth>
               }
             />

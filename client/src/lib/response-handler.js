@@ -1,8 +1,4 @@
 const handleResponse = async (response, authDispatch) => {
-  // Success responses
-
-  console.log("handle res triggered", response);
-
   if (response.ok) {
     const contentLength = response.headers.get("Content-Length");
 
@@ -35,7 +31,7 @@ const handleResponse = async (response, authDispatch) => {
     // Handle errors
     const error = {
       status: response.status,
-      message: response.message,
+      message: response.data,
     };
 
     return Promise.reject(error);
@@ -47,10 +43,13 @@ const handleError = (error, authDispatch) => {
     case 401 || 403:
       localStorage.clear();
       authDispatch({ type: "RESET_STATE" });
-      window.location.href = "/";
+      console.log("error", error);
+      // window.location.href = "/";
       break;
 
     case 404:
+      console.log("error", error);
+      window.location.href = "/@me/conversations";
       break;
 
     case error.status >= 400 && error.status < 500:
@@ -60,8 +59,6 @@ const handleError = (error, authDispatch) => {
       break;
 
     default:
-      // Handle other unanticipated errors
-      // Example: showToast('An unexpected error occurred');
       break;
   }
 

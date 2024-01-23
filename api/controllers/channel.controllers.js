@@ -2,6 +2,8 @@ import Channel from "../modals/channel.modals.js";
 import Profile from "../modals/profile.modals.js";
 import Member from "../modals/member.modals.js";
 import Server from "../modals/server.modals.js";
+import mongoose from "mongoose";
+import ServerMessage from "../modals/serverMessage.modals.js";
 
 export const createChannel = async (req, res, next) => {
   try {
@@ -76,15 +78,12 @@ export const getChannel = async (req, res) => {
         _id: req.user.profileId,
         servers: { $in: [req.params.serverId] },
       }),
-      Channel.findOne({ _id: req.params.channelId }),
-
-      // .populate({
-      //   path: "conversationId",
-      //   populate: {
-      //     path: "messages",
-      //     options: { sort: { createdAt: -1 }, limit: 10 }, // Sort by createdAt in descending order and limit to 10 messages
-      //   },
-      // }),
+      Channel.findOne({ _id: req.params.channelId }).select([
+        "_id",
+        "name",
+        "type",
+        "conversationId",
+      ]),
     ]);
 
     if (!profile) {
@@ -103,21 +102,22 @@ export const getChannel = async (req, res) => {
       });
     }
 
-    const channelToSend = {
+    const channelData = {
       _id: channel._id,
       name: channel.name,
       type: channel.type,
-      conversationId: channel.conversationId._id,
-      // messages: channel.conversationId.messages,
+      conversationId: channel.conversationId,
     };
 
     if (res.body) {
       res.body = {
         ...res.body,
-        channel: channelToSend,
+        channel: channelData,
       };
     } else {
-      res.body = { channel: channelToSend };
+      res.body = {
+        channel: channelData,
+      };
     }
 
     res.status(200).send(res.body);

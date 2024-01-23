@@ -16,7 +16,6 @@ import {
 } from "./ui/dropdownMenu";
 import { Separator } from "./ui/separator";
 import useServer from "@/hooks/useServer";
-import useMisc from "@/hooks/useMisc";
 import { useModal } from "@/hooks/useModals";
 import { get } from "@/services/api-service";
 import { handleError, handleResponse } from "@/lib/response-handler";
@@ -27,7 +26,6 @@ const ProfileControl = () => {
   const profileImage = useAuth("image");
   const authDispatch = useAuth("dispatch");
   const serverDispatch = useServer("dispatch");
-  const miscDispatch = useMisc("dispatch");
   const { onOpen } = useModal();
   const [about, setAbout] = useState("");
   const [email, setEmail] = useState("");
@@ -37,7 +35,6 @@ const ProfileControl = () => {
     localStorage.clear();
     authDispatch({ type: "RESET_STATE" });
     serverDispatch({ type: "RESET_STATE" });
-    miscDispatch({ type: "RESET_STATE" });
   };
 
   useEffect(() => {

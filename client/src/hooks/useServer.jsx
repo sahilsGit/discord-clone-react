@@ -11,6 +11,8 @@ const useServer = (value) => {
       return useContext(ServerContext).channels;
     case "activeChannel":
       return useContext(ServerContext).activeChannel;
+    case "cache":
+      return useContext(ServerContext).cache;
     case "dispatch":
       return useContext(ServerContext).dispatch;
     default:

@@ -1,5 +1,4 @@
 import useConversations from "@/hooks/useConversations";
-import useMisc from "@/hooks/useMisc";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
 import React, { useEffect, useState } from "react";

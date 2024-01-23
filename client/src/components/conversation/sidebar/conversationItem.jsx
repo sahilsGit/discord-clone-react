@@ -11,20 +11,9 @@ const ConversationItem = ({ conversation, profile }) => {
   const profileId = useAuth("id");
   const navigate = useNavigate();
 
-  const conversationCache = {
-    id: conversation._id,
-    profileId: profile._id,
-    name: profile.name,
-    image: profile.image || null,
-  };
-
   const onClick = () => {
     setClicked(true);
-    navigate(`/@me/conversations/${profile._id}/${profileId}`, {
-      state: {
-        activeConversationCache: conversationCache,
-      },
-    });
+    navigate(`/@me/conversations/${profile._id}/${profileId}`);
   };
 
   useEffect(() => {
@@ -41,7 +30,7 @@ const ConversationItem = ({ conversation, profile }) => {
     <button
       className={cn(
         "group px-2 py-1 rounded-sm flex items-center gap-x-2 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition mb-1",
-        (activeConversation?.id === conversation?._id || clicked) &&
+        (activeConversation?._id === conversation?._id || clicked) &&
           "bg-zinc-700/20 dark:bg-zinc-700"
       )}
       onClick={onClick}
@@ -50,9 +39,9 @@ const ConversationItem = ({ conversation, profile }) => {
       <p
         className={cn(
           "line-clamp-1 text-sm transition",
-          activeConversation?.id !== conversation?._id &&
+          activeConversation?._id !== conversation?._id &&
             "text-primary dark:text-zinc-300 dark:text-zinc-300",
-          activeConversation?.id === conversation?._id &&
+          activeConversation?._id === conversation?._id &&
             "text-primary dark:text-white"
         )}
       >

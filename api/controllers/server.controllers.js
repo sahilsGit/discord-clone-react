@@ -214,6 +214,24 @@ export const getOne = async (req, res) => {
         },
       },
       {
+        $unwind: "$channels",
+      },
+      {
+        $sort: {
+          "channels.createdAt": 1,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: { $first: "$name" },
+          inviteCode: { $first: "$inviteCode" },
+          image: { $first: "$image" },
+          channels: { $push: "$channels" },
+          members: { $first: "$members" },
+        },
+      },
+      {
         $lookup: {
           from: "members",
           let: {

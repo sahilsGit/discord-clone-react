@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import MessageWelcome from "./messageWelcome";
 import { get } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
@@ -6,24 +6,20 @@ import { handleError, handleResponse } from "@/lib/response-handler";
 import useServer from "@/hooks/useServer";
 import useSocket from "@/hooks/useSocket";
 import MessageItem from "./messageItem";
-import useMessages from "@/hooks/useMessages";
+import useChannels from "@/hooks/useChannels";
 
-const MessageServer = memo(() => {
-  const activeChannel = useServer("activeChannel");
+const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   const name = activeChannel?.name;
   const authDispatch = useAuth("dispatch");
   const access_token = useAuth("token");
   const myMembership = useServer("activeServer").myMembership;
-  const channelId = useServer("activeChannel")._id;
+  const channelId = activeChannel._id;
   const [error, setError] = useState(false);
   const observerRef = useRef();
   const lastItemRef = useRef();
   const { socket } = useSocket();
   const [isConnected, setIsConnected] = useState(false);
-  const cursor = useMessages("cursor");
-  const messages = useMessages("messages");
-  const hasMore = useMessages("hasMore");
-  const messagesDispatch = useMessages("dispatch");
+  const channelsDispatch = useChannels("dispatch");
 
   const CONNECTED_EVENT = "connected";
   const DISCONNECT_EVENT = "disconnect";
@@ -34,7 +30,6 @@ const MessageServer = memo(() => {
 
   const fetchMessages = async () => {
     try {
-      console.log("yes for sure");
       const response = await get(
         `/messages/fetch?memberId=${myMembership._id}&channelId=${channelId}&cursor=${cursor}`,
         access_token
@@ -44,7 +39,7 @@ const MessageServer = memo(() => {
 
       console.log("got data", messageData);
 
-      messagesDispatch({
+      channelsDispatch({
         type: "SET_MESSAGES",
         payload: {
           messages: [...messages, ...messageData.messages],
@@ -64,7 +59,7 @@ const MessageServer = memo(() => {
   const onMessageReceived = (message) => {
     if (message.channelId === channelId) {
       messages?.length
-        ? messagesDispatch({
+        ? channelsDispatch({
             type: "SET_MESSAGES",
             payload: {
               messages: [message, ...messages],
@@ -72,7 +67,7 @@ const MessageServer = memo(() => {
               hasMore: hasMore,
             },
           })
-        : messagesDispatch({
+        : channelsDispatch({
             type: "SET_MESSAGES",
             payload: {
               messages: [message, ...messages],
@@ -95,7 +90,7 @@ const MessageServer = memo(() => {
         updatedMessages[messageIndex] = message;
 
         // Update the state with the updated message
-        messagesDispatch({
+        channelsDispatch({
           type: "SET_MESSAGES",
           payload: {
             messages: updatedMessages,
@@ -190,7 +185,6 @@ const MessageServer = memo(() => {
         }
       }}
     >
-      {/* <div className="h-[100px]">{message.content}</div> */}
       <MessageItem
         message={message}
         myDetails={myMembership}
