@@ -6,15 +6,22 @@ import useAuth from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { useNavigate, useParams } from "react-router-dom";
 import useServer from "@/hooks/useServer";
+import { getChannelAndServer } from "@/lib/context-helper";
+import useChannels from "@/hooks/useChannels";
 
 const NavigationItem = ({ name, id, image, firstChannel, type }) => {
   const activeServer = useServer("activeServer");
   const [imageSrc, setImageSrc] = useState(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
   const [clicked, setClicked] = useState(false);
   const params = useParams();
+  const user = useAuth("user");
+  const serverDispatch = useServer("dispatch");
+  const channelsDispatch = useChannels("dispatch");
+  const serverCache = useServer("cache");
+  const channelCache = useChannels("cache");
 
   useEffect(() => {
     const getImage = async () => {
@@ -36,10 +43,7 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
     if (!activeServer) {
       setClicked(false);
     } else {
-      if (
-        (activeServer?.id !== id && id !== params.serverId) ||
-        type === "conversation"
-      ) {
+      if (activeServer?.id !== id || type === "conversation") {
         setClicked(false);
       } else setClicked(true);
     }
@@ -49,7 +53,21 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
     <button
       onClick={() => {
         setClicked(true);
-        navigate(`/servers/${id}/${firstChannel}`);
+
+        if (serverCache && channelCache && id === serverCache.activeServer.id) {
+          channelsDispatch({ type: "USE_CACHE" });
+          serverDispatch({ type: "USE_CACHE" });
+          return;
+        }
+
+        getChannelAndServer(
+          user,
+          id,
+          firstChannel,
+          authDispatch,
+          serverDispatch,
+          channelsDispatch
+        );
       }}
       className={cn("w-full flex items-center justify-center group relative")}
     >
@@ -57,7 +75,6 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
         className={cn(
           "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
           params.serverId !== id && "group-hover:h-[20px]",
-          clicked && "h-[20px]",
           clicked && params.serverId === id ? "h-[36px]" : "h-[8px]"
         )}
       ></div>

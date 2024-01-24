@@ -4,6 +4,8 @@ import { Edit, Hash, Lock, Mic, Trash, Video } from "lucide-react";
 import { ActionTooltip } from "@/components/actionTooltip";
 import { useNavigate } from "react-router-dom";
 import useChannels from "@/hooks/useChannels";
+import { getChannelOnly } from "@/lib/context-helper";
+import useAuth from "@/hooks/useAuth";
 
 const iconMap = {
   TEXT: Hash,
@@ -16,21 +18,13 @@ const ServerChannelItem = ({ channel, role, type, activeServer }) => {
   const activeChannel = useChannels("activeChannel");
   const [clicked, setClicked] = useState(false);
   const navigate = useNavigate();
-
-  const channelCache = {
-    _id: channel.id,
-    conversationId: channel.conversationId,
-    name: channel.name,
-    type: channel.channelType,
-  };
+  const serverId = activeServer.id;
+  const authDispatch = useAuth("dispatch");
+  const channelsDispatch = useChannels("dispatch");
 
   const onClick = () => {
     setClicked(true);
-    navigate(`/servers/${activeServer.id}/${channel.id}`, {
-      state: {
-        channel: channelCache,
-      },
-    });
+    getChannelOnly(serverId, channel.id, authDispatch, channelsDispatch);
   };
 
   const onAction = (e, action) => {

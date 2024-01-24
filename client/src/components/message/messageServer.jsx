@@ -1,17 +1,20 @@
 import React, { memo, useEffect, useRef, useState } from "react";
 import MessageWelcome from "./messageWelcome";
-import { get } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
-import { handleError, handleResponse } from "@/lib/response-handler";
 import useServer from "@/hooks/useServer";
 import useSocket from "@/hooks/useSocket";
 import MessageItem from "./messageItem";
 import useChannels from "@/hooks/useChannels";
+import {
+  getMoreServerMessages,
+  processEditedServerMessage,
+  processReceivedServerMessage,
+} from "@/lib/context-helper";
 
 const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
+  console.log(messages);
   const name = activeChannel?.name;
   const authDispatch = useAuth("dispatch");
-  const access_token = useAuth("token");
   const myMembership = useServer("activeServer").myMembership;
   const channelId = activeChannel._id;
   const [error, setError] = useState(false);
@@ -28,81 +31,30 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   const MESSAGE_RECEIVED_EVENT = "messageReceived";
   const MESSAGE_EDITED_EVENT = "messageEdited";
 
-  const fetchMessages = async () => {
-    try {
-      const response = await get(
-        `/messages/fetch?memberId=${myMembership._id}&channelId=${channelId}&cursor=${cursor}`,
-        access_token
-      );
-
-      const messageData = await handleResponse(response, authDispatch);
-
-      console.log("got data", messageData);
-
-      channelsDispatch({
-        type: "SET_MESSAGES",
-        payload: {
-          messages: [...messages, ...messageData.messages],
-          cursor: messageData.newCursor || cursor,
-          hasMore: messageData.hasMoreMessages,
-        },
-      });
-    } catch (error) {
-      handleError(error, authDispatch);
-      setError(true);
-    }
-  };
-
-  /**
+  /*
    * Handles the event when a new message is received.
    */
   const onMessageReceived = (message) => {
-    if (message.channelId === channelId) {
-      messages?.length
-        ? channelsDispatch({
-            type: "SET_MESSAGES",
-            payload: {
-              messages: [message, ...messages],
-              cursor: cursor,
-              hasMore: hasMore,
-            },
-          })
-        : channelsDispatch({
-            type: "SET_MESSAGES",
-            payload: {
-              messages: [message, ...messages],
-              cursor: message.createdAt,
-              hasMore: false,
-            },
-          });
-    }
+    processReceivedServerMessage(
+      message,
+      messages,
+      channelId,
+      cursor,
+      hasMore,
+      channelsDispatch
+    );
   };
 
   const onMessageEdited = (message) => {
-    if (message.channelId === channelId) {
-      const messageIndex = messages.findIndex((msg) => {
-        return msg._id === message._id;
-      });
-
-      // If the message is found in the array, update it
-      if (messageIndex !== -1) {
-        const updatedMessages = [...messages];
-        updatedMessages[messageIndex] = message;
-
-        // Update the state with the updated message
-        channelsDispatch({
-          type: "SET_MESSAGES",
-          payload: {
-            messages: updatedMessages,
-            cursor: cursor,
-            hasMore: hasMore,
-          },
-        });
-      } else {
-        // Handle the case where the message to update is not found
-        console.error("Message not found for update:");
-      }
-    }
+    console.log(messages);
+    processEditedServerMessage(
+      message,
+      messages,
+      channelId,
+      cursor,
+      hasMore,
+      channelsDispatch
+    );
   };
 
   /**
@@ -127,10 +79,20 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       async (entries) => {
-        console.log(entries[0]);
         if (entries[0].isIntersecting) {
-          console.log("fetching");
-          fetchMessages();
+          // Fetching another batch when observer intersects
+          const errorStatusAfterFetch = await getMoreServerMessages(
+            myMembership._id,
+            channelId,
+            cursor,
+            channelsDispatch,
+            authDispatch,
+            messages
+          );
+
+          if (errorStatusAfterFetch) {
+            setError(errorStatusAfterFetch);
+          }
         }
       },
       { threshold: 1 }
@@ -173,7 +135,7 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
       socket.off(MESSAGE_RECEIVED_EVENT, onMessageReceived);
       socket.off(MESSAGE_EDITED_EVENT, onMessageEdited);
     };
-  }, [socket]);
+  }, [socket, messages]);
 
   const renderMessageItem = (message, index) => (
     <div
@@ -189,6 +151,7 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
         message={message}
         myDetails={myMembership}
         sender={message.member}
+        apiRoute="/messages/update/server"
       />
     </div>
   );

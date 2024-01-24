@@ -19,7 +19,7 @@ export const ActionTooltip = ({ label, children, side, align }) => {
           <p className="font-semibold text-xs capitalize">
             {label.toLowerCase()}
           </p>
-          <TooltipArrow width={10} height={5} />
+          {/* <TooltipArrow width={10} height={5} /> */}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

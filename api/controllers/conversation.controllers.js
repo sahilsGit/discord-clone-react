@@ -8,6 +8,8 @@ export const getOrCreateConversation = async (req, res) => {
     const profileOneId = req.params.profileOneId;
     const profileTwoId = req.params.profileTwoId;
 
+    console.log(profileOneId, profileTwoId);
+
     if (profileOneId === profileTwoId) {
       return res
         .status(201)

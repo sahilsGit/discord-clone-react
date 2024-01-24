@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React from "react";
 import ConversationHeader from "@/components/conversation/header/conversationHeader";
 import ServerHeader from "../server/header/serverHeader";
 import MainInput from "./mainInput";
@@ -12,6 +12,8 @@ const MainConversation = ({ type, activeConversation }) => {
   const messages = useConversations("messages");
   const cursor = useConversations("cursor");
   const hasMore = useConversations("hasMore");
+
+  console.log(messages?.length);
 
   // useEffect(() => {
   //   activeConversation && setKey(key + 1);
@@ -34,7 +36,7 @@ const MainConversation = ({ type, activeConversation }) => {
             apiUrl="/messages/direct"
             query={{
               myProfileId: profileId,
-              memberProfileId: activeConversation.profileId,
+              memberProfileId: activeConversation.theirProfileId,
             }}
           />
         </>

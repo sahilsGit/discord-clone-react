@@ -34,7 +34,7 @@ const formSchema = z.object({
   content: z.string().min(1),
 });
 
-const MessageItem = ({ message, myDetails, sender }) => {
+const MessageItem = ({ message, myDetails, sender, apiRoute }) => {
   const [isEditing, setIsEditing] = useState(false);
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
@@ -77,7 +77,7 @@ const MessageItem = ({ message, myDetails, sender }) => {
 
     try {
       const response = await update(
-        `/messages/update/${message._id}/${myDetails._id}`,
+        `${apiRoute}/${message._id}/${myDetails._id}`,
         updatedData,
         access_token
       );

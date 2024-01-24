@@ -3,21 +3,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
 import useServer from "@/hooks/useServer";
 import useAuth from "@/hooks/useAuth";
-import { handleError } from "@/lib/response-handler";
 import ConversationSidebar from "@/components/conversation/sidebar/conversationSidebar";
 import MainWrapper from "@/components/main/mainWrapper";
 import ServerSidebar from "@/components/server/sidebar/serverSidebar";
 import useConversations from "@/hooks/useConversations";
 import useChannels from "@/hooks/useChannels";
 import {
-  fetchAllConversations,
-  fetchAllServers,
-  fetchChannel,
-  fetchChannelMessages,
-  fetchConversation,
-  fetchConversationMessages,
-  fetchServer,
-} from "@/api";
+  getAllConversations,
+  getAllServers,
+  getChannelAndServer,
+  getChannelOnly,
+  getConversationDetails,
+} from "@/lib/context-helper";
+import { handleError } from "@/lib/response-handler";
 
 /*
  * MainPage
@@ -50,204 +48,105 @@ const MainPage = ({ type }) => {
   const channelsDispatch = useChannels("dispatch");
   const authDispatch = useAuth("dispatch");
   const user = useAuth("user");
-  const serverCache = useServer("cache");
-  const channelCache = useChannels("cache");
+
+  const fetchMap = {
+    servers: () => {
+      getAllServers(user, authDispatch, serverDispatch);
+    },
+    channelAndServer: () => {
+      getChannelAndServer(
+        user,
+        params.serverId,
+        params.channelId,
+        authDispatch,
+        serverDispatch,
+        channelsDispatch
+      );
+    },
+    channelOnly: () => {
+      getChannelOnly(
+        params.serverId,
+        params.channelId,
+        authDispatch,
+        channelsDispatch
+      );
+    },
+    conversations: () => {
+      getAllConversations(profileId, authDispatch, conversationsDispatch);
+    },
+    conversationDetails: () => {
+      getConversationDetails(
+        params.memberProfileId,
+        params.myProfileId,
+        authDispatch,
+        conversationsDispatch
+      );
+    },
+  };
 
   useEffect(() => {
-    /*
-     *
-     *
-     */
-    const getAllConversations = async () => {
-      try {
-        const data = await fetchAllConversations({
-          profileId: profileId,
-          authDispatch: authDispatch,
-        });
+    const toFetchBatch = [];
 
-        // Populate / Re-populate the conversations context
-        conversationsDispatch({
-          type: "SET_CONVERSATIONS",
-          payload: data.conversations,
-        });
-      } catch (err) {
-        handleError(err, authDispatch);
-      }
-    };
-
-    const getAllServers = async () => {
-      try {
-        const data = await fetchAllServers({
-          user: user,
-          authDispatch: authDispatch,
-        });
-        const serverIds = Object.keys(data.servers);
-
-        serverIds.length > 0
-          ? serverDispatch({ type: "SET_SERVERS", payload: data.servers })
-          : serverDispatch({ type: "SET_SERVERS", payload: [] });
-      } catch (err) {
-        handleError(err, authDispatch);
-      }
-    };
-
-    const getConversationDetails = async () => {
-      try {
-        const [conversationData, conversationMessagesData] = await Promise.all([
-          fetchConversation({
-            memberProfileId: params.memberProfileId,
-            myProfileId: params.myProfileId,
-            authDispatch: authDispatch,
-          }),
-          fetchConversationMessages({
-            memberProfileId: params.memberProfileId,
-            myProfileId: params.myProfileId,
-            authDispatch,
-          }),
-        ]);
-
-        conversationsDispatch({
-          type: "SET_CUSTOM",
-          payload: {
-            activeConversation: {
-              _id: conversationData.conversation._id,
-              theirProfileId: conversationData.memberProfile._id,
-              theirName: conversationData.memberProfile.name,
-              theirImage: conversationData.memberProfile.image
-                ? conversationData.memberProfile.image
-                : null,
-            },
-            messages: conversationMessagesData.messages,
-            cursor: conversationMessagesData.newCursor,
-            hasMore: conversationMessagesData.hasMoreMessages,
-          },
-        });
-      } catch (error) {
-        await handleError(error, authDispatch);
-      }
-    };
-
-    const getChannelAndServer = async () => {
-      console.log("getting both channels and server");
-      try {
-        const [serverData, channelData, messagesData] = await Promise.all([
-          fetchServer({
-            user: user,
-            serverId: params.serverId,
-            authDispatch: authDispatch,
-          }),
-          fetchChannel({
-            serverId: params.serverId,
-            channelId: params.channelId,
-            authDispatch: authDispatch,
-          }),
-          fetchChannelMessages({
-            channelId: params.channelId,
-            authDispatch: authDispatch,
-          }),
-        ]);
-
-        serverDispatch({
-          type: "SET_ACTIVE_SERVER",
-          payload: serverData.server,
-        });
-
-        channelsDispatch({
-          type: "SET_CUSTOM",
-          payload: {
-            channels: serverData.server.channels,
-            activeChannel: channelData.channel,
-            messages: messagesData.messages,
-            cursor: messagesData.newCursor,
-            hasMore: messagesData.hasMoreMessages,
-          },
-        });
-      } catch (error) {
-        await handleError(error, authDispatch);
-      }
-    };
-
-    const getChannelOnly = async () => {
-      try {
-        const [channelData, messagesData] = await Promise.all([
-          fetchChannel({
-            serverId: params.serverId,
-            channelId: params.channelId,
-            authDispatch: authDispatch,
-          }),
-          fetchChannelMessages({
-            channelId: params.channelId,
-            authDispatch: authDispatch,
-          }),
-        ]);
-
-        channelsDispatch({
-          type: "SET_CUSTOM",
-          payload: {
-            activeChannel: channelData.channel,
-            messages: messagesData.messages,
-            cursor: messagesData.newCursor,
-            hasMore: messagesData.hasMoreMessages,
-          },
-        });
-      } catch (error) {
-        await handleError(error, authDispatch);
-      }
-    };
+    // One Must fetch basic server details irrespective of the type
+    (servers === null || servers === "undefined") &&
+      toFetchBatch.push("servers");
 
     /*
      *
      *
-     */
-
-    servers === null && getAllServers(); // Basic server details is a must in any case
-
-    /*
      *
      *
      */
-
     if (type === "conversation") {
-      conversations === null && getAllConversations();
+      // Batch conversations if they don't exist
+      (conversations === null || conversations === "undefined") &&
+        toFetchBatch.push("conversations");
 
+      // Fetch activeConversation if user is in the chat page and activeConversation doesn't exist
       if (params.memberProfileId && params.myProfileId) {
-        (!activeConversation ||
-          params.memberProfileId !== activeConversation?.theirProfileId) &&
-          getConversationDetails();
+        !activeConversation && toFetchBatch.push("conversationDetails");
       }
     }
 
     /*
      *
      *
+     *
+     *
      */
-
     if (type === "channel") {
-      if (!params.channelId) {
-        return navigate(
-          `/servers/${params.serverId}/${servers[params.serverId].channels[0]}`
-        );
-      }
+      // If servers basic details are present
+      if (servers)
+        if (!params.channelId) {
+          // If there's no channelId in params then navigate the user to the first channel
+          return navigate(
+            `/servers/${params.serverId}/${
+              servers[params.serverId].channels[0]
+            }`
+          );
+        }
 
-      if (
-        serverCache &&
-        channelCache &&
-        params.serverId === serverCache.activeServer.id &&
-        params.channelId === channelCache.activeChannel._id
-      ) {
-        console.log("using cache");
-        channelsDispatch({ type: "USE_CACHE" });
-        serverDispatch({ type: "USE_CACHE" });
-        return;
-      }
-
-      (!activeServer || activeServer?.id !== params.serverId) &&
-        getChannelAndServer();
-
-      activeServer &&
-        activeChannel?.id !== params.channelId &&
-        getChannelOnly();
+      // If there's no activeChannel
+      !activeChannel &&
+        // And not an activeServer as well
+        (!activeServer
+          ? //then batch both at once
+            toFetchBatch.push("channelAndServer")
+          : // else batch channel only
+            toFetchBatch.push("channelOnly"));
     }
+
+    async function processBatch() {
+      if (toFetchBatch.length === 0) return;
+
+      try {
+        await Promise.all(toFetchBatch.map((key) => fetchMap[key]()));
+      } catch (error) {
+        await handleError(error, authDispatch);
+      }
+    }
+
+    processBatch();
 
     /*
      *
@@ -266,25 +165,6 @@ const MainPage = ({ type }) => {
     return null;
   }
 
-  if (type === "channel" && !activeChannel) {
-    return (
-      <main className="h-screen flex w-screen">
-        <div className="h-full w-[72px] bg-main10 flex-shrink-0">
-          <NavigationSidebar type="conversation" />
-        </div>
-        <div className="w-[240px] bg-main08 flex-shrink-0 ">
-          <ConversationSidebar conversations={conversations} />
-        </div>
-        <div className="w-full h-full">
-          <MainWrapper
-            type="conversation"
-            activeConversation={activeConversation}
-          />
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="h-screen flex w-screen">
       <div className="h-full w-[72px] bg-main10 flex-shrink-0">
@@ -299,9 +179,9 @@ const MainPage = ({ type }) => {
       </div>
       <div className="w-full h-full">
         {type === "conversation" ? (
-          <MainWrapper type={type} activeConversation={activeConversation} />
+          <MainWrapper type={type} mainData={activeConversation} />
         ) : (
-          <MainWrapper type={type} activeChannel={activeChannel} />
+          <MainWrapper type={type} mainData={activeChannel} />
         )}
       </div>
     </main>

@@ -83,6 +83,7 @@ export const getChannel = async (req, res) => {
         "name",
         "type",
         "conversationId",
+        "serverId",
       ]),
     ]);
 
@@ -107,6 +108,7 @@ export const getChannel = async (req, res) => {
       name: channel.name,
       type: channel.type,
       conversationId: channel.conversationId,
+      serverId: channel.serverId,
     };
 
     if (res.body) {

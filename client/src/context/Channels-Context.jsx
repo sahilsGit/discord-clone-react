@@ -1,6 +1,5 @@
-import { fetchAllConversations, fetchAllServers } from "@/api";
-import useAuth from "@/hooks/useAuth";
 import React, { createContext, useEffect, useReducer } from "react";
+import { useNavigate } from "react-router-dom";
 
 const initialState = {
   channels: null,
@@ -60,11 +59,8 @@ const channelsReducer = (state, action) => {
 export const ChannelsContext = createContext(initialState);
 
 export const ChannelsContextProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [state, dispatch] = useReducer(channelsReducer, initialState);
-  // const authDispatch = useAuth("dispatch");
-  // const profileId = useAuth("id");
-  // const user = useAuth("user");
-
   const value = { ...state, dispatch };
 
   useEffect(() => {
@@ -73,6 +69,10 @@ export const ChannelsContextProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem("activeChannel", JSON.stringify(state.activeChannel));
+    state.activeChannel &&
+      navigate(
+        `/servers/${state.activeChannel.serverId}/${state.activeChannel._id}`
+      );
   }, [state.activeChannel]);
 
   useEffect(() => {

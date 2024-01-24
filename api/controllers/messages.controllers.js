@@ -97,7 +97,7 @@ const sendDirectMessage = async (req, res, next) => {
     // Validate required fields
     if (!memberProfileId || !myProfileId) {
       return res.status(400).send({
-        error: "Need memberProfileId and your profileId are required",
+        error: "memberProfileId and your profileIds are required",
       });
     }
 
@@ -413,7 +413,56 @@ const updateMessage = async (req, res) => {
   }
 };
 
-export { sendDirectMessage, sendServerMessage, fetchMessages, updateMessage };
+const updateDirectMessage = async (req, res) => {
+  console.log("here");
+  try {
+    const { messageId, profileId } = req.params;
+    const { content } = req.body;
+
+    // Find and update the message in the database
+    const updatedMessage = await DirectMessage.findOneAndUpdate(
+      { _id: messageId, senderId: profileId },
+      { $set: { content: content } }
+    );
+
+    const messageDocument = await DirectMessage.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(messageId) } },
+      ...directMessagePipeline,
+    ]);
+
+    console.log(messageDocument);
+
+    // Check if the message was found and updated
+    if (updatedMessage) {
+      const senderId = updatedMessage.senderId.toHexString();
+
+      emitSocketEvent(
+        req,
+        senderId,
+        ConversationEventEnum.MESSAGE_EDITED,
+        messageDocument[0]
+      );
+
+      res.status(200).send(res.body);
+    } else {
+      res
+        .status(404)
+        .json({ success: false, message: "Message not found for update" });
+    }
+  } catch (error) {
+    // Handle errors and respond with an error status
+    console.error("Error updating message:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export {
+  sendDirectMessage,
+  sendServerMessage,
+  fetchMessages,
+  updateDirectMessage,
+  updateMessage,
+};
 
 // db.directmessages.aggregate([
 //   {

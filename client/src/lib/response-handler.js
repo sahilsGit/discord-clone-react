@@ -44,12 +44,12 @@ const handleError = (error, authDispatch) => {
       localStorage.clear();
       authDispatch({ type: "RESET_STATE" });
       console.log("error", error);
-      // window.location.href = "/";
+      window.location.href = "/";
       break;
 
     case 404:
       console.log("error", error);
-      window.location.href = "/@me/conversations";
+      // window.location.href = "/@me/conversations";
       break;
 
     case error.status >= 400 && error.status < 500:

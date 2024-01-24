@@ -1,21 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import MessageWelcome from "./messageWelcome";
-import { get } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
-import { handleError, handleResponse } from "@/lib/response-handler";
 import useSocket from "@/hooks/useSocket";
 import MessageItem from "./messageItem";
 import useConversations from "@/hooks/useConversations";
+import {
+  getMoreDirectMessages,
+  processEditedDirectMessage,
+  processReceivedDirectMessage,
+} from "@/lib/context-helper";
 
-const MessageDirect = ({
-  key,
-  activeConversation,
-  messages,
-  cursor,
-  hasMore,
-}) => {
+const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
+  console.log(messages.length);
   const authDispatch = useAuth("dispatch");
-  const access_token = useAuth("token");
   const [error, setError] = useState(false);
   const observerRef = useRef();
   const lastItemRef = useRef();
@@ -32,79 +29,29 @@ const MessageDirect = ({
   const conversationsDispatch = useConversations("dispatch");
   const name = activeConversation?.theirName;
 
-  const fetchMessages = async () => {
-    try {
-      const response = await get(
-        `/messages/fetch?conversationId=${activeConversation._id}&cursor=${cursor}`,
-        access_token
-      );
-
-      const messageData = await handleResponse(response, authDispatch);
-
-      conversationsDispatch({
-        type: "SET_MESSAGES",
-        payload: {
-          messages: [...messages, ...messageData.messages],
-          cursor: messageData.newCursor || cursor,
-          hasMore: messageData.hasMoreMessages,
-        },
-      });
-    } catch (error) {
-      handleError(error, authDispatch);
-      setError(true);
-    }
-  };
-
   /**
    * Handles the event when a new message is received.
    */
   const onMessageReceived = (message) => {
-    if (message.senderId === profileId || message.receiverId === profileId) {
-      messages.length
-        ? conversationsDispatch({
-            type: "SET_MESSAGES",
-            payload: {
-              messages: [message, ...messages],
-              cursor: cursor,
-              hasMore: hasMore,
-            },
-          })
-        : conversationsDispatch({
-            type: "SET_MESSAGES",
-            payload: {
-              messages: [message, ...messages],
-              cursor: message.createdAt,
-              hasMore: false,
-            },
-          });
-    }
+    processReceivedDirectMessage(
+      message,
+      messages,
+      profileId,
+      cursor,
+      hasMore,
+      conversationsDispatch
+    );
   };
 
   const onMessageEdited = (message) => {
-    if (message.conversationId === activeConversation._id) {
-      const messageIndex = messages.findIndex((msg) => {
-        return msg._id === message._id;
-      });
-
-      // If the message is found in the array, update it
-      if (messageIndex !== -1) {
-        const updatedMessages = [...messages];
-        updatedMessages[messageIndex] = message;
-
-        // Update the state with the updated message
-        conversationsDispatch({
-          type: "SET_MESSAGES",
-          payload: {
-            messages: updatedMessages,
-            cursor: cursor,
-            hasMore: hasMore,
-          },
-        });
-      } else {
-        // Handle the case where the message to update is not found
-        console.error("Message not found for update:");
-      }
-    }
+    processEditedDirectMessage(
+      message,
+      messages,
+      activeConversation._id,
+      cursor,
+      hasMore,
+      conversationsDispatch
+    );
   };
 
   /**
@@ -130,7 +77,17 @@ const MessageDirect = ({
     const observer = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
-          fetchMessages();
+          const errorStatusAfterFetch = await getMoreDirectMessages(
+            activeConversation._id,
+            cursor,
+            conversationsDispatch,
+            authDispatch,
+            messages
+          );
+
+          if (errorStatusAfterFetch) {
+            setError(errorStatusAfterFetch);
+          }
         }
       },
       { threshold: 1 }
@@ -173,7 +130,7 @@ const MessageDirect = ({
       socket.off(MESSAGE_RECEIVED_EVENT, onMessageReceived);
       socket.off(MESSAGE_EDITED_EVENT, onMessageEdited);
     };
-  }, [socket]);
+  }, [socket, messages]);
 
   const renderMessageItem = (message, index) => (
     <div
@@ -192,6 +149,7 @@ const MessageDirect = ({
           _id: message.senderId,
           profile: message.sender,
         }}
+        apiRoute="/messages/update/direct"
       />
     </div>
   );

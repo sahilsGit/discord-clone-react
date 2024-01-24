@@ -64,6 +64,35 @@ const fetchAllServers = async ({ user, authDispatch }) => {
   return await handleResponse(response, authDispatch);
 };
 
+const fetchMoreServerMessages = async ({
+  myMembershipId,
+  channelId,
+  cursor,
+  authDispatch,
+}) => {
+  const access_token = JSON.parse(localStorage.getItem("access_token"));
+  const response = await get(
+    `/messages/fetch?memberId=${myMembershipId}&channelId=${channelId}&cursor=${cursor}`,
+    access_token
+  );
+
+  return await handleResponse(response, authDispatch);
+};
+
+const fetchMoreDirectMessages = async ({
+  conversationId,
+  cursor,
+  authDispatch,
+}) => {
+  const access_token = JSON.parse(localStorage.getItem("access_token"));
+  const response = await get(
+    `/messages/fetch?conversationId=${conversationId}&cursor=${cursor}`,
+    access_token
+  );
+
+  return await handleResponse(response, authDispatch);
+};
+
 export {
   fetchChannel,
   fetchServer,
@@ -72,4 +101,6 @@ export {
   fetchConversationMessages,
   fetchAllServers,
   fetchAllConversations,
+  fetchMoreServerMessages,
+  fetchMoreDirectMessages,
 };

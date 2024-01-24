@@ -1,4 +1,6 @@
+import useAuth from "@/hooks/useAuth";
 import React, { createContext, useEffect, useReducer } from "react";
+import { useNavigate } from "react-router-dom";
 
 const initialState = {
   conversations: null,
@@ -10,6 +12,7 @@ const initialState = {
 };
 
 const conversationsReducer = (state, action) => {
+  console.log(action);
   switch (action.type) {
     case "SET_CONVERSATIONS":
       return { ...state, conversations: action.payload };
@@ -55,7 +58,9 @@ const conversationsReducer = (state, action) => {
 export const ConversationsContext = createContext(initialState);
 
 export const ConversationsContextProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [state, dispatch] = useReducer(conversationsReducer, initialState);
+  const profileId = useAuth("id");
 
   const value = {
     ...state,
@@ -71,6 +76,11 @@ export const ConversationsContextProvider = ({ children }) => {
       "activeConversation",
       JSON.stringify(state.activeConversation)
     );
+
+    state.activeConversation &&
+      navigate(
+        `/@me/conversations/${state.activeConversation.theirProfileId}/${profileId}`
+      );
   }, [state.activeConversation]);
 
   useEffect(() => {
@@ -78,6 +88,8 @@ export const ConversationsContextProvider = ({ children }) => {
       "conversationMessages",
       JSON.stringify(state.messages)
     );
+
+    console.log("changed ctx value", state.messages);
   }, [state.messages]);
 
   return (
