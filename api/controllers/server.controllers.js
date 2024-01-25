@@ -360,12 +360,21 @@ export const updateServerBasics = async (req, res, next) => {
       });
     }
 
+    const updatedServerDocument = {
+      name: server.name,
+      inviteCode: server.inviteCode,
+      id: server._id,
+      image: server.image,
+      channels: server.channels,
+    };
+
     if (res.body) {
-      res.body = { ...res.body };
-      res.status(200).send(res.body);
+      res.body = { ...res.body, server: updatedServerDocument };
     } else {
-      res.status(200).send({ message: "okay..." });
+      res.body = { server: updatedServerDocument };
     }
+
+    res.status(200).send(res.body);
   } catch (err) {
     // console.error(err);
     res.status(500).send(err.message);

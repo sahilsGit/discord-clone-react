@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useReducer } from "react";
 
 const initialState = {
-  servers: JSON.parse(localStorage.getItem("servers")) || null, // Holds basic details of all the server the user is member of
+  servers: null, // Holds basic details of all the server the user is member of
   activeServer: null, // Holds the activeServer's comprehensive details
   cache: null,
 };
@@ -40,7 +40,7 @@ const serverReducer = (state, action) => {
       };
     case "UPDATE_MEMBER":
       const memberIndex = state.activeServer.members.findIndex(
-        (member) => member.id === action.payload.id
+        (member) => member._id === action.payload._id
       );
       if (memberIndex !== -1) {
         return {
@@ -55,6 +55,17 @@ const serverReducer = (state, action) => {
           },
         };
       }
+    case "REMOVE_MEMBER":
+      const updatedMembers = state.activeServer.members.filter(
+        (member) => member._id !== action.payload
+      );
+      return {
+        ...state,
+        activeServer: {
+          ...state.activeServer,
+          members: updatedMembers,
+        },
+      };
     case "ADD_TO_CACHE":
       return {
         ...state,

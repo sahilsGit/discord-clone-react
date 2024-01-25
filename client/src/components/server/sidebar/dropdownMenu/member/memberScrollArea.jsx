@@ -96,7 +96,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
     }
 
     return () => observerRef.current.disconnect();
-  }, [activeServer.members.length, results.length]);
+  }, [activeServer?.members?.length, results?.length]);
 
   const debouncedSearch = useCallback(
     (fetched) => {
@@ -124,6 +124,8 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
             setIsLoading(false);
             return;
           }
+
+          console.log(data);
           setResults([...results, ...data.members]);
           setIsLoading(false);
         } catch (err) {
@@ -156,8 +158,9 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
       const data = await handleResponse(response, authDispatch);
       serverDispatch({ type: "UPDATE_MEMBER", payload: data.member });
 
+      // If the member whose role is being changed was search instead of fetched
       const memberIndex = results.findIndex(
-        (member) => member.id === data.member.id
+        (member) => member._id === data.member._id
       );
 
       if (memberIndex !== -1) {
@@ -227,7 +230,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
                       <DropdownMenuItem
                         className="text-xs"
                         onClick={() => {
-                          clickRoleChange(member.id, "GUEST");
+                          clickRoleChange(member._id, "GUEST");
                         }}
                       >
                         <Shield className="text-xxs h-4 w-4 mr-2" />
@@ -239,7 +242,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
                       <DropdownMenuItem
                         className="text-xs"
                         onClick={() => {
-                          clickRoleChange(member.id, "MODERATOR");
+                          clickRoleChange(member._id, "MODERATOR");
                         }}
                       >
                         <ShieldCheck className="h-4 w-4 mr-2" />
@@ -255,7 +258,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
                 <DropdownMenuItem
                   className="text-xs"
                   onClick={() => {
-                    clickKick(member.id);
+                    clickKick(member._id);
                   }}
                 >
                   <Gavel className="h-4 w-4 mr-2" />

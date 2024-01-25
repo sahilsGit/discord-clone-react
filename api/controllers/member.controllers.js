@@ -33,12 +33,14 @@ export const changeRole = async (req, res, next) => {
     );
 
     const memberPayloadToSend = {
-      email: profile.email,
-      name: profile.name,
-      id: updatedMember._id,
-      profileId: updatedMember.profileId,
+      _id: updatedMember._id,
       role: updatedMember.role,
-      image: profile.image ? profile.image : null,
+      profile: {
+        _id: updatedMember.profileId,
+        name: profile.name,
+        image: profile.image ? profile.image : null,
+        email: profile.email,
+      },
     };
 
     if (res.body) {
@@ -95,12 +97,11 @@ export const searchMember = async (req, res, next) => {
       {
         $project: {
           _id: 1,
-          email: "$profile.email",
-          name: "$profile.name",
-          id: "$_id",
-          image: { $ifNull: ["$profile.image", null] },
-          profileId: "$profile._id",
           role: 1,
+          "profile.email": "$profile.email",
+          "profile.name": "$profile.name",
+          "profile._id": "$profile._id",
+          "profile.image": { $ifNull: ["$profile.image", null] },
         },
       },
       {
@@ -110,6 +111,8 @@ export const searchMember = async (req, res, next) => {
         $limit: limit, // Limit the result to a certain number of documents
       },
     ]);
+
+    console.log(result);
 
     if (res.body) {
       res.body = { ...res.body, members: result };

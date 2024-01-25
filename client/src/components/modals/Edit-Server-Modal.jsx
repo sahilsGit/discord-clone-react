@@ -45,6 +45,7 @@ const EditServerModal = () => {
   const [imagePreview, setImagePreview] = useState(null); // To preview the chosen image
   const access_token = useAuth("token"); // For authorization
   const serverDispatch = useServer("dispatch");
+  const servers = useServer("servers");
 
   let activeServer;
 
@@ -207,9 +208,27 @@ const EditServerModal = () => {
         access_token
       );
 
-      await handleResponse(response, authDispatch);
+      const data = await handleResponse(response, authDispatch);
+
+      const updatedServers = servers;
+      servers[data.server.id] = data.server;
+
+      console.log(activeServer);
+
+      serverDispatch({
+        type: "SET_CUSTOM",
+        payload: {
+          servers: updatedServers,
+          activeServer: {
+            ...activeServer,
+            name: data.server.name,
+            image: data.server.image,
+          },
+        },
+      });
     } catch (err) {
-      handleError(err, authDispatch);
+      console.log(err);
+      await handleError(err, authDispatch);
     }
 
     setTimeout(() => {
