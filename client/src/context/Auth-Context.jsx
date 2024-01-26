@@ -5,6 +5,8 @@ const INITIAL_STATE = {
   access_token: JSON.parse(localStorage.getItem("access_token")) || null,
   user: JSON.parse(localStorage.getItem("user")) || null, // Check for a previously authenticated user in local storage
   name: null,
+  about: null,
+  email: null,
   profileId: null,
   image: null,
   loading: false, // Indicate if authentication actions are in progress
@@ -16,24 +18,18 @@ const AuthContext = createContext(INITIAL_STATE);
 
 // Reducer function for managing authentication state
 const AuthReducer = (state, action) => {
-  console.log("RECIEVED AUTH DISPATCH: ", action);
+  console.log("RECEIVED AUTH DISPATCH: ", action);
   switch (action.type) {
     case "RESET_STATE":
-      return {
-        access_token: null,
-        user: null, // Clear the user on login start
-        name: null,
-        image: null,
-        profileId: null,
-        loading: false, // Set loading to true
-        error: null, // Clear any previous errors
-      };
+      return INITIAL_STATE;
     case "LOGIN_START":
       return {
         access_token: null,
         user: null, // Clear the user on login start
         name: null,
         image: null,
+        about: null,
+        email: null,
         profileId: null,
         loading: true, // Set loading to true
         error: null, // Clear any previous errors
@@ -44,6 +40,8 @@ const AuthReducer = (state, action) => {
         user: null, // Clear the user on login failure
         name: null,
         image: null,
+        about: null,
+        email: null,
         profileId: null,
         loading: false, // Set loading to false
         error: action.payload, // Set the error message
@@ -55,18 +53,15 @@ const AuthReducer = (state, action) => {
         profileId: action.payload.profileId,
         name: action.payload.name,
         image: action.payload.image,
+        about: state.about,
+        email: state.email,
         loading: false,
         error: null,
       };
-    case "LOGOUT":
+    case "SET_CUSTOM":
       return {
-        access_token: null,
-        user: null, // Clear the user on logout
-        profileId: null,
-        name: null,
-        image: null,
-        loading: false, // Set loading to false
-        error: null, // Clear any previous errors
+        ...state,
+        ...action.payload,
       };
     default:
       return state;
@@ -83,7 +78,7 @@ const AuthContextProvider = ({ children }) => {
     localStorage.setItem("access_token", JSON.stringify(state.access_token));
     localStorage.setItem("user", JSON.stringify(state.user));
 
-    console.log(JSON.parse(localStorage.getItem("access_token")));
+    console.log(state);
   }, [state.access_token, state.user]);
 
   return (

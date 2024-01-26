@@ -1,14 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { UserAvatar } from "./userAvatar";
 import useAuth from "@/hooks/useAuth";
-import {
-  ChevronRight,
-  Dot,
-  LogOut,
-  Pencil,
-  Settings,
-  Smile,
-} from "lucide-react";
+import { ChevronRight, LogOut, Pencil, Settings, Smile } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +10,9 @@ import {
 import { Separator } from "./ui/separator";
 import useServer from "@/hooks/useServer";
 import { useModal } from "@/hooks/useModals";
-import { get } from "@/services/api-service";
-import { handleError, handleResponse } from "@/lib/response-handler";
+import useChannels from "@/hooks/useChannels";
+import { Button } from "./ui/button";
+import { ActionTooltip } from "./actionTooltip";
 
 const ProfileControl = () => {
   const profileName = useAuth("name");
@@ -27,31 +21,18 @@ const ProfileControl = () => {
   const authDispatch = useAuth("dispatch");
   const serverDispatch = useServer("dispatch");
   const { onOpen } = useModal();
-  const [about, setAbout] = useState("");
-  const [email, setEmail] = useState("");
-  const access_token = useAuth("token");
+  const email = useAuth("email");
+  const about = useAuth("about");
+  const channelsDispatch = useChannels("dispatch");
 
   const handleLogout = () => {
     localStorage.clear();
     authDispatch({ type: "RESET_STATE" });
     serverDispatch({ type: "RESET_STATE" });
+    channelsDispatch({ type: "RESET_STATE" });
+
+    // window.location.href = "/";
   };
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await get(`/profiles/about`, access_token);
-        const data = await handleResponse(response, authDispatch);
-
-        setAbout(data.about);
-        setEmail(data.email);
-      } catch (err) {
-        handleError(err, authDispatch);
-      }
-    };
-
-    fetchUserData();
-  }, []);
 
   return (
     <div className="group flex justify-between h-[53px] bg-main09 py-1 px-2">
@@ -122,18 +103,31 @@ const ProfileControl = () => {
                 ) : null}
                 <Separator className="h-[1px]" />
                 <div className="flex flex-col w-full">
-                  <div className="group h-[25px] px-2 rounded-sm flex justify-between items-center gap-x-1 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition">
-                    <div className="flex gap-x-3 items-center">
-                      <div className="h-3 w-3 bg-indigo-500 rounded-full group-hover:bg-zinc-500 transition"></div>
-                      <p className="">Online</p>
-                    </div>
+                  <ActionTooltip
+                    label="Coming soon!"
+                    side="right"
+                    align="center"
+                  >
+                    <Button
+                      disabled="true"
+                      className="bg-zinc-800 group h-[25px] px-2 rounded-sm flex justify-between items-center gap-x-1 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition"
+                    >
+                      <div className="flex text-xs gap-x-3 items-center">
+                        <div className="h-3 w-3 bg-indigo-500 rounded-full group-hover:bg-zinc-500 transition"></div>
+                        <p className="text-zinc-500">Online</p>
+                      </div>
 
-                    <ChevronRight className="h-4 w-4" />
-                  </div>
-                  <div className="h-[25px] px-[5px] rounded-sm flex justify-start items-center gap-x-[10px] w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition">
-                    <Smile className="h-[18px] w-[18px]" />
-                    <p className="">Set custom status</p>
-                  </div>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                      disabled="true"
+                      className="bg-zinc-800 h-[25px] px-[5px] rounded-sm flex justify-start items-center gap-x-[10px] w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition"
+                    >
+                      <Smile className="text-zinc-500 h-[18px] w-[18px]" />
+                      <p className="text-zinc-500 text-xs">Set custom status</p>
+                    </Button>
+                  </ActionTooltip>
                 </div>
                 <Separator className="h-[1px]" />
                 <div className="group px-2 rounded-sm flex items-center w-full dark:hover:bg-rose-700 hover:bg-rose-700/20 transition">

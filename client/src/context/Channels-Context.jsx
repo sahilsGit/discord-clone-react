@@ -51,6 +51,8 @@ const channelsReducer = (state, action) => {
         hasMore: state.cache.hasMore,
         cache: null,
       };
+    case "RESET_STATE":
+      return initialState;
     default:
       return state;
   }

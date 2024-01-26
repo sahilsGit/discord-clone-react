@@ -17,6 +17,10 @@ const useAuth = (value) => {
       return useContext(AuthContext).name;
     case "image":
       return useContext(AuthContext).image;
+    case "about":
+      return useContext(AuthContext).about;
+    case "email":
+      return useContext(AuthContext).email;
     case "dispatch":
       return useContext(AuthContext).dispatch;
     default:

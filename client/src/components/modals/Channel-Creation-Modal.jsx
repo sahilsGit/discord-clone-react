@@ -188,6 +188,8 @@ const ChannelCreationModal = () => {
                 size="custom"
                 className="bg-gray-100 hover:bg-gray-100 p-0"
                 disabled={isLoading}
+                type="button"
+                onClick={handleClose}
               >
                 Back
               </Button>

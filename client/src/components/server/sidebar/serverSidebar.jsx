@@ -42,6 +42,7 @@ const ServerSidebar = memo(({ activeServer, channels }) => {
         icon: iconMap[channel.type],
         channelType: channel.type,
         conversationId: channel.conversationId,
+        itemType: "channel",
       })),
     },
     {
@@ -52,6 +53,7 @@ const ServerSidebar = memo(({ activeServer, channels }) => {
         icon: iconMap[channel.type],
         channelType: channel.type,
         conversationId: channel.conversationId,
+        itemType: "channel",
       })),
     },
     {
@@ -63,6 +65,7 @@ const ServerSidebar = memo(({ activeServer, channels }) => {
         icon: iconMap[channel.type],
         channelType: channel.type,
         conversationId: channel.conversationId,
+        itemType: "channel",
       })),
     },
     {
@@ -72,6 +75,7 @@ const ServerSidebar = memo(({ activeServer, channels }) => {
         name: member.profile?.name,
         icon: roleIconMap[member.role],
         profileId: member.profileId,
+        itemType: "member",
       })),
     },
   ];

@@ -466,6 +466,65 @@ export const acceptInvite = async (req, res, next) => {
   }
 };
 
+const leaveServer = async (req, res, next) => {
+  try {
+    const { serverId, memberId } = req.params;
+
+    // Find the member document by serverId and memberId
+    const member = await Member.findOne({
+      _id: memberId,
+      serverId: serverId,
+      profileId: req.user.profileId,
+    });
+
+    if (!member) {
+      return res.status(404).send("Member not found");
+    }
+
+    const server = await Server.findById(serverId);
+    if (!server || server.profileId.equals(req.user.profileId)) {
+      return res
+        .status(403)
+        .json({ message: "Admins cannot leave the server" });
+    }
+
+    // Remove member from Profile
+    const profileUpdatePromise = Profile.updateOne(
+      { _id: member.profileId },
+      { $pull: { members: member._id, servers: member.serverId } }
+    );
+
+    // Remove member from Server
+    const serverUpdatePromise = Server.updateOne(
+      { _id: member.serverId },
+      { $pull: { members: member._id } }
+    );
+
+    // Remove member from Channels
+    await Channel.updateMany(
+      { _id: { $in: server.channels } },
+      { $pull: { members: member._id } }
+    );
+
+    // Remove member reference from ServerMessage
+    // const messageUpdatePromise = ServerMessage.updateMany(
+    //   { memberId: member._id },
+    //   { memberId: null }
+    // );
+
+    await Promise.all([profileUpdatePromise, serverUpdatePromise]);
+    await Member.deleteOne({ _id: member._id });
+
+    if (res.body) {
+      res.status(200).send(res.body);
+    } else {
+      res.status(200).send({ message: "Member removed Successfully" });
+    }
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
 // MEMBERS' SPECIFIC APIs++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 export const getMembers = async (req, res) => {
@@ -547,3 +606,5 @@ export const getMembers = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
+export { leaveServer };

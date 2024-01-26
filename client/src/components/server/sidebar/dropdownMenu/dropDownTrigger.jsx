@@ -88,7 +88,12 @@ const DropdownTrigger = ({ role }) => {
             </DropdownMenuItem>
           )}
           {!isAdmin && (
-            <DropdownMenuItem className="px-3 py-2 text-xs cursor-pointer">
+            <DropdownMenuItem
+              onClick={() => {
+                onOpen("leaveServer", { activeServer: activeServer });
+              }}
+              className="px-3 py-2 text-xs cursor-pointer"
+            >
               Leave Server
               <LogOut className="h-4 w-4 ml-auto" />
             </DropdownMenuItem>

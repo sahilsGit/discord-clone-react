@@ -1,5 +1,5 @@
 import { handleResponse } from "@/lib/response-handler";
-import { get } from "@/services/api-service";
+import { get, remove, update } from "@/services/api-service";
 
 const fetchChannel = async ({ serverId, channelId, authDispatch }) => {
   const access_token = JSON.parse(localStorage.getItem("access_token"));
@@ -93,6 +93,15 @@ const fetchMoreDirectMessages = async ({
   return await handleResponse(response, authDispatch);
 };
 
+const leaveServer = async ({ serverId, memberId, authDispatch }) => {
+  const access_token = JSON.parse(localStorage.getItem("access_token"));
+  const response = await remove(
+    `/servers/${serverId}/${memberId}/leave`,
+    access_token
+  );
+  return await handleResponse(response, authDispatch);
+};
+
 export {
   fetchChannel,
   fetchServer,
@@ -103,4 +112,5 @@ export {
   fetchAllConversations,
   fetchMoreServerMessages,
   fetchMoreDirectMessages,
+  leaveServer,
 };

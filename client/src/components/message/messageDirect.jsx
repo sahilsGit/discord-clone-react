@@ -90,7 +90,7 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
           }
         }
       },
-      { threshold: 1 }
+      { threshold: 0 }
     );
 
     observerRef.current = observer;

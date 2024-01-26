@@ -7,6 +7,7 @@ import {
   getMembers,
   findServer,
   acceptInvite,
+  leaveServer,
 } from "../controllers/server.controllers.js";
 import { verifyToken } from "../middlewares/auth.middlewares.js";
 
@@ -21,5 +22,6 @@ router.get("/:username/:getOne", getOne);
 router.get("/:username/find/:inviteCode", findServer);
 router.put("/:serverId/update/basics", updateServerBasics);
 router.get("/:username/:serverId/members", getMembers);
+router.delete("/:serverId/:memberId/leave", leaveServer);
 
 export default router;

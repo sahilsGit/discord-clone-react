@@ -1,6 +1,6 @@
 import useAuth from "@/hooks/useAuth";
 import { get } from "@/services/api-service";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleError, handleResponse } from "./response-handler";
 
@@ -10,27 +10,43 @@ const RequireAuth = ({ children }) => {
   const navigate = useNavigate();
   const profileId = useAuth("id");
   const authDispatch = useAuth("dispatch");
-  const [loading, setLoading] = useState(true);
+  const name = useAuth("name");
+  const image = useAuth("image");
+  const email = useAuth("email");
+  const about = useAuth("about");
 
   useEffect(() => {
-    const refreshAuthDetails = async () => {
+    const refreshUserDetails = async () => {
       try {
         const response = await get("/auth/refresh", access_token);
-        await handleResponse(response, authDispatch);
+        const data = await handleResponse(response, authDispatch);
+
+        console.log(data);
+
+        authDispatch({ type: "SET_CUSTOM", payload: data });
       } catch (err) {
         handleError(err, authDispatch);
       }
     };
 
     if (user && access_token) {
-      !profileId ? refreshAuthDetails() : setLoading(false);
+      (!profileId || !name || !image || !about || !email) &&
+        refreshUserDetails();
     } else {
       authDispatch({ type: "RESET_STATE" });
       navigate("/");
     }
-  }, [user, access_token, profileId]);
+  }, [user, access_token]);
 
-  return loading ? null : children;
+  return !profileId ||
+    !name ||
+    !image ||
+    !about ||
+    !email ||
+    !user ||
+    !access_token
+    ? null
+    : children;
 };
 
 export default RequireAuth;

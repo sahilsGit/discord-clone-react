@@ -1,6 +1,10 @@
 import express from "express";
-import { register, login } from "../controllers/auth.controllers.js";
-import { refresh } from "../middlewares/auth.middlewares.js";
+import {
+  register,
+  login,
+  refreshUserDetails,
+} from "../controllers/auth.controllers.js";
+import { verifyToken } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
 
@@ -8,6 +12,6 @@ const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
-router.get("/refresh", refresh);
+router.get("/refresh", verifyToken, refreshUserDetails);
 
 export default router;

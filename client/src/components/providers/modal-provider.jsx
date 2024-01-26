@@ -5,6 +5,7 @@ import MembersModal from "@/components/modals/Members-Modal";
 import ChannelCreationModal from "@/components/modals/Channel-Creation-Modal";
 import { MessageFileModal } from "@/components/modals/Message-File-Modal";
 import SettingsModal from "../modals/Settings-Modal";
+import LeaveServerModal from "../modals/Leave-Server-Modal";
 
 export const ModalProvider = () => {
   return (
@@ -16,6 +17,7 @@ export const ModalProvider = () => {
       <ChannelCreationModal />
       <MessageFileModal />
       <SettingsModal />
+      <LeaveServerModal />
     </>
   );
 };

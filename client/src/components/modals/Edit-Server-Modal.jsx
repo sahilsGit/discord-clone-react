@@ -231,15 +231,13 @@ const EditServerModal = () => {
       await handleError(err, authDispatch);
     }
 
-    setTimeout(() => {
-      onClose();
-      form.reset();
-    }, 1000);
+    onClose();
+    // form.reset();
+    setAvatarImage(null);
   };
 
   const handleClose = () => {
     onClose();
-    form.reset();
   };
 
   // Scadcn UI's Dialog box

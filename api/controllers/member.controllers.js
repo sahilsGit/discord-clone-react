@@ -136,6 +136,10 @@ export const removeMember = async (req, res, next) => {
 
     const server = await Server.findById(member.serverId);
 
+    if (req.params.serverId !== server._id.toHexString()) {
+      return res.status(404).send("Something went wrong");
+    }
+
     // Remove member from Profile
     const profileUpdatePromise = Profile.updateOne(
       { _id: member.profileId },
@@ -169,6 +173,6 @@ export const removeMember = async (req, res, next) => {
       res.status(200).send({ message: "Member removed Successfully" });
     }
   } catch (err) {
-    res.send(err.message);
+    res.status(500).send(err.message);
   }
 };

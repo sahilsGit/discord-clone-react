@@ -59,7 +59,6 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
           serverDispatch({ type: "USE_CACHE" });
           return;
         }
-
         getChannelAndServer(
           user,
           id,

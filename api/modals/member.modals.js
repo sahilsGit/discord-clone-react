@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+import Profile from "./profile.modals.js";
+import Channel from "./channel.modals.js";
+import Server from "./server.modals.js";
 
 const memberSchema = new mongoose.Schema({
   role: {

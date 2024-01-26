@@ -20,7 +20,6 @@ import "../../App.css";
 
 const SettingsModal = () => {
   const { isOpen, onClose, type, data } = useModal();
-  console.log(isOpen, type);
   const isModalOpen = isOpen && type === "settings";
   const username = useAuth("user");
   const [avatarImage, setAvatarImage] = useState(null);
@@ -28,8 +27,7 @@ const SettingsModal = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const access_token = useAuth("token");
   const [hasChanged, setHasChanged] = useState(true);
-
-  // console.log(hasChanged);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -125,9 +123,8 @@ const SettingsModal = () => {
   };
 
   const onSubmit = async (values) => {
+    setLoading(true);
     const image = await uploadImage(); // Wait for image you get upon resolution
-
-    console.log(image);
 
     const updatedValues = {};
 
@@ -138,7 +135,7 @@ const SettingsModal = () => {
       updatedValues["name"] = values.name;
     }
     if (data.username !== values.username) {
-      updatedValues["name"] = values.username;
+      updatedValues["username"] = values.username;
     }
     if (data.about !== values.about) {
       updatedValues["about"] = values.about;
@@ -149,6 +146,8 @@ const SettingsModal = () => {
       return;
     }
 
+    console.log(updatedValues);
+
     try {
       const response = await update(
         `/profiles/updateProfile`,
@@ -156,15 +155,15 @@ const SettingsModal = () => {
         access_token
       );
 
-      await handleResponse(response, authDispatch);
+      const dataReceived = await handleResponse(response, authDispatch);
+
+      authDispatch({ type: "SET_CUSTOM", payload: dataReceived.updatedData });
     } catch (err) {
       handleError(err, authDispatch);
-    }
-
-    setTimeout(() => {
+    } finally {
+      setLoading(false);
       onClose();
-      form.reset();
-    }, 1000);
+    }
   };
 
   return (
@@ -318,7 +317,9 @@ const SettingsModal = () => {
                         >
                           Reset
                         </Button>
-                        <Button size="custom">Save Changes</Button>
+                        <Button size="custom" disabled={loading}>
+                          Save Changes
+                        </Button>
                       </div>
                     </div>
                   </div>

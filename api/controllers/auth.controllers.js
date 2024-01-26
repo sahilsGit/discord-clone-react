@@ -3,7 +3,7 @@ import Session from "../modals/session.modals.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-export const register = async (req, res, next) => {
+const register = async (req, res, next) => {
   /*
   Handles user Registration
   */
@@ -61,11 +61,10 @@ export const register = async (req, res, next) => {
   }
 };
 
-export const login = async (req, res, next) => {
+const login = async (req, res, next) => {
   /*
   Handles user login
   */
-
   try {
     // Validation
 
@@ -120,10 +119,6 @@ export const login = async (req, res, next) => {
         expiresIn: "5m", // Token expiration time
       }
     ); // Authorize user using the secret key
-
-    console.log("Signed a jwt");
-
-    console.log(userProfile.name, userProfile.image);
 
     const refresh = jwt.sign(
       {
@@ -187,4 +182,22 @@ const handleLogout = async (req, res, next) => {
   }
 };
 
-export default handleLogout;
+const refreshUserDetails = async (req, res) => {
+  // Extract tokens from cookies and headers
+  try {
+    const profile = await Profile.findById(req.user.profileId);
+
+    res.status(200).send({
+      user: profile.username,
+      profileId: profile._id,
+      name: profile.name,
+      image: profile.image,
+      email: profile.email,
+      about: profile.about,
+    });
+  } catch (err) {
+    return res.status(401).send("Invalid Token");
+  }
+};
+
+export { handleLogout, refreshUserDetails, register, login };

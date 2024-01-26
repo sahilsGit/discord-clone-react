@@ -6,12 +6,48 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import React, { useState } from "react";
+import useAuth from "@/hooks/useAuth";
+import useChannels from "@/hooks/useChannels";
+import { getChannelOnly } from "@/lib/context-helper";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const ServerSearch = ({ data }) => {
   const [open, setOpen] = useState(false);
+  const params = useParams();
+  const authDispatch = useAuth("dispatch");
+  const channelsDispatch = useChannels("dispatch");
 
-  // console.log("dddd", data);
+  useEffect(() => {
+    const press = (e) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((open) => !open);
+      }
+    };
+
+    document.addEventListener("keydown", press);
+
+    return () => document.removeEventListener("keydown", press);
+  }, []);
+
+  const onClick = async ({ id, itemType }) => {
+    // if (itemType === "member") {
+    //   return router.push(`/servers/${params?.serverId}/conversations/${id}`);
+    // }
+
+    if (itemType === "channel") {
+      await getChannelOnly(
+        params?.serverId,
+        id,
+        authDispatch,
+        channelsDispatch
+      );
+    }
+    setOpen(false);
+    return;
+  };
+
   return (
     <>
       <button
@@ -24,8 +60,9 @@ const ServerSearch = ({ data }) => {
           <p className="text-xs text-zinc-500 dark:text-zinc-400 transition">
             Search
           </p>
-
-          <p className="text-xxxs text-zinc-500 dark:text-zinc-400">ctrl + k</p>
+          <kbd className="text-xxxs tracking-tighter text-zinc-500 dark:text-zinc-400">
+            ctrl + k
+          </kbd>
         </div>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
@@ -37,9 +74,13 @@ const ServerSearch = ({ data }) => {
 
             return (
               <CommandGroup key={label} heading={label}>
-                {contentArray?.map(({ id, icon, name }) => {
+                {contentArray?.map(({ id, icon, name, itemType }) => {
                   return (
-                    <CommandItem className="flex space-x-3" key={id}>
+                    <CommandItem
+                      className="flex space-x-3"
+                      key={id}
+                      onSelect={() => onClick({ id, itemType })}
+                    >
                       <span>{name}</span>
                       <div>{icon}</div>
                     </CommandItem>

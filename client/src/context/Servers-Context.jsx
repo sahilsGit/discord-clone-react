@@ -17,12 +17,7 @@ const serverReducer = (state, action) => {
     case "SET_ACTIVE_SERVER":
       return { ...state, activeServer: action.payload };
     case "RESET_STATE":
-      return {
-        servers: null,
-        activeServer: null,
-        channels: null,
-        activeChannel: null,
-      };
+      return initialState;
     case "REMOVE_ACTIVE_SERVER":
       return {
         ...state,
