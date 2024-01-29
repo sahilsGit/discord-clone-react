@@ -153,7 +153,7 @@ const login = async (req, res, next) => {
       newAccessToken: access_token,
       profileId: userProfile._id,
       name: userProfile.name,
-      image: userProfile.image || null,
+      image: userProfile.image || "",
     });
   } catch (err) {
     err.status = 500;
@@ -187,13 +187,15 @@ const refreshUserDetails = async (req, res) => {
   try {
     const profile = await Profile.findById(req.user.profileId);
 
+    console.log(profile);
+
     res.status(200).send({
       user: profile.username,
       profileId: profile._id,
       name: profile.name,
-      image: profile.image,
+      image: profile.image || "",
       email: profile.email,
-      about: profile.about,
+      about: profile.about || "",
     });
   } catch (err) {
     return res.status(401).send("Invalid Token");

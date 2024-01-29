@@ -30,13 +30,15 @@ const SettingsModal = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isModalOpen) {
+    if (isModalOpen && !hasChanged) {
       form.setValue("name", data.name);
       form.setValue("about", data.about);
       form.setValue("email", data.email);
       form.setValue("username", data.username);
+      setAvatarImage(null);
+      setImagePreview(null);
     }
-  }, [isModalOpen]);
+  }, [isModalOpen, hasChanged]);
 
   const formSchema = z.object({
     name: z.string().min(1, {
@@ -283,9 +285,10 @@ const SettingsModal = () => {
                         render={({ field }) => (
                           <div className="bg-main10 w-full px-3 py-3 text-white h-full rounded-sm break-all">
                             <textarea
-                              className="w-full h-full resize-none bg-main10"
+                              className="w-full h-full resize-none bg-main10 placeholder:text-sm"
                               name=""
                               id=""
+                              placeholder="Write something for others to see..."
                               {...field}
                               onChange={(e) => {
                                 field.onChange(e);

@@ -17,7 +17,6 @@ const ServerChannelItem = ({ channel, role, type, activeServer }) => {
   const Icon = iconMap[type];
   const activeChannel = useChannels("activeChannel");
   const [clicked, setClicked] = useState(false);
-  const navigate = useNavigate();
   const serverId = activeServer.id;
   const authDispatch = useAuth("dispatch");
   const channelsDispatch = useChannels("dispatch");
@@ -41,18 +40,17 @@ const ServerChannelItem = ({ channel, role, type, activeServer }) => {
   return (
     <button
       className={cn(
-        "group px-2 py-1 rounded-sm flex items-center gap-x-2 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition mb-1",
+        "group px-2 py-1 rounded-sm h-[30px] flex items-center gap-x-2 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition mb-1",
         (activeChannel._id === channel.id || clicked) &&
           "bg-zinc-700/20 dark:bg-zinc-700"
       )}
       onClick={onClick}
     >
-      <Icon className="flex-shrink-0 w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+      <Icon className="flex-shrink-0 w-4 h-4 dark:text-zinc-400" />
       <p
         className={cn(
-          "line-clamp-1 font-semibold text-sm transition",
-          activeChannel?._id !== channel.id &&
-            "text-primary dark:text-zinc-300 dark:text-zinc-300",
+          "font-medium text-sm dark:text-zinc-400 transition",
+          activeChannel?._id !== channel.id && "dark:group-hover:text-zinc-300",
           activeChannel?._id === channel.id && "text-primary dark:text-white"
         )}
       >
@@ -66,9 +64,6 @@ const ServerChannelItem = ({ channel, role, type, activeServer }) => {
               className="hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition"
             />
           </ActionTooltip>
-          {/* <ActionTooltip label="Delete">
-            <Trash className="hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition" />
-          </ActionTooltip> */}
         </div>
       )}
       {channel.name === "general" && (

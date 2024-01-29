@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import useAuth from "@/hooks/useAuth";
 import { UserAvatar } from "@/components/userAvatar";
-import { useNavigate } from "react-router-dom";
 import useConversations from "@/hooks/useConversations";
 import { getConversationDetails } from "@/lib/context-helper";
 
@@ -10,13 +9,11 @@ const ConversationItem = ({ conversation, profile }) => {
   const [clicked, setClicked] = useState(false);
   const activeConversation = useConversations("activeConversation");
   const profileId = useAuth("id");
-  // const navigate = useNavigate();
   const authDispatch = useAuth("dispatch");
   const conversationsDispatch = useConversations("dispatch");
 
   const onClick = () => {
     setClicked(true);
-    // navigate(`/@me/conversations/${profile._id}/${profileId}`);
     getConversationDetails(
       profile._id,
       profileId,

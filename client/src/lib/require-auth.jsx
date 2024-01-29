@@ -21,16 +21,24 @@ const RequireAuth = ({ children }) => {
         const response = await get("/auth/refresh", access_token);
         const data = await handleResponse(response, authDispatch);
 
-        console.log(data);
-
-        authDispatch({ type: "SET_CUSTOM", payload: data });
+        authDispatch({
+          type: "SET_CUSTOM",
+          payload: {
+            about: data.about,
+            email: data.email,
+            image: data.image,
+            name: data.name,
+            profileId: data.profileId,
+            user: data.user,
+          },
+        });
       } catch (err) {
         handleError(err, authDispatch);
       }
     };
 
     if (user && access_token) {
-      (!profileId || !name || !image || !about || !email) &&
+      (!profileId || !name || !about === null || !image === null || !email) &&
         refreshUserDetails();
     } else {
       authDispatch({ type: "RESET_STATE" });
@@ -39,9 +47,9 @@ const RequireAuth = ({ children }) => {
   }, [user, access_token]);
 
   return !profileId ||
+    !image === null ||
     !name ||
-    !image ||
-    !about ||
+    !about === null ||
     !email ||
     !user ||
     !access_token

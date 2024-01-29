@@ -43,15 +43,15 @@ const NavigationConversation = ({
           <div
             className={cn(
               "relative h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all bg-main07 group-hover:bg-indigo-500",
-              type === "conversation" &&
-                "rounded-[16px] bg-indigo-500 translate-y-[1px]"
+              type === "conversation" && "rounded-[16px] bg-indigo-500"
             )}
           >
             <img
               className={cn(
                 "absolute top-[4.5px] left-[5.5px] h-[37px] w-[37px]",
                 theme === "light" &&
-                  "invert group-hover:invert-0 transition-all"
+                  "invert group-hover:invert-0 transition-all",
+                type === "conversation" && "invert-0"
               )}
               src="../../../../../assets/images/logos/discord_logo.png"
               alt=""

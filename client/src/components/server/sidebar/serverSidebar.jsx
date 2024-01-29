@@ -74,7 +74,7 @@ const ServerSidebar = memo(({ activeServer, channels }) => {
         id: member._id,
         name: member.profile?.name,
         icon: roleIconMap[member.role],
-        profileId: member.profileId,
+        profileId: member?.profile?._id,
         itemType: "member",
       })),
     },
