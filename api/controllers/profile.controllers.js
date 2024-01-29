@@ -23,6 +23,55 @@ const about = async (req, res, next) => {
   }
 };
 
+const searchUser = async (req, res) => {
+  console.log("searching");
+  try {
+    // Get the search query from the request query parameters
+    const searchQuery = req.query.searchQuery;
+
+    // Check if the search query is present
+    if (!searchQuery) {
+      return res.status(400).json({ error: "Search query is required." });
+    }
+
+    // Use a case-insensitive regular expression to perform a partial match on the username and name fields
+    const searchRegex = new RegExp(searchQuery);
+
+    // Use the Mongoose 'find' method to search for users
+    const user = await Profile.find({
+      username: { $regex: searchRegex },
+    });
+
+    console.log(user);
+
+    if (!user || !user?.length) {
+      return res.status(200).send({ message: "No user found!" });
+    }
+    const userData = {
+      name: user[0].name,
+      username: user[0].username,
+      image: user[0].image || "",
+      id: user[0]._id,
+    };
+
+    if (res.body) {
+      res.body = {
+        ...res.body,
+        userData: userData,
+      };
+    } else {
+      res.body = {
+        userData: userData,
+      };
+    }
+
+    res.status(200).send(res.body);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const updateProfile = async (req, res) => {
   let oldImage;
 
@@ -95,4 +144,4 @@ const updateProfile = async (req, res) => {
   }
 };
 
-export { about, updateProfile };
+export { about, updateProfile, searchUser };
