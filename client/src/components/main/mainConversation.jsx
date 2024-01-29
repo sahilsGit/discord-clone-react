@@ -41,7 +41,18 @@ const MainConversation = ({ type, activeConversation }) => {
           />
         </>
       ) : (
-        <ConversationHeader />
+        <>
+          <ConversationHeader />
+          <div className="flex items-center justify-center px-12 h-full">
+            <div className="text-center text-lg max-w-[500px]">
+              <p className="text-4xl pb-5">Coming soon!</p>
+              <p>
+                Your friends would appear here, for now you can chat directly by
+                creating a DM.
+              </p>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

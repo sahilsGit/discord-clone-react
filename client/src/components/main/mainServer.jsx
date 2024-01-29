@@ -17,39 +17,6 @@ const MainServer = ({ type }) => {
   const channelId = activeChannel?._id;
   const channelType = activeChannel?.type;
 
-  // To un-mount & re-mount component
-  // useEffect(() => {
-  //   console.log("flushing");
-  //   channelId && setKey(key + 1);
-  // }, [channelId]);
-
-  // useEffect(() => {
-  //   const fetchMessages = async () => {
-  //     try {
-  //       const response = await get(
-  //         `/messages/fetch?memberId=${memberId}&channelId=${channelId}`,
-  //         access_token
-  //       );
-  //       const messageData = await handleResponse(response, authDispatch);
-
-  //       messagesDispatch({
-  //         type: "SET_MESSAGES",
-  //         payload: {
-  //           messages: messageData.messages,
-  //           cursor: messageData.newCursor,
-  //           hasMore: messageData.hasMoreMessages,
-  //         },
-  //       });
-  //       setLoading(false);
-  //     } catch (error) {
-  //       handleError(error, authDispatch);
-  //       // setError(true);
-  //     }
-  //   };
-
-  //   fetchMessages();
-  // }, [activeChannel]);
-
   if (messages === "null" || !activeChannel) {
     return null;
   }

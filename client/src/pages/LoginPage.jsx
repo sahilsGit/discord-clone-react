@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import {
   Form,
   FormControl,
@@ -95,7 +94,8 @@ const LoginPage = () => {
                             }
                             className={cn(
                               "h-[45px]",
-                              fieldState.error && "placeholder:text-red-400"
+                              fieldState.error &&
+                                "placeholder:text-red-400 focus-visible:ring-red-400"
                             )}
                             {...field}
                           />
@@ -108,7 +108,7 @@ const LoginPage = () => {
                     name="password"
                     render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel className="uppercase text-sm text-zinc-400">
+                        <FormLabel className="uppercase text-sm text-zinc-400 ring-red-400">
                           Password
                         </FormLabel>
                         <FormControl>
@@ -122,7 +122,8 @@ const LoginPage = () => {
                             type="password"
                             className={cn(
                               "h-[45px]",
-                              fieldState.error && "placeholder:text-red-400"
+                              fieldState.error &&
+                                "placeholder:text-red-400 focus-visible:ring-red-400 ring-red-400"
                             )}
                           />
                         </FormControl>

@@ -10,16 +10,16 @@ import { SocketContextProvider } from "./context/Socket-Context";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    {/* <React.StrictMode> */}
-    <ErrorBoundary>
-      <AuthContextProvider>
-        <SocketContextProvider>
-          <ServerContextProvider>
-            <App />
-          </ServerContextProvider>
-        </SocketContextProvider>
-      </AuthContextProvider>
-    </ErrorBoundary>
-    {/* </React.StrictMode> */}
+    <React.StrictMode>
+      <ErrorBoundary>
+        <AuthContextProvider>
+          <SocketContextProvider>
+            <ServerContextProvider>
+              <App />
+            </ServerContextProvider>
+          </SocketContextProvider>
+        </AuthContextProvider>
+      </ErrorBoundary>
+    </React.StrictMode>
   </BrowserRouter>
 );

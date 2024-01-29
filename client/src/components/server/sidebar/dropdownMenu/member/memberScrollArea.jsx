@@ -25,6 +25,7 @@ import {
   ShieldQuestion,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+// import useDebounce from "@/hooks/useDebounce";
 
 const roleIconMap = {
   GUEST: null,
@@ -43,6 +44,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const observerRef = useRef();
   const timeoutId = useRef(null);
   const activeServer = useServer("activeServer");
+  // const debouncedSearch = useDebounce(searchTerm);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -91,8 +93,8 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
       { threshold: 0.5 }
     );
 
-    if (lastItemRef.current) {
-      observerRef.current.observe(lastItemRef.current);
+    if (lastItemRef?.current) {
+      observerRef?.current?.observe(lastItemRef.current);
     }
 
     return () => observerRef.current.disconnect();

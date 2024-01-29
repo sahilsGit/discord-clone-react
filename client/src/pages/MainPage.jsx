@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
 import useServer from "@/hooks/useServer";
@@ -34,6 +34,7 @@ import { handleError } from "@/lib/response-handler";
 const MainPage = ({ type }) => {
   const params = useParams();
   const navigate = useNavigate();
+  const [verified, setVerified] = useState(false);
 
   // Consume the Servers context using custom hook
   const profileId = useAuth("id");
