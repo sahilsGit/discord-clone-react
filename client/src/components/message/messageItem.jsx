@@ -2,17 +2,9 @@ import { Edit, ShieldAlert, ShieldCheck, Trash } from "lucide-react";
 import { ActionTooltip } from "../actionTooltip";
 import { UserAvatar } from "../userAvatar";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
-// import { UserAvatar } from "@/components/user-avatar";
-// import { ActionTooltip } from "@/components/action-tooltip";
-
+import { useEffect } from "react";
 import * as z from "zod";
-// import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-// import { useEffect, useState } from "react";
-// import { useRouter, useParams } from "next/navigation";
-
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
@@ -20,9 +12,7 @@ import { Input } from "../ui/input";
 import useAuth from "@/hooks/useAuth";
 import { update } from "@/services/api-service";
 import { handleError, handleResponse } from "@/lib/response-handler";
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
-// import { useModal } from "@/hooks/use-modal-store";
+import { useModal } from "@/hooks/useModals";
 
 const roleIconMap = {
   GUEST: null,
@@ -34,34 +24,31 @@ const formSchema = z.object({
   content: z.string().min(1),
 });
 
-const MessageItem = ({ message, myDetails, sender, apiRoute }) => {
-  const [isEditing, setIsEditing] = useState(false);
+const MessageItem = ({
+  message,
+  myDetails,
+  sender,
+  apiRoute,
+  isEditing,
+  setIsEditing,
+}) => {
+  // const [isEditing, setIsEditing] = useState(false);
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
+  const { onOpen } = useModal();
 
-  // const { onOpen } = useModal();
-  // const params = useParams();
-  // const router = useRouter();
+  useEffect(() => {
+    const pressEsc = (e) => {
+      if (e.key === "Escape" && e.ctrlKey) {
+        e.preventDefault();
+        setIsEditing([false, ""]);
+      }
+    };
 
-  // const onMemberClick = () => {
-  //   if (member.id === currentMember.id) {
-  //     return;
-  //   }
+    document.addEventListener("keydown", pressEsc);
 
-  //   router.push(`/servers/${params?.serverId}/conversations/${member.id}`);
-  // };
-
-  // useEffect(() => {
-  //   const handleKeyDown = (event) => {
-  //     if (event.key === "Escape" || event.keyCode === 27) {
-  //       setIsEditing(false);
-  //     }
-  //   };
-
-  //   window.addEventListener("keydown", handleKeyDown);
-
-  //   return () => window.removeEventListener("keyDown", handleKeyDown);
-  // }, []);
+    return () => document.removeEventListener("keydown", pressEsc);
+  }, []);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -77,42 +64,14 @@ const MessageItem = ({ message, myDetails, sender, apiRoute }) => {
 
     try {
       const response = await update(
-        `${apiRoute}/${message._id}/${myDetails._id}`,
+        `${apiRoute}/update/${message._id}/${myDetails._id}`,
         updatedData,
         access_token
       );
 
       await handleResponse(response, authDispatch);
-
-      // const messageIndex = activeChannel.messages.data.findIndex(
-      //   (msg) => msg._id === message._id
-      // );
-
-      // // If the message is found in the array, update it
-      // if (messageIndex !== -1) {
-      //   const updatedMessages = [...activeChannel.messages.data];
-      //   updatedMessages[messageIndex] = data.message;
-
-      //   // Update the state with the updated message
-      //   serverDispatch({
-      //     type: "SET_CUSTOM",
-      //     payload: {
-      //       activeChannel: {
-      //         ...activeChannel,
-      //         messages: {
-      //           data: updatedMessages,
-      //           cursor: activeChannel.messages.cursor,
-      //           hasMoreMessages: activeChannel.messages.hasMoreMessages,
-      //         },
-      //       },
-      //     },
-      //   });
-      // } else {
-      //   // Handle the case where the message to update is not found
-      //   console.error("Message not found for update:");
-      // }
       form.reset();
-      setIsEditing(false);
+      setIsEditing([false], "");
     } catch (error) {
       handleError(error);
     }
@@ -134,19 +93,13 @@ const MessageItem = ({ message, myDetails, sender, apiRoute }) => {
   return (
     <div className="relative group flex items-center hover:bg-black/5 p-4 transition w-full">
       <div className="group flex gap-x-2 items-start w-full">
-        <div
-          // onClick={onMemberClick}
-          className="cursor-pointer hover:drop-shadow-md transition"
-        >
+        <div className="cursor-pointer hover:drop-shadow-md transition">
           <UserAvatar subject={sender?.profile} />
         </div>
         <div className="flex flex-col w-full">
           <div className="flex items-center gap-x-2">
             <div className="flex items-center">
-              <p
-                // onClick={onMemberClick}
-                className="font-semibold text-sm hover:underline cursor-pointer"
-              >
+              <p className="font-semibold text-sm hover:underline cursor-pointer">
                 {sender.profile.name}
               </p>
               {sender?.role && (
@@ -160,7 +113,7 @@ const MessageItem = ({ message, myDetails, sender, apiRoute }) => {
             </span>
           </div>
 
-          {!isEditing && (
+          {!isEditing[1] !== message._id && (
             <p
               className={cn(
                 "text-sm text-zinc-600 dark:text-zinc-300",
@@ -176,7 +129,7 @@ const MessageItem = ({ message, myDetails, sender, apiRoute }) => {
               )}
             </p>
           )}
-          {isEditing && (
+          {isEditing[0] && isEditing[1] === message._id && (
             <Form {...form}>
               <form
                 className="flex items-center w-full gap-x-2 pt-2"
@@ -205,30 +158,31 @@ const MessageItem = ({ message, myDetails, sender, apiRoute }) => {
                 </Button>
               </form>
               <span className="text-[10px] mt-1 text-zinc-400">
-                Press escape to cancel, enter to save
+                Press enter to save, or ctrl + escape to cancel
               </span>
             </Form>
           )}
         </div>
       </div>
-      {canDeleteMessage && (
-        <div className="hidden group-hover:flex items-center gap-x-2 absolute p-1 -top-2 right-5 bg-white dark:bg-zinc-800 border rounded-sm">
+      {canDeleteMessage && !isEditing[0] && isEditing[1] !== message._id && (
+        <div className="hidden group-hover:flex absolute items-center gap-x-2 p-1 -top-2 right-5 bg-white dark:bg-zinc-800 border rounded-sm">
           {canEditMessage && (
             <ActionTooltip label="Edit">
               <Edit
-                onClick={() => setIsEditing(true)}
+                onClick={() => setIsEditing([true, message._id])}
                 className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
               />
             </ActionTooltip>
           )}
           <ActionTooltip label="Delete">
             <Trash
-              // onClick={() =>
-              //   onOpen("deleteMessage", {
-              //     apiUrl: `${socketUrl}/${id}`,
-              //     query: socketQuery,
-              //   })
-              // }
+              onClick={() =>
+                onOpen("deleteMessage", {
+                  url: `${apiRoute}/delete/${message._id}/${myDetails._id}`,
+                  sender: sender,
+                  message: message,
+                })
+              }
               className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
             />
           </ActionTooltip>

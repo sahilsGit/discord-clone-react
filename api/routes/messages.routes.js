@@ -1,4 +1,6 @@
 import {
+  deleteDirectMessage,
+  deleteMessage,
   fetchMessages,
   sendDirectMessage,
   sendServerMessage,
@@ -14,7 +16,9 @@ router.use(verifyToken);
 router.post("/direct", sendDirectMessage);
 router.post("/server", sendServerMessage);
 router.get("/fetch", fetchMessages);
-router.put("/update/server/:messageId/:memberId", updateMessage);
-router.put("/update/direct/:messageId/:profileId", updateDirectMessage);
+router.put("/server/update/:messageId/:memberId", updateMessage);
+router.delete("/server/delete/:messageId/:memberId", deleteMessage);
+router.put("/direct/update/:messageId/:profileId", updateDirectMessage);
+router.delete("/direct/delete/:messageId/:profileId", deleteDirectMessage);
 
 export default router;

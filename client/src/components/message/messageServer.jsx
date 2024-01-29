@@ -23,6 +23,7 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   const { socket } = useSocket();
   const [isConnected, setIsConnected] = useState(false);
   const channelsDispatch = useChannels("dispatch");
+  const [isEditing, setIsEditing] = useState([false, ""]);
 
   const CONNECTED_EVENT = "connected";
   const DISCONNECT_EVENT = "disconnect";
@@ -30,6 +31,11 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   const STOP_TYPING_EVENT = "stopTyping";
   const MESSAGE_RECEIVED_EVENT = "messageReceived";
   const MESSAGE_EDITED_EVENT = "messageEdited";
+  const MESSAGE_DELETED_EVENT = "messageDeleted";
+
+  const handleEditChange = (status) => {
+    setIsEditing([status[0], status[1]]);
+  };
 
   /*
    * Handles the event when a new message is received.
@@ -46,7 +52,7 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   };
 
   const onMessageEdited = (message) => {
-    console.log(messages);
+    console.log("server message being edited");
     processEditedServerMessage(
       message,
       messages,
@@ -57,7 +63,19 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
     );
   };
 
-  /**
+  const onMessageDeleted = (message) => {
+    console.log("server message being deleted");
+    processEditedServerMessage(
+      message,
+      messages,
+      channelId,
+      cursor,
+      hasMore,
+      channelsDispatch
+    );
+  };
+
+  /*
    * Handles the "typing" event on the socket.
    */
   const handleOnSocketTyping = () => {
@@ -77,9 +95,13 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   };
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    observerRef.current = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
+          if (isEditing[0]) {
+            return;
+          }
+
           // Fetching another batch when observer intersects
           const errorStatusAfterFetch = await getMoreServerMessages(
             myMembership._id,
@@ -95,10 +117,8 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
           }
         }
       },
-      { threshold: 1 }
+      { threshold: 0.5 }
     );
-
-    observerRef.current = observer;
 
     if (lastItemRef.current) {
       observerRef?.current?.observe(lastItemRef.current);
@@ -107,24 +127,19 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
     return () => {
       observerRef?.current?.disconnect();
     };
-  }, [messages?.length]);
+  }, [messages?.length, isEditing]);
 
   useEffect(() => {
     if (!socket) return;
-    // Set up event listeners for various socket events:
 
-    // Listener for when the socket connects.
+    // Set up event listeners for various socket events:
     socket.on(CONNECTED_EVENT, onConnect);
-    // Listener for when the socket disconnects.
     socket.on(DISCONNECT_EVENT, onDisconnect);
-    // Listener for when a user is typing.
     socket.on(TYPING_EVENT, handleOnSocketTyping);
-    // Listener for when a user stops typing.
     socket.on(STOP_TYPING_EVENT, handleOnSocketStopTyping);
-    // Listener for when a new message is received.
     socket.on(MESSAGE_RECEIVED_EVENT, onMessageReceived);
-    // Listener for when a message is edited.
     socket.on(MESSAGE_EDITED_EVENT, onMessageEdited);
+    socket.on(MESSAGE_DELETED_EVENT, onMessageDeleted);
 
     return () => {
       // Remove all the event listeners to avoid memory leaks.
@@ -134,6 +149,7 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
       socket.off(STOP_TYPING_EVENT, handleOnSocketStopTyping);
       socket.off(MESSAGE_RECEIVED_EVENT, onMessageReceived);
       socket.off(MESSAGE_EDITED_EVENT, onMessageEdited);
+      socket.off(MESSAGE_DELETED_EVENT, onMessageDeleted);
     };
   }, [socket, messages]);
 
@@ -151,7 +167,9 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
         message={message}
         myDetails={myMembership}
         sender={message.member}
-        apiRoute="/messages/update/server"
+        apiRoute="/messages/server"
+        isEditing={isEditing}
+        setIsEditing={handleEditChange}
       />
     </div>
   );
@@ -162,11 +180,11 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
 
   return (
     <div className="flex-1 flex flex-col-reverse overflow-y-auto">
-      {messages?.length && (
+      {messages?.length ? (
         <div className="flex flex-col-reverse">
           {messages?.map((message, index) => renderMessageItem(message, index))}
         </div>
-      )}
+      ) : null}
       {(!messages?.length || !hasMore) && (
         <div className="flex flex-col pt-3">
           <div className="flex-1" />

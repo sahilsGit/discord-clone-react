@@ -393,10 +393,52 @@ const updateMessage = async (req, res) => {
     if (updatedMessage) {
       const channelId = updatedMessage.channelId.toHexString();
 
+      console.log("launching event");
+
       emitSocketEvent(
         req,
         channelId,
         ConversationEventEnum.MESSAGE_EDITED,
+        messageDocument[0]
+      );
+
+      res.status(200).send(res.body);
+    } else {
+      res
+        .status(404)
+        .json({ success: false, message: "Message not found for update" });
+    }
+  } catch (error) {
+    // Handle errors and respond with an error status
+    console.error("Error updating message:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+const deleteMessage = async (req, res) => {
+  try {
+    const { messageId, memberId } = req.params;
+    const content = "This message has been deleted!";
+
+    // Find and update the message in the database
+    const updatedMessage = await ServerMessage.findOneAndUpdate(
+      { _id: messageId, memberId: memberId },
+      { $set: { content: content, deleted: true } }
+    );
+
+    const messageDocument = await ServerMessage.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(messageId) } },
+      ...commonMessagesPipeline,
+    ]);
+
+    // Check if the message was found and updated
+    if (updatedMessage) {
+      const channelId = updatedMessage.channelId.toHexString();
+
+      emitSocketEvent(
+        req,
+        channelId,
+        ConversationEventEnum.MESSAGE_DELETED,
         messageDocument[0]
       );
 
@@ -456,12 +498,56 @@ const updateDirectMessage = async (req, res) => {
   }
 };
 
+const deleteDirectMessage = async (req, res) => {
+  try {
+    const { messageId, profileId } = req.params;
+    const content = "This message has been deleted!";
+
+    console.log(req.params);
+
+    // Find and update the message in the database
+    const updatedMessage = await DirectMessage.findOneAndUpdate(
+      { _id: messageId, senderId: profileId },
+      { $set: { content: content, deleted: true } }
+    );
+
+    const messageDocument = await DirectMessage.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(messageId) } },
+      ...directMessagePipeline,
+    ]);
+
+    // Check if the message was found and updated
+    if (updatedMessage) {
+      const senderId = updatedMessage.senderId.toHexString();
+
+      emitSocketEvent(
+        req,
+        senderId,
+        ConversationEventEnum.MESSAGE_DELETED,
+        messageDocument[0]
+      );
+
+      res.status(200).send(res.body);
+    } else {
+      res
+        .status(404)
+        .json({ success: false, message: "Message not found for update" });
+    }
+  } catch (error) {
+    // Handle errors and respond with an error status
+    console.error("Error updating message:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 export {
   sendDirectMessage,
   sendServerMessage,
   fetchMessages,
   updateDirectMessage,
   updateMessage,
+  deleteMessage,
+  deleteDirectMessage,
 };
 
 // db.directmessages.aggregate([
