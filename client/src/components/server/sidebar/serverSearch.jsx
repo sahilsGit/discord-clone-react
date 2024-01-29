@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/command";
 import useAuth from "@/hooks/useAuth";
 import useChannels from "@/hooks/useChannels";
-import { getChannelOnly } from "@/lib/context-helper";
+import useConversations from "@/hooks/useConversations";
+import { getChannelOnly, getConversationDetails } from "@/lib/context-helper";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -17,7 +18,10 @@ const ServerSearch = ({ data }) => {
   const params = useParams();
   const authDispatch = useAuth("dispatch");
   const channelsDispatch = useChannels("dispatch");
+  const conversationsDispatch = useConversations("dispatch");
+  const myProfileId = useAuth("id");
 
+  console.log("logging dd", data);
   useEffect(() => {
     const press = (e) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -31,11 +35,7 @@ const ServerSearch = ({ data }) => {
     return () => document.removeEventListener("keydown", press);
   }, []);
 
-  const onClick = async ({ id, itemType }) => {
-    // if (itemType === "member") {
-    //   return router.push(`/servers/${params?.serverId}/conversations/${id}`);
-    // }
-
+  const onClick = async ({ id, itemType, profileId }) => {
     if (itemType === "channel") {
       await getChannelOnly(
         params?.serverId,
@@ -44,6 +44,16 @@ const ServerSearch = ({ data }) => {
         channelsDispatch
       );
     }
+
+    if (itemType === "member") {
+      await getConversationDetails(
+        profileId,
+        myProfileId,
+        authDispatch,
+        conversationsDispatch
+      );
+    }
+
     setOpen(false);
     return;
   };
@@ -74,18 +84,20 @@ const ServerSearch = ({ data }) => {
 
             return (
               <CommandGroup key={label} heading={label}>
-                {contentArray?.map(({ id, icon, name, itemType }) => {
-                  return (
-                    <CommandItem
-                      className="flex space-x-3"
-                      key={id}
-                      onSelect={() => onClick({ id, itemType })}
-                    >
-                      <span>{name}</span>
-                      <div>{icon}</div>
-                    </CommandItem>
-                  );
-                })}
+                {contentArray?.map(
+                  ({ id, icon, name, profileId, itemType }) => {
+                    return (
+                      <CommandItem
+                        className="flex space-x-3"
+                        key={id}
+                        onSelect={() => onClick({ id, profileId, itemType })}
+                      >
+                        <span>{name}</span>
+                        <div>{icon}</div>
+                      </CommandItem>
+                    );
+                  }
+                )}
               </CommandGroup>
             );
           })}
