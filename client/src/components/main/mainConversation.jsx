@@ -15,10 +15,6 @@ const MainConversation = ({ type, activeConversation }) => {
 
   console.log(messages?.length);
 
-  // useEffect(() => {
-  //   activeConversation && setKey(key + 1);
-  // }, [activeConversation?.id]);
-
   return (
     <div className="bg-white dark:bg-[#313338] flex flex-col justify-between h-full">
       {activeConversation ? (

@@ -70,7 +70,7 @@ const ConversationScrollArea = () => {
         });
       }
     } catch (error) {
-      await handleError(error, authDispatch);
+      handleError(error, authDispatch);
     }
   };
 
@@ -128,12 +128,11 @@ const ConversationScrollArea = () => {
                 </ActionTooltip>
               </button>
             </DropdownMenuTrigger>
-
             <DropdownMenuContent
               sideOffset={8}
               alignOffset={-30}
               align="start"
-              className="rounded-md drop-shadow-xl w-[440px] py-5 px-4 text-xs bg-main07 font-medium text-black dark:text-neutral-400"
+              className="rounded-md drop-shadow-xl w-[350px] sm:w-[440px] py-5 px-4 text-xs bg-main07 font-medium text-black dark:text-neutral-400"
             >
               <div className="text-xl font-medium text-white">Search User</div>
               <p className="font-normal mt-[4px]">

@@ -35,7 +35,7 @@ import { post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { useModal } from "@/hooks/useModals";
-import useServer from "@/hooks/useServer";
+import { Loader2 } from "lucide-react";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -57,6 +57,7 @@ const ChannelCreationModal = () => {
   // For conditionally rendering the dialog
   const { isOpen, onClose, type, data } = useModal();
   const isModalOpen = isOpen && type === "createChannel";
+  const [loading, setLoading] = useState(false);
 
   let serverId;
   let channelType;
@@ -87,7 +88,7 @@ const ChannelCreationModal = () => {
   const isLoading = form.formState.isSubmitting; // For disabling buttons on submission
 
   const onSubmit = async (data) => {
-    // console.log("dataaaaa", data);
+    setLoading(true);
     const dataToSend = {
       name: data.name,
       type: data.type,
@@ -99,6 +100,7 @@ const ChannelCreationModal = () => {
         access_token
       );
       await handleResponse(response, authDispatch);
+      window.location.reload();
     } catch (err) {
       handleError(err, authDispatch);
     }
@@ -199,6 +201,12 @@ const ChannelCreationModal = () => {
                 variant="primary"
                 disabled={isLoading}
               >
+                {loading && (
+                  <Loader2
+                    strokeWidth={3}
+                    className="w-4 h-4 mr-1.5 animate-spin"
+                  />
+                )}
                 Create
               </Button>
             </div>

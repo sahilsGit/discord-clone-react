@@ -31,6 +31,7 @@ const MessageItem = ({
   apiRoute,
   isEditing,
   setIsEditing,
+  timeStamp,
 }) => {
   // const [isEditing, setIsEditing] = useState(false);
   const access_token = useAuth("token");
@@ -109,7 +110,7 @@ const MessageItem = ({
               )}
             </div>
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              {message.createdAt}
+              {timeStamp}
             </span>
           </div>
 

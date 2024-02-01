@@ -9,7 +9,7 @@ const verifyToken = async (req, res, next) => {
 
   // Don't issue new token if access token is absent even if refresh token is present
   if (!accessToken) {
-    return res.status(401).send("Invalid Token");
+    return res.status(401).send({ message: "Invalid Token" });
   }
 
   try {
@@ -33,7 +33,7 @@ const verifyToken = async (req, res, next) => {
         const session = await Session.find({ token: refreshToken });
 
         if (session.length < 0 || Date.now() > session[0].expireAt) {
-          return res.status(401).send("Invalid Token");
+          return res.status(401).send({ message: "Invalid Token" });
         }
 
         // Refresh token is valid, generate a new access token and send it in the response
@@ -81,11 +81,11 @@ const verifyToken = async (req, res, next) => {
         next();
       } catch (err) {
         // Don't issue new token if refresh_token is expired or invalid
-        return res.status(401).send("Invalid Token");
+        return res.status(401).send({ message: "Invalid Token" });
       }
     } else {
       // Other errors reflect tempering or other suspicious reasons, DON'T ISSUE TOKEN!!
-      return res.status(401).send("Invalid Token");
+      return res.status(401).send({ message: "Invalid Token" });
     }
   }
 };

@@ -9,6 +9,7 @@ import {
   processEditedDirectMessage,
   processReceivedDirectMessage,
 } from "@/lib/context-helper";
+import { format } from "date-fns";
 
 const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
   console.log(messages.length);
@@ -31,6 +32,7 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
 
   const conversationsDispatch = useConversations("dispatch");
   const name = activeConversation?.theirName;
+  const DATE_FORMAT = "d-MM-yyyy, HH:mm";
 
   const handleEditChange = (status) => {
     setIsEditing([status[0], status[1]]);
@@ -164,6 +166,7 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
     >
       <MessageItem
         message={message}
+        timeStamp={format(new Date(message.createdAt), DATE_FORMAT)}
         myDetails={{ _id: profileId }}
         sender={{
           _id: message.senderId,

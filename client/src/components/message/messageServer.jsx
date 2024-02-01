@@ -10,6 +10,7 @@ import {
   processEditedServerMessage,
   processReceivedServerMessage,
 } from "@/lib/context-helper";
+import { format } from "date-fns";
 
 const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   console.log(messages);
@@ -24,6 +25,7 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   const [isConnected, setIsConnected] = useState(false);
   const channelsDispatch = useChannels("dispatch");
   const [isEditing, setIsEditing] = useState([false, ""]);
+  const DATE_FORMAT = "d-MM-yyyy, HH:mm";
 
   const CONNECTED_EVENT = "connected";
   const DISCONNECT_EVENT = "disconnect";
@@ -165,6 +167,7 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
     >
       <MessageItem
         message={message}
+        timeStamp={format(new Date(message.createdAt), DATE_FORMAT)}
         myDetails={myMembership}
         sender={message.member}
         apiRoute="/messages/server"

@@ -19,6 +19,7 @@ const RequireAuth = ({ children }) => {
     const refreshUserDetails = async () => {
       try {
         const response = await get("/auth/refresh", access_token);
+        console.log(response);
         const data = await handleResponse(response, authDispatch);
 
         authDispatch({
@@ -32,8 +33,9 @@ const RequireAuth = ({ children }) => {
             user: data.user,
           },
         });
-      } catch (err) {
-        handleError(err, authDispatch);
+      } catch (error) {
+        console.log("here", error);
+        handleError(error, authDispatch);
       }
     };
 

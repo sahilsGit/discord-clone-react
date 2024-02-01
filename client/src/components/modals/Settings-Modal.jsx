@@ -14,13 +14,14 @@ import { Input } from "../ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { Avatar, AvatarImage } from "../ui/avatar";
-import { get, post, update } from "@/services/api-service";
+import { post, update } from "@/services/api-service";
 import { cn } from "@/lib/utils";
 import "../../App.css";
 
 const SettingsModal = () => {
-  const { isOpen, onClose, type, data } = useModal();
-  const isModalOpen = isOpen && type === "settings";
+  const { isOpen, onClose, type, data, onOpen } = useModal();
+  const isModalOpen =
+    isOpen && (type === "settings" || type === "emailVerification");
   const username = useAuth("user");
   const [avatarImage, setAvatarImage] = useState(null);
   const authDispatch = useAuth("dispatch");
@@ -28,12 +29,13 @@ const SettingsModal = () => {
   const access_token = useAuth("token");
   const [hasChanged, setHasChanged] = useState(true);
   const [loading, setLoading] = useState(false);
+  const profileId = useAuth("id");
 
   useEffect(() => {
     if (isModalOpen && !hasChanged) {
       form.setValue("name", data.name);
       form.setValue("about", data.about);
-      form.setValue("email", data.email);
+      form.setValue("email", data.email.data);
       form.setValue("username", data.username);
       setAvatarImage(null);
       setImagePreview(null);
@@ -63,6 +65,25 @@ const SettingsModal = () => {
       // email: "",
     },
   });
+
+  console.log(data?.email?.isEmailVerified);
+
+  const handleVerifyClick = () => {
+    (async () => {
+      try {
+        await update(
+          `/profiles/verify/${profileId}`,
+          {
+            content: null,
+          },
+          access_token
+        );
+      } catch (error) {
+        handleError(error, authDispatch);
+      }
+    })();
+    onOpen("emailVerification", "");
+  };
 
   const handleClose = () => {
     setHasChanged(false);
@@ -255,9 +276,22 @@ const SettingsModal = () => {
                       </div>
                       <Separator className="my-7 bg-main06 w-full h-[1px]" />
                       <div className="flex flex-col gap-y-2">
-                        <p className="text-xs uppercase font-semibold text-zinc-500 dark:text-zinc-400">
-                          Email
-                        </p>
+                        <div className="flex items-center">
+                          <p className="text-xs uppercase font-semibold text-zinc-500 dark:text-zinc-400">
+                            Email
+                          </p>{" "}
+                          {!data?.email?.isEmailVerified && (
+                            <Button
+                              type="button"
+                              variant="link"
+                              className="ml-2 underline-offset-3 text-xs h-[10px] text-blue-500 p-0 max-w-[90px] box-content max-w-content"
+                              onClick={handleVerifyClick}
+                            >
+                              Verify
+                            </Button>
+                          )}
+                        </div>
+
                         <FormField
                           control={form.control}
                           name="email"

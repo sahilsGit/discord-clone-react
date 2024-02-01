@@ -1,14 +1,15 @@
 const handleResponse = async (response, authDispatch) => {
+  // If response is ok
   if (response.ok) {
-    const contentLength = response.headers.get("Content-Length");
-
-    if (contentLength == 0) {
-      return;
+    if (response.headers.get("Content-Length") == 0) {
+      return; // Return nothing if content is missing
     }
 
+    // Else
     try {
-      const data = await response.json();
+      const data = await response.json(); // Parse the response
 
+      // See if new token is received along with response
       if (data.newAccessToken) {
         authDispatch({
           type: "TOKEN_RECEIVED",
@@ -21,35 +22,42 @@ const handleResponse = async (response, authDispatch) => {
             about: data.about,
           },
         });
-      }
+      } // Update the token
 
-      return data;
-    } catch (jsonError) {
-      console.error("Error parsing JSON response:", jsonError);
+      return data; // Return the data
+    } catch (error) {
+      // This error here is most probably a JSON error throw it
+      throw new Error("Error parsing JSON response");
     }
+    // If response is not okay i.e., Error
   } else {
-    // Handle errors
+    console.log(response.status);
+    const parsedError = await response.json(); // Parse the error message
+
+    console.log(response.status);
+
+    // Construct a new error object for error handler
     const error = {
       status: response.status,
-      message: response.data,
+      message: parsedError.message,
     };
 
-    return Promise.reject(error);
+    return Promise.reject(error); // Reject the promise to be caught by outer catch block
   }
 };
 
 const handleError = (error, authDispatch) => {
+  // Handle error based on their status codes
+
   switch (error.status) {
+    // Un-authorized or un-authenticated request is suspicious, reset everything
     case 401 || 403:
       localStorage.clear();
       authDispatch({ type: "RESET_STATE" });
-      console.log("error", error);
-      window.location.href = "/";
-      break;
+      return (window.location.href = "/");
 
+    // TODO: Handle errors
     case 404:
-      console.log("error", error);
-      // window.location.href = "/@me/conversations";
       break;
 
     case error.status >= 400 && error.status < 500:
@@ -62,7 +70,11 @@ const handleError = (error, authDispatch) => {
       break;
   }
 
-  return error.status;
+  // Return the error object for custom error handling within each component
+  return {
+    status: error.status,
+    message: error.message,
+  };
 };
 
 export { handleResponse, handleError };

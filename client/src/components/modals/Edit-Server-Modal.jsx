@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { X, Plus, Image } from "lucide-react";
+import { X, Plus, Image, Loader2 } from "lucide-react";
 import { get, post, update } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
@@ -46,6 +46,7 @@ const EditServerModal = () => {
   const access_token = useAuth("token"); // For authorization
   const serverDispatch = useServer("dispatch");
   const servers = useServer("servers");
+  const [loading, setLoading] = useState(false);
 
   let activeServer;
 
@@ -183,6 +184,7 @@ const EditServerModal = () => {
   };
 
   const onSubmit = async (data) => {
+    setLoading(true);
     const image = await uploadImage(); // Wait for image you get upon resolution
 
     const updatedValues = {};
@@ -228,9 +230,10 @@ const EditServerModal = () => {
       });
     } catch (err) {
       console.log(err);
-      await handleError(err, authDispatch);
+      handleError(err, authDispatch);
     }
 
+    setLoading(false);
     onClose();
     // form.reset();
     setAvatarImage(null);
@@ -335,7 +338,14 @@ const EditServerModal = () => {
                 size="custom"
                 variant="primary"
                 disabled={isLoading}
+                className="w-[100px]"
               >
+                {loading && (
+                  <Loader2
+                    strokeWidth={3}
+                    className="w-4 h-4 mr-1.5 animate-spin"
+                  />
+                )}
                 Save
               </Button>
             </div>

@@ -65,7 +65,7 @@ const getConversationDetails = async (
     });
   } catch (error) {
     console.log("log", error);
-    await handleError(error, authDispatch);
+    handleError(error, authDispatch);
   }
 };
 
@@ -119,7 +119,7 @@ const getChannelOnly = async (
       },
     });
   } catch (error) {
-    await handleError(error, authDispatch);
+    handleError(error, authDispatch);
   }
 };
 
@@ -132,7 +132,6 @@ const getChannelAndServer = async (
   channelsDispatch
 ) => {
   try {
-    console.log("will try");
     const [serverData, channelData, messagesData] = await Promise.all([
       fetchServer({
         user: user,
@@ -288,7 +287,7 @@ const getMoreDirectMessages = async (
     });
     return false; // returning error
   } catch (error) {
-    await handleError(error, authDispatch);
+    handleError(error, authDispatch);
     return true; // returning error
   }
 };
@@ -301,8 +300,6 @@ const processReceivedDirectMessage = (
   hasMore,
   conversationsDispatch
 ) => {
-  console.log(messages);
-
   const newMessageArray = [message, ...messages];
   console.log(newMessageArray);
 
