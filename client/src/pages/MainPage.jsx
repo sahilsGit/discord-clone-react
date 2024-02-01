@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
 import useServer from "@/hooks/useServer";
@@ -16,13 +16,14 @@ import {
   getConversationDetails,
 } from "@/lib/context-helper";
 import { handleError } from "@/lib/response-handler";
+import { Loader2 } from "lucide-react";
 
 /*
  * MainPage
  *
  *
  * This component represents the main page of the application.
- * Authenticated users lend here, receiving a "profile" 'type' by default.
+ * Authenticated users lend here, receiving "conversation" 'type' by default.
  * Includes sidebars, and main-content-pane based on the page 'type'.
  * User can either stay or visit one of the servers, obtaining a "server" 'type'.
  * Expects authentication details; if missing, it navigates to the homepage.
@@ -34,22 +35,22 @@ import { handleError } from "@/lib/response-handler";
 const MainPage = ({ type }) => {
   const params = useParams();
   const navigate = useNavigate();
-  const [verified, setVerified] = useState(false);
 
-  // Consume the Servers context using custom hook
+  // Consume context using custom hook
   const profileId = useAuth("id");
+  const authDispatch = useAuth("dispatch");
+  const user = useAuth("user");
+  const servers = useServer("servers");
   const activeServer = useServer("activeServer");
   const serverDispatch = useServer("dispatch");
-  const servers = useServer("servers");
   const conversations = useConversations("conversations");
   const activeConversation = useConversations("activeConversation");
   const conversationsDispatch = useConversations("dispatch");
   const channels = useChannels("channels");
   const activeChannel = useChannels("activeChannel");
   const channelsDispatch = useChannels("dispatch");
-  const authDispatch = useAuth("dispatch");
-  const user = useAuth("user");
 
+  // FetchMap for mapping utility functions to keywords so that queuing multiple fetches becomes easier and readable
   const fetchMap = {
     servers: () => {
       getAllServers(user, authDispatch, serverDispatch);
@@ -86,11 +87,15 @@ const MainPage = ({ type }) => {
   };
 
   useEffect(() => {
+    // To queue multiple fetches for batch processing
     const toFetchBatch = [];
 
-    // One Must fetch basic server details irrespective of the type
+    // Fetch basic server details and conversations irrespective of the type
     (servers === null || servers === "undefined") &&
       toFetchBatch.push("servers");
+
+    (conversations === null || conversations === "undefined") &&
+      toFetchBatch.push("conversations");
 
     /*
      *
@@ -99,11 +104,7 @@ const MainPage = ({ type }) => {
      *
      */
     if (type === "conversation") {
-      // Batch conversations if they don't exist
-      (conversations === null || conversations === "undefined") &&
-        toFetchBatch.push("conversations");
-
-      // Fetch activeConversation if user is in the chat page and activeConversation doesn't exist
+      // Batch activeConversation if user is in the chat page and activeConversation doesn't exist
       if (params.memberProfileId && params.myProfileId) {
         !activeConversation && toFetchBatch.push("conversationDetails");
       }
@@ -116,7 +117,6 @@ const MainPage = ({ type }) => {
      *
      */
     if (type === "channel") {
-      // If servers basic details are present
       if (servers)
         if (!params.channelId) {
           // If there's no channelId in params then navigate the user to the first channel
@@ -137,41 +137,56 @@ const MainPage = ({ type }) => {
             toFetchBatch.push("channelOnly"));
     }
 
+    // Batch processor function
     async function processBatch() {
       if (toFetchBatch.length === 0) return;
 
       try {
+        // Map the keys stored in fetchBatch to fetchMap and fetch all simultaneously
         await Promise.all(toFetchBatch.map((key) => fetchMap[key]()));
       } catch (error) {
-        await handleError(error, authDispatch);
+        handleError(error, authDispatch); // Error handler
       }
     }
 
-    processBatch();
+    (async () => {
+      await processBatch();
+    })(); // Call the batch processor as an immediately invoked function, calling processBatch wrapped inside an async function is so that I can await it, and can do other things afterwards, if required.
 
     /*
      *
      * Explanation of Dependencies:
      *
-     * type: Need to render different stuff for different "type"s
-     * params.serverId: User has switched the server, need to fetch everything again
-     * params.channelId: User has switched the channel, need to fetch new activeChannel
+     * Empty Dependency: Since all the navigation is reactive in nature, this means data is fetched before user is navigated, so we won't need to re-fetch anything after initial render.
      *
      *
      */
-  }, [type, params.serverId, params.channelId, params.memberProfileId]);
+  }, []);
 
-  // TODO loading state when the context is empty, so there's nothing to show
-  if (!activeChannel && !activeConversation && conversations === null) {
-    return null;
+  // Loading state, shown only once when the component mounts just like the real-discord application
+
+  if (
+    !servers ||
+    !conversations ||
+    (type === "channel" && !activeChannel) ||
+    (params.myProfileId && !activeConversation && !conversations)
+  ) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center">
+        <Loader2
+          strokeWidth={3}
+          className="lg:w-6 lg:h-6 sm:w-2 sm:h-2 animate-spin"
+        />
+      </div>
+    );
   }
 
   return (
     <main className="h-screen flex w-screen">
-      <div className="h-full w-[72px] bg-main10 flex-shrink-0">
+      <div className="hidden lg:block h-full w-[72px] bg-main10 flex-shrink-0">
         <NavigationSidebar type={type} />
       </div>
-      <div className="w-[240px] bg-main08 flex-shrink-0 ">
+      <div className="hidden lg:block w-[240px] bg-main08 flex-shrink-0 ">
         {type === "conversation" ? (
           <ConversationSidebar conversations={conversations} />
         ) : (
@@ -190,3 +205,5 @@ const MainPage = ({ type }) => {
 };
 
 export default MainPage;
+
+// Approach: A "type" system has been used to differentiate between different aspects of the application like "Direct Messages" and "Servers". The "type" parameter decides that which components get rendered downs the hierarchy, providing a structured and modular approach. Everything from Sidebars to Main components change as the type changes, providing a single-page application like feel with highly dynamic experience.
