@@ -8,7 +8,6 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-
 import {
   Card,
   CardContent,
@@ -20,9 +19,13 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useLocation, useNavigate } from "react-router-dom";
 import { post } from "@/services/api-service";
-import { handleResponse } from "@/lib/response-handler";
+import { handleError, handleResponse } from "@/lib/response-handler";
 import useAuth from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import ResetPassword from "@/components/resetPassword";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import ErrorComponent from "@/lib/error-Component";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email" }),
@@ -30,11 +33,11 @@ const loginSchema = z.object({
 });
 
 const LoginPage = () => {
-  const navigate = useNavigate();
   const authDispatch = useAuth("dispatch");
+  const navigate = useNavigate();
   const location = useLocation();
-
-  const from = location.state ? location.state.from : "/@me/conversations";
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState({ status: "", message: "" });
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -44,7 +47,15 @@ const LoginPage = () => {
     },
   });
 
+  // Error setter for standard error component
+  const setError = ({ status, message }) => {
+    setApiError({ status: status, message: message });
+  };
+
+  const from = location.state ? location.state.from : "/@me/conversations";
+
   const onSubmit = async (data) => {
+    setLoading(true);
     localStorage.clear();
     authDispatch({ type: "LOGIN_START" });
 
@@ -59,13 +70,16 @@ const LoginPage = () => {
 
       navigate(from);
     } catch (err) {
-      setHasError;
-      // handleError(err, authDispatch);
+      const { status, message } = handleError(err, authDispatch);
+      setApiError({ status: status, message: message });
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div className="flex w-screen h-screen items-center justify-center">
-      <Card className="items-center px-2 h-[450px] bg-main09 flex">
+      <Card className="items-center px-2 h-[450px] bg-zinc-900/40 flex">
         <div className="flex flex-col w-[500px]">
           <CardHeader className="pb-4">
             <CardTitle className="text-center">Welcome back!</CardTitle>
@@ -93,9 +107,9 @@ const LoginPage = () => {
                                 : "Enter your Email"
                             }
                             className={cn(
-                              "h-[45px]",
+                              "h-[45px] bg-zinc-900",
                               fieldState.error &&
-                                "placeholder:text-red-400 focus-visible:ring-red-400"
+                                "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                             )}
                             {...field}
                           />
@@ -121,9 +135,9 @@ const LoginPage = () => {
                             {...field}
                             type="password"
                             className={cn(
-                              "h-[45px]",
+                              "h-[45px] bg-zinc-900",
                               fieldState.error &&
-                                "placeholder:text-red-400 focus-visible:ring-red-400 ring-red-400"
+                                "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                             )}
                           />
                         </FormControl>
@@ -133,13 +147,14 @@ const LoginPage = () => {
                   />
                 </div>
                 <div className="flex flex-col gap-y-3 mt-[2px]">
-                  <a
-                    href="/login"
-                    className="text-blue-500 hover:underline text-sm transition-all m-1"
-                  >
-                    Forgot your password?
-                  </a>
+                  <ResetPassword authDispatch={authDispatch} />
                   <Button type="submit" variant="primary">
+                    {loading && (
+                      <Loader2
+                        className="m-0 animate-spin h-5 w-5 mr-1.5"
+                        strokeWidth={3}
+                      />
+                    )}
                     Log in
                   </Button>
                 </div>
@@ -166,6 +181,7 @@ const LoginPage = () => {
           <Button className="h-[45px] text-md w-full" variant="primary">
             Browse as guest
           </Button>
+          <ErrorComponent error={apiError} setError={setError} />
         </div>
       </Card>
     </div>

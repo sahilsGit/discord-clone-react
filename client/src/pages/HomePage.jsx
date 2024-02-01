@@ -1,27 +1,17 @@
-// Imports
+// HomePage.js
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import useAuth from "@/hooks/useAuth";
-import { ArrowRight, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../App.css";
-
-/*
- * Homepage
- *
- * This component serves as the landing page.
- * It checks the user's authentication status.
- * Redirects authenticated users to their profile page (/@me).
- * The unauthenticated ones can either login or register.
- */
+import useAuth from "@/hooks/useAuth";
+import GetStarted from "@/components/getStarted";
 
 const HomePage = () => {
   const navigate = useNavigate(); // For programmatic navigation
   const location = useLocation();
   const from = location.state?.from?.pathname || "/@me/conversations";
   const [justBrowsing, setJustBrowsing] = useState(false); // When users browse discord without registering
-  const [displayName, setDisplayName] = useState("");
 
   // Fetch user and access token from custom auth hook
   const user = useAuth("user");
@@ -33,6 +23,10 @@ const HomePage = () => {
       navigate(from);
     }
   }, [user, access_token]);
+
+  const handleDisplayNameSubmit = (displayName) => {
+    navigate("/register", { state: { displayName } });
+  };
 
   return (
     <div>
@@ -66,7 +60,15 @@ const HomePage = () => {
               challenge, I hope Discord won't be mad if they ever find out.
             </p>
 
-            {!justBrowsing ? (
+            {justBrowsing ? (
+              <div className="flex flex-col gap-y-5 items-center justify-center">
+                <GetStarted onDisplayNameSubmit={handleDisplayNameSubmit} />
+                <p className="text-sm">
+                  By registering, you agree to our non-existent terms of
+                  service.
+                </p>
+              </div>
+            ) : (
               <div className="flex gap-x-10 justify-center p-0 items-center">
                 <Button
                   className="flex font-normal h-[55px] px-10 items-center justify-center gap-x-2 px-10 text-center text-xl text-main07 bg-white rounded-full transition-all hover:drop-shadow-[0_10px_10px_rgba(0,0,0,0.25)] hover:text-indigo-500"
@@ -85,34 +87,6 @@ const HomePage = () => {
                 >
                   Dive right in
                 </Button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-y-5 items-center justify-center">
-                <div className="flex w-[400px] h-[55px] items-center justify-center drop-shadow-subtle animate-open">
-                  <Input
-                    autoFocus
-                    className="pl-[35px] text-main10 text-md h-full pr-[8px] bg-white border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-l-sm rounded-r-none rounded-l-full rounded-r-none"
-                    placeholder="Enter a Display Name"
-                    onChange={(e) => {
-                      setDisplayName(e.target.value);
-                    }}
-                  />
-                  <div className="group w-[100px] p-2 h-full flex p-1 bg-white rounded-r-full">
-                    <Button
-                      className="bg-indigo-500 text-white text-xs m-0 w-full h-full rounded-full hover:bg-indigo-500 hover:drop-shadow-[0_0_10px_rgba(0,0,0,0.15)] hover:bg-indigo-500/80 transition-all"
-                      onClick={() => {
-                        displayName &&
-                          navigate("/register", { state: { displayName } });
-                      }}
-                    >
-                      <ArrowRight />
-                    </Button>
-                  </div>
-                </div>
-                <p className="text-sm">
-                  By registering, you agree to our non-existent terms of
-                  service.
-                </p>
               </div>
             )}
           </div>
