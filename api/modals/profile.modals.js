@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { USER_TEMPORARY_TOKEN_EXPIRY } from "../utils/constants.js";
 
 const profileSchema = new mongoose.Schema(
@@ -73,19 +74,19 @@ profileSchema.pre("remove", async function (next) {
   next();
 });
 
-profileSchema.methods.generateTemporaryToken = function () {
+profileSchema.methods.generateVerificationCode = function () {
   // Token to be sent for email verification
-  const unHashedToken = crypto.randomBytes(20).toString("hex");
+  const unHashedCode = Math.floor(100000 + Math.random() * 900000);
 
-  // Save it in the DB to compare at the time of verification
-  const hashedToken = crypto
+  const hashedCode = crypto
     .createHash("sha256")
-    .update(unHashedToken)
+    .update(unHashedCode.toString())
     .digest("hex");
 
   // This is the expiry time for the token (20 minutes)
+
   const tokenExpiry = Date.now() + USER_TEMPORARY_TOKEN_EXPIRY;
-  return { unHashedToken, hashedToken, tokenExpiry };
+  return { unHashedCode, hashedCode, tokenExpiry };
 };
 
 const Profile = mongoose.model("Profile", profileSchema);

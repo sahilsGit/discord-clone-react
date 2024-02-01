@@ -2,6 +2,7 @@ import Profile from "../modals/profile.modals.js";
 import Session from "../modals/session.modals.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { emailVerificationMailContent, sendEmail } from "../utils/mail.js";
 
 const register = async (req, res, next) => {
   /*
@@ -51,8 +52,71 @@ const register = async (req, res, next) => {
       newProfile.image = req.body.image;
     }
 
+    const { unHashedCode, hashedCode, tokenExpiry } =
+      newProfile.generateVerificationCode();
+
+    newProfile.emailVerificationToken = hashedCode;
+    newProfile.emailVerificationExpiry = tokenExpiry;
+
+    await sendEmail({
+      email: newProfile?.email,
+      subject: "Please verify your email",
+      content: emailVerificationMailContent(newProfile.username, unHashedCode),
+    });
+
     await newProfile.save();
-    res.status(200).send("Profile has been created");
+
+    ////////////////////////////////////////////////////////////////////////
+
+    // Create a session equivalent JWT token
+    const access_token = jwt.sign(
+      {
+        username: newProfile.username,
+        profileId: newProfile._id,
+        name: newProfile.name,
+        image: newProfile.image,
+      },
+      process.env.JWT,
+      {
+        expiresIn: "5m", // Token expiration time
+      }
+    ); // Authorize user using the secret key
+
+    const refresh = jwt.sign(
+      {
+        username: newProfile.username,
+        profileId: newProfile._id,
+        name: newProfile.name,
+        image: newProfile.image,
+      },
+      process.env.REFRESH,
+      {
+        expiresIn: "30m", // Token expiration time
+      }
+    ); // Authorize user using the secret key
+
+    const newSession = new Session({
+      token: refresh,
+      profileId: newProfile._id,
+      expireAt: new Date(Date.now() + 30 * 60 * 1000),
+    });
+
+    await newSession.save();
+
+    res.cookie("refresh_token", refresh, {
+      httpOnly: true,
+      path: "/",
+      sameSite: "Lax",
+      maxAge: 30 * 60 * 1000,
+    });
+
+    res.status(200).send({
+      username: newProfile.username,
+      newAccessToken: access_token,
+      profileId: newProfile._id,
+      name: newProfile.name,
+      image: newProfile.image || "",
+    });
   } catch (err) {
     err.status = 500;
     err.message = "Internal server error!";
@@ -100,9 +164,9 @@ const login = async (req, res, next) => {
     console.log(isPasswordCorrect);
 
     if (!isPasswordCorrect) {
-      return res.status(401).send({
+      return res.status(404).send({
         success: false,
-        message: "Incorrect email or password",
+        message: "Incorrect Email or password.",
       });
     }
 
@@ -194,11 +258,11 @@ const refreshUserDetails = async (req, res) => {
       profileId: profile._id,
       name: profile.name,
       image: profile.image || "",
-      email: profile.email,
+      email: { data: profile.email, isEmailVerified: profile.isEmailVerified },
       about: profile.about || "",
     });
   } catch (err) {
-    return res.status(401).send("Invalid Token");
+    return res.status(401).send({ message: "Invalid Token" });
   }
 };
 

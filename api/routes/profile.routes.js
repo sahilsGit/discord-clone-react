@@ -1,20 +1,27 @@
 import express from "express";
 import {
-  about,
+  changePassword,
+  forgotPasswordRequest,
   searchUser,
+  sendEmailVerification,
   updateProfile,
+  verifyEmail,
+  // about,
 } from "../controllers/profile.controllers.js";
 import { verifyToken } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
 
+router.post("/forgotPassword", forgotPasswordRequest);
 router.use(verifyToken);
 
 //Handle requests
 
 router
-  .get("/about", about)
   .put("/updateProfile", updateProfile)
-  .get("/find", searchUser);
+  .get("/find", searchUser)
+  .put("/verify/:profileId", sendEmailVerification)
+  .put("/verifyCode", verifyEmail)
+  .put("/newPassword", changePassword);
 
 export default router;

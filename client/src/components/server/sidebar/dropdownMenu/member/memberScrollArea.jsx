@@ -18,6 +18,7 @@ import { handleError, handleResponse } from "@/lib/response-handler";
 import {
   Check,
   Gavel,
+  Loader2,
   MoreVertical,
   Shield,
   ShieldAlert,
@@ -64,7 +65,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
               );
 
               if (data.members.length < 1) {
-                setFetchLog("No results found");
+                setFetchLog("No results found.");
                 setIsLoading(false);
                 return;
               }
@@ -106,7 +107,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
 
       timeoutId.current = setTimeout(async () => {
         if (searchTerm.length < 3) {
-          setFetchLog("The search term must include at least 3 characters");
+          setFetchLog("The search term must include at least 3 characters.");
           setIsLoading(false);
           return;
         }
@@ -122,7 +123,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
           );
 
           if (data.members.length < 1) {
-            setFetchLog("No results found");
+            setFetchLog("No results found.");
             setIsLoading(false);
             return;
           }
@@ -276,19 +277,21 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
 
   return (
     <div className="flex flex-col gap-y-3">
-      <ScrollArea className="h-[200px]">
+      <ScrollArea className="flex items-center justify-center h-[120px]">
         {!searchTerm ? (
           activeServer?.members.map((member, index) =>
             renderMemberItem(member, index)
           )
         ) : isLoading ? (
-          <p>Loading...</p>
+          <div className="w-full h-full flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin" />
+          </div>
         ) : results.length > 0 ? (
-          <ScrollArea className="h-[200px]">
+          <ScrollArea className="h-[120px]">
             {results?.map((member, index) => renderMemberItem(member, index))}
           </ScrollArea>
         ) : (
-          <p>{fetchLog}</p>
+          <p className="text-center text-zinc-700 text-sm">{fetchLog}</p>
         )}
       </ScrollArea>
     </div>

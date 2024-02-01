@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import {
   Form,
   FormControl,
@@ -10,25 +9,42 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-
 import { useForm } from "react-hook-form";
 import { registerSchema } from "@/services/auth-validator";
-import { post } from "@/services/api-service";
+import { post, update } from "@/services/api-service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { handleError } from "@/lib/response-handler";
-import { useState } from "react";
+import { handleError, handleResponse } from "@/lib/response-handler";
+import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Clock10 } from "lucide-react";
+import useAuth from "@/hooks/useAuth";
 
 const RegistrationPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const displayName = location.state && location.state?.displayName;
   const [focused, setFocused] = useState([null, false]);
+  const [showDialog, setShowDialog] = useState(false);
+  const [resendCodeTimeout, setResendCodeTimeout] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState(null);
+  const [code, setCode] = useState(null);
+  const access_token = useAuth("token");
+  const authDispatch = useAuth("dispatch");
 
   const handleFocus = (item) => {
     setFocused((prev) => [...prev, item]);
   };
+
+  console.log(code);
 
   const form = useForm({
     resolver: zodResolver(registerSchema), //Resolving registerSchema created before
@@ -40,6 +56,45 @@ const RegistrationPage = () => {
     },
   });
 
+  const handleResendCode = async () => {
+    // Perform email code resend logic here
+
+    setResendCodeTimeout(
+      setTimeout(() => {
+        setResendCodeTimeout(null);
+        setTimeRemaining(null);
+      }, 60000)
+    ); // Set timeout for 1 minute
+
+    setTimeRemaining(60); // Set initial time remaining
+  };
+
+  const submitCode = async () => {
+    try {
+      const response = await update(
+        `/profiles/verifyCode`,
+        {
+          code: code,
+        },
+        access_token
+      );
+
+      const data = handleResponse(response, authDispatch);
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  useEffect(() => {
+    if (resendCodeTimeout) {
+      const intervalId = setInterval(() => {
+        setTimeRemaining((prevTime) => prevTime - 1);
+      }, 1000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [resendCodeTimeout]);
+
   async function onSubmit(data) {
     const body = {
       username: data.username,
@@ -49,11 +104,11 @@ const RegistrationPage = () => {
     };
 
     try {
-      const status = await post("/auth/register", JSON.stringify(body));
+      const response = await post("/auth/register", JSON.stringify(body));
+      await handleResponse(response, authDispatch);
+      setShowDialog(true);
     } catch (err) {
-      const errorCode = await handleError(err);
-    } finally {
-      navigate("/");
+      handleError(err);
     }
   }
 
@@ -87,7 +142,8 @@ const RegistrationPage = () => {
                         {...field}
                         className={cn(
                           "h-[45px]",
-                          fieldState.error && "placeholder:text-red-400"
+                          fieldState.error &&
+                            "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                         )}
                       />
                     </FormControl>
@@ -116,7 +172,8 @@ const RegistrationPage = () => {
                         }}
                         className={cn(
                           "h-[45px]",
-                          fieldState.error && "placeholder:text-red-400"
+                          fieldState.error &&
+                            "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                         )}
                       />
                     </FormControl>
@@ -129,8 +186,6 @@ const RegistrationPage = () => {
                       Others see you with this. You can use emojis and special
                       characters.
                     </FormDescription>
-
-                    {/* <FormMessage /> */}
                   </FormItem>
                 )}
               />
@@ -155,7 +210,8 @@ const RegistrationPage = () => {
                         }}
                         className={cn(
                           "h-[45px]",
-                          fieldState.error && "placeholder:text-red-400"
+                          fieldState.error &&
+                            "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                         )}
                       />
                     </FormControl>
@@ -167,8 +223,6 @@ const RegistrationPage = () => {
                     >
                       Only use numbers, letters, underscores or periods.
                     </FormDescription>
-
-                    {/* <FormMessage /> */}
                   </FormItem>
                 )}
               />
@@ -191,7 +245,8 @@ const RegistrationPage = () => {
                         type="password"
                         className={cn(
                           "h-[45px]",
-                          fieldState.error && "placeholder:text-red-400"
+                          fieldState.error &&
+                            "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                         )}
                         onFocus={() => {
                           handleFocus(3);
@@ -207,10 +262,74 @@ const RegistrationPage = () => {
                       Use at least 8 characters, mix cases, numbers and special
                       characters.
                     </FormDescription>
-                    {/* <FormMessage /> */}
                   </FormItem>
                 )}
               />
+              <Dialog open={showDialog} onOpenChange={setShowDialog}>
+                <DialogContent className="w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Verify Email</DialogTitle>
+                    <DialogDescription>
+                      Enter the code we sent to your email, or skip verification
+                      for now
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div>
+                    <div className="flex flex-col gap-y-4 py-2">
+                      <Input
+                        id="name"
+                        className="h-[40px]"
+                        placeholder="Enter the verification code here"
+                        onChange={(e) => {
+                          setCode(e.target.value);
+                        }}
+                      />
+                      <Button
+                        variant="primary"
+                        type="button"
+                        disabled={!code}
+                        className="flex-1"
+                        onClick={submitCode}
+                      >
+                        Submit Code
+                      </Button>
+                      <div className="flex text-sm items-center gap-x-2">
+                        <a
+                          className={`text-blue-500 underline text-sm transition-all ${
+                            resendCodeTimeout
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
+                          onClick={resendCodeTimeout ? null : handleResendCode}
+                        >
+                          Resend code
+                        </a>
+                        {resendCodeTimeout && (
+                          <div className="flex items-center justify-center">
+                            <Clock10 className="animate-pulse w-4 h-4" />
+                            <p className="text-sm text-gray-500 ml-1">
+                              {timeRemaining} seconds
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex w-full items-center">
+                      <Separator className="shrink"></Separator>
+                      <p className="px-4">or</p>
+                      <Separator className="shrink"></Separator>
+                    </div>
+                  </div>
+                  <Button
+                    className=""
+                    onClick={() => {
+                      navigate("/");
+                    }}
+                  >
+                    Skip
+                  </Button>
+                </DialogContent>
+              </Dialog>
               <div className="pt-2">
                 <Button
                   type="submit"
@@ -220,7 +339,7 @@ const RegistrationPage = () => {
                   variant="primary"
                   className="w-full"
                 >
-                  Continue
+                  Submit
                 </Button>
               </div>
             </form>
