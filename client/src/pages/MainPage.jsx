@@ -17,6 +17,7 @@ import {
 } from "@/lib/context-helper";
 import { handleError } from "@/lib/response-handler";
 import { Loader2 } from "lucide-react";
+import MobileToggle from "@/components/mobileToggle";
 
 /*
  * MainPage
@@ -46,7 +47,6 @@ const MainPage = ({ type }) => {
   const conversations = useConversations("conversations");
   const activeConversation = useConversations("activeConversation");
   const conversationsDispatch = useConversations("dispatch");
-  const channels = useChannels("channels");
   const activeChannel = useChannels("activeChannel");
   const channelsDispatch = useChannels("dispatch");
 
@@ -161,7 +161,7 @@ const MainPage = ({ type }) => {
      *
      *
      */
-  }, []);
+  }, [type]);
 
   // Loading state, shown only once when the component mounts just like the real-discord application
 
@@ -183,15 +183,18 @@ const MainPage = ({ type }) => {
 
   return (
     <main className="h-screen flex w-screen">
+      <div className="top-1 left-1 absolute">
+        {type === "conversation" ? (
+          <MobileToggle type={type} data={<ConversationSidebar />} />
+        ) : (
+          <MobileToggle type={type} data={<ServerSidebar />} />
+        )}
+      </div>
       <div className="hidden lg:block h-full w-[72px] bg-main10 flex-shrink-0">
         <NavigationSidebar type={type} />
       </div>
       <div className="hidden lg:block w-[240px] bg-main08 flex-shrink-0 ">
-        {type === "conversation" ? (
-          <ConversationSidebar conversations={conversations} />
-        ) : (
-          <ServerSidebar activeServer={activeServer} channels={channels} />
-        )}
+        {type === "conversation" ? <ConversationSidebar /> : <ServerSidebar />}
       </div>
       <div className="w-full h-full">
         {type === "conversation" ? (

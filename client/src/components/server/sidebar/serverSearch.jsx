@@ -75,7 +75,11 @@ const ServerSearch = ({ data }) => {
           </kbd>
         </div>
       </button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog
+        className="md:w-[600px] w-[90%] bg-main09"
+        open={open}
+        onOpenChange={setOpen}
+      >
         <CommandInput placeholder="Search channels & members" />
         <CommandList>
           <CommandEmpty>No Results found</CommandEmpty>

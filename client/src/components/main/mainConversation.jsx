@@ -5,6 +5,7 @@ import MainInput from "./mainInput";
 import MessageDirect from "../message/messageDirect";
 import useAuth from "@/hooks/useAuth";
 import useConversations from "@/hooks/useConversations";
+import { Construction } from "lucide-react";
 
 const MainConversation = ({ type, activeConversation }) => {
   const profileId = useAuth("id");
@@ -39,10 +40,12 @@ const MainConversation = ({ type, activeConversation }) => {
       ) : (
         <>
           <ConversationHeader />
-          <div className="flex items-center justify-center px-12 h-full">
+          <div className="flex items-center justify-center grow px-12">
             <div className="text-center text-lg max-w-[500px]">
-              <p className="text-4xl pb-5">Coming soon!</p>
-              <p>
+              <p className="text-4xl dark:text-zinc-300 text-zinc-600 pb-5">
+                Coming soon!
+              </p>
+              <p className="dark:text-zinc-400 text-zinc-600 ">
                 Your friends would appear here, for now you can chat directly by
                 creating a DM.
               </p>

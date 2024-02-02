@@ -8,7 +8,7 @@ import {
   fetchMoreDirectMessages,
   fetchMoreServerMessages,
   fetchServer,
-} from "@/api";
+} from "./api";
 import { handleError } from "./response-handler";
 
 const getAllServers = async (user, authDispatch, serverDispatch) => {
@@ -165,7 +165,7 @@ const getChannelAndServer = async (
       },
     });
   } catch (error) {
-    await handleError(error, authDispatch);
+    handleError(error, authDispatch);
   }
 };
 

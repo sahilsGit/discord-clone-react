@@ -79,18 +79,18 @@ const LoginPage = () => {
 
   return (
     <div className="flex w-screen h-screen items-center justify-center">
-      <Card className="items-center px-2 h-[450px] bg-zinc-900/40 flex">
-        <div className="flex flex-col w-[500px]">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-center">Welcome back!</CardTitle>
+      <Card className="items-center md:px-2 h-[450px] bg-zinc-900/40 flex">
+        <div className="flex flex-col w-[350px] md:w-[500px]">
+          <CardHeader className="p-3 md:pb-4">
+            <CardTitle className="m-0 text-center">Welcome back!</CardTitle>
             <CardDescription className="text-center">
               We're so excited to see you again!
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-8">
+          <CardContent className="md:px-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
-                <div className="flex flex-col gap-y-5">
+                <div className="flex flex-col gap-y-3 md:gap-y-5">
                   <FormField
                     control={form.control}
                     name="email"
@@ -171,7 +171,7 @@ const LoginPage = () => {
             </div>
           </CardContent>
         </div>
-        <div className="flex flex-col items-center justify-center h-auto p-8">
+        <div className="hidden lg:flex flex-col items-center justify-center h-auto p-8">
           <CardHeader className="pb-4">
             <CardTitle className="text-center">Just checking out?</CardTitle>
             <CardDescription className="text-center">

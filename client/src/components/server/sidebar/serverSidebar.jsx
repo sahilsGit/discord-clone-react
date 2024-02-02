@@ -5,6 +5,8 @@ import ProfileControl from "@/components/profileControl";
 import ServerScrollArea from "./serverScrollArea";
 import ServerSearch from "./serverSearch";
 import { memo } from "react";
+import useServer from "@/hooks/useServer";
+import useChannels from "@/hooks/useChannels";
 
 const iconMap = {
   TEXT: <Hash className="mr-2 h-4 w-4" />,
@@ -18,8 +20,10 @@ const roleIconMap = {
   ADMIN: <ShieldAlert className="h-4 w-4 mr-2 text-rose-500" />,
 };
 
-const ServerSidebar = memo(({ activeServer, channels }) => {
+const ServerSidebar = () => {
   const profileId = useAuth("id");
+  const activeServer = useServer("activeServer");
+  const channels = useChannels("channels");
 
   const textChannels = channels.filter((channel) => channel.type === "TEXT");
   const audioChannels = channels.filter((channel) => channel.type === "AUDIO");
@@ -92,6 +96,6 @@ const ServerSidebar = memo(({ activeServer, channels }) => {
       </div>
     </div>
   );
-});
+};
 
 export default ServerSidebar;

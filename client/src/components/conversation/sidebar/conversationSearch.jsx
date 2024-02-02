@@ -7,6 +7,13 @@ import {
 } from "@/components/ui/command";
 import { useState } from "react";
 
+/*
+ * ConversationSearch
+ *
+ * Coming Soon!
+ *
+ */
+
 const ConversationSearch = () => {
   const [open, setOpen] = useState(false);
   return (
@@ -17,13 +24,17 @@ const ConversationSearch = () => {
           setOpen(true);
         }}
       >
-        <div className="flex p-2 h-[30px] w-[220px] bg-main10 rounded-sm flex items-center gap-x-2 w-full transition group-hover:cursor-text justify-between overflow-hidden">
+        <div className="flex p-2 h-[30px] max-w-[220px] bg-main10 rounded-sm flex items-center gap-x-2 w-full transition group-hover:cursor-text justify-between overflow-hidden">
           <p className="text-xs text-zinc-500 dark:text-zinc-400 transition truncate">
             Find Friends
           </p>
         </div>
       </button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog
+        className="md:w-[600px] w-[90%] bg-main09"
+        open={open}
+        onOpenChange={setOpen}
+      >
         <CommandInput disabled="true" placeholder="Search Friends" />
         <div className="py-6 text-center text-sm">Coming Soon!</div>
         {/* <CommandList>

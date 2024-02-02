@@ -35,9 +35,9 @@ const GetStarted = ({ onDisplayNameSubmit }) => {
   };
 
   return (
-    <div className="flex w-[400px] h-[55px] items-center justify-center drop-shadow-subtle animate-open">
+    <div className="flex text-sm sm:text-md sm:w-[400px] h-[55px] sm:items-center sm:justify-center drop-shadow-subtle animate-open">
       {fieldError && !isValidUsername && (
-        <div className="rounded-sm absolute text-center text-black top-[-65px] bg-white ">
+        <div className="rounded-sm absolute text-center text-black top-[-83px] sm:top-[-65px] bg-white ">
           <p className="py-3 text-sm text-red-500 px-6">
             We need a name, we can't just call you "nobody"
           </p>

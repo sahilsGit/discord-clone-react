@@ -191,12 +191,14 @@ const SettingsModal = () => {
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-main07 text-black p-0 w-screen h-screen">
+      <DialogContent className="dark:bg-main07 p-0 w-screen h-screen">
         <ScrollArea>
-          <div className="flex">
-            <div className="flex-1 grow"></div>
-            <div className="flex w-[850px] flex-col py-16 gap-y-4 shrink-0">
-              <p className="text-xl font-semibold text-white">My Account</p>
+          <div className="flex px-4 items-center justify-center">
+            {/* <div className="min-w-[20px] flex-1 grow"></div> */}
+            <div className="flex w-full md:w-[850px] flex-col py-16 gap-y-4 shrink-0">
+              <p className="text-xl font-semibold dark:text-white text-zinc-600">
+                My Account
+              </p>
               <div className="relative h-[100px] w-full bg-indigo-500 flex flex-col rounded-lg">
                 <input
                   type="file"
@@ -217,7 +219,7 @@ const SettingsModal = () => {
                   )}
 
                   <button
-                    className="flex items-center justify-center absolute top-[68px] left-[78px] rounded-full h-[40px] text-white border-8 border-main07 bg-main06 hover:bg-main05 w-[40px] transition"
+                    className="flex items-center justify-center absolute top-[68px] left-[78px] rounded-full h-[40px] hover:bg-zinc-200 hover:text-zinc-700 dark:text-primary border-8 border-main07 bg-main06 hover:bg-main05 w-[40px] transition"
                     onClick={handlePencilClick}
                     type="button"
                   >
@@ -243,7 +245,7 @@ const SettingsModal = () => {
                             render={({ field }) => (
                               <Input
                                 type="text"
-                                className="py-3 rounded-sm px-2 bg-main10 text-white text-sm"
+                                className="py-3 rounded-sm px-2 bg-main10 text-primary text-sm"
                                 {...field}
                                 onChange={(e) => {
                                   field.onChange(e);
@@ -263,7 +265,7 @@ const SettingsModal = () => {
                             render={({ field }) => (
                               <Input
                                 type="text"
-                                className="py-3 rounded-sm px-2 bg-main10 text-white text-sm"
+                                className="py-3 rounded-sm px-2 bg-main10 text-primary text-sm"
                                 {...field}
                                 onChange={(e) => {
                                   field.onChange(e);
@@ -298,7 +300,7 @@ const SettingsModal = () => {
                           render={({ field }) => (
                             <Input
                               type="email"
-                              className="py-3 rounded-sm px-2 bg-main10 text-white text-sm"
+                              className="py-3 rounded-sm px-2 bg-main10 text-primary text-sm"
                               {...field}
                               disabled={true}
                             />
@@ -319,7 +321,7 @@ const SettingsModal = () => {
                         render={({ field }) => (
                           <div className="bg-main10 w-full px-3 py-3 text-white h-full rounded-sm break-all">
                             <textarea
-                              className="w-full h-full resize-none bg-main10 placeholder:text-sm"
+                              className="w-full h-full text-primary resize-none bg-main10 placeholder:text-sm"
                               name=""
                               id=""
                               placeholder="Write something for others to see..."
@@ -336,25 +338,30 @@ const SettingsModal = () => {
                   </div>
                   <div
                     className={cn(
-                      "absolute w-full left-[50%] bg-black rounded-sm px-3 py-2 transition-all max-w-[800px] translate-x-[-50%] hidden bottom-[-100px]",
+                      "absolute w-full left-[50%] bg-main10 rounded-sm px-2 sm:px-3 py-2 transition-all min-w-[350px] w-auto md:w-[600px] lg:w-[800px] translate-x-[-50%] hidden bottom-[-100px]",
                       hasChanged && "block bottom-3 flyIn"
                     )}
                   >
                     <div className="flex w-full items-center justify-between">
-                      <p className="text-white pl-1">
+                      <p className="text-xs lg:text-md text-primary pl-1">
                         Careful - You have unsaved changes!
                       </p>
-                      <div>
+                      <div className="flex items-center justify-center lg:block">
                         <Button
                           type="button"
                           variant="link"
                           onClick={() => {
                             setHasChanged(false);
                           }}
+                          className="text-xs lg:text-md p-2 lg:p-3"
                         >
                           Reset
                         </Button>
-                        <Button size="custom" disabled={loading}>
+                        <Button
+                          size="custom"
+                          disabled={loading}
+                          className="text-xs lg:text-md px-2 lg:px-3"
+                        >
                           Save Changes
                         </Button>
                       </div>
@@ -365,23 +372,29 @@ const SettingsModal = () => {
 
               <Separator className="my-7 bg-main06 w-full h-[1px]" />
               <div className="flex flex-col gap-y-6">
-                <p className="text-xl font-semibold text-white">
+                <p className="text-xl font-semibold dark:text-white text-zinc-600">
                   Password and Session
                 </p>
                 <div>
-                  <button className="text-white bg-indigo-500 rounded-sm px-3 text-sm h-[30px]">
+                  <Button
+                    variant="primary"
+                    className="max-w-fit text-white text-xs font-normal bg-indigo-500 rounded-sm px-4 text-sm h-[40px]"
+                  >
                     Change Password
-                  </button>
+                  </Button>
                 </div>
                 <div className="flex flex-col gap-y-3">
-                  <p className="text-sm text-zinc-400">
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
                     Logged in on a public device? You can suspend all the active
                     sessions by pressing <br></br>the button below. This will
                     log you out of all the devices including this one.
                   </p>
-                  <button className="max-w-fit text-white bg-indigo-500 rounded-sm px-3 text-sm h-[30px]">
+                  <Button
+                    variant="primary"
+                    className="max-w-fit text-white text-xs font-normal bg-indigo-500 rounded-sm px-4 text-sm h-[40px]"
+                  >
                     Log Out all know devices
-                  </button>
+                  </Button>
                 </div>
               </div>
               <Separator className="my-7 bg-main06 w-full h-[1px]" />
@@ -389,16 +402,19 @@ const SettingsModal = () => {
                 <p className="text-xs uppercase font-semibold text-zinc-500 dark:text-zinc-400">
                   Account Removal
                 </p>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   This will immediately log you out of your account and remove
                   your access completely.
                 </p>
-                <button className="max-w-fit text-white bg-red-600 rounded-sm px-3 text-sm h-[30px]">
-                  Delete Account
-                </button>
+                <Button
+                  variant="primary"
+                  className="max-w-fit text-white text-xs font-normal hover:bg-red-700 bg-red-600 rounded-sm px-4 text-sm h-[40px]"
+                >
+                  Log Out all know devices
+                </Button>
               </div>
             </div>
-            <div className="flex-1"></div>
+            {/* <div className="flex-1 min-w-[20px]"></div> */}
           </div>
         </ScrollArea>
       </DialogContent>

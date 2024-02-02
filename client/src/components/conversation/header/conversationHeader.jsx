@@ -1,5 +1,4 @@
 import { ActionTooltip } from "@/components/actionTooltip";
-import MobileToggle from "@/components/mobileToggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Users } from "lucide-react";
@@ -7,11 +6,11 @@ import React from "react";
 
 const ConversationHeader = () => {
   return (
-    <div className="text-md lg:px-3 flex items-center h-[51px] border-neutral-200 dark:border-neutral-800 border-b-2 pl-1 pr-3">
-      <MobileToggle type="conversation" />
+    <div className="text-md lg:px-3 flex items-center h-[48px] border-neutral-200 dark:border-neutral-800 border-b-2 pl-1 pr-3">
+      {/* <MobileToggle type="conversation" /> */}
       <div className="flex group justify-between gap-x-2 w-full">
         <div className="flex items-center gap-x-2">
-          <div className="flex items-center gap-x-2">
+          <div className="pl-14 lg:pl-1 flex items-center gap-x-2">
             <Users className="h-5 w-5 text-zinc-400" />
             <p>Friends</p>
           </div>

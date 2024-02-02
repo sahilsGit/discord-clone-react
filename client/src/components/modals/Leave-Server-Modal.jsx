@@ -1,10 +1,9 @@
-// imports
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { useModal } from "@/hooks/useModals";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { leaveServer } from "@/api";
 import useAuth from "@/hooks/useAuth";
+import { leaveServer } from "@/lib/api";
 
 // Main component for serving the server creation dialog box
 const LeaveServerModal = () => {

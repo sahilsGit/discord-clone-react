@@ -2,7 +2,16 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/providers/theme-provider";
 import { ActionTooltip } from "./actionTooltip";
 
-export function ModeToggle() {
+/*
+ * ModeToggle
+ *
+ * Let's you toggle between the light and dark mode
+ *
+ *
+ */
+
+export const ModeToggle = () => {
+  // Theme provider
   const { theme, setTheme } = useTheme("system");
 
   const toggleTheme = () => {
@@ -40,4 +49,4 @@ export function ModeToggle() {
       </ActionTooltip>
     </button>
   );
-}
+};

@@ -40,22 +40,26 @@ const ServerChannelItem = ({ channel, role, type, activeServer }) => {
   return (
     <button
       className={cn(
-        "group px-2 py-1 rounded-sm h-[30px] flex items-center gap-x-2 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition mb-1",
+        "group px-2 py-1 rounded-sm h-[30px] flex items-center gap-x-2  w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition mb-1",
         (activeChannel._id === channel.id || clicked) &&
           "bg-zinc-700/20 dark:bg-zinc-700"
       )}
       onClick={onClick}
     >
       <Icon className="flex-shrink-0 w-4 h-4 dark:text-zinc-400" />
-      <p
-        className={cn(
-          "font-medium text-sm dark:text-zinc-400 transition",
-          activeChannel?._id !== channel.id && "dark:group-hover:text-zinc-300",
-          activeChannel?._id === channel.id && "text-primary dark:text-white"
-        )}
-      >
-        {channel.name}
-      </p>
+      <div className="overflow-hidden truncate text-left w-[158px]">
+        <p
+          className={cn(
+            "font-medium text-sm dark:text-zinc-400 transition",
+            activeChannel?._id !== channel.id &&
+              "dark:group-hover:text-zinc-300",
+            activeChannel?._id === channel.id && "text-primary dark:text-white"
+          )}
+        >
+          {channel.name}
+        </p>
+      </div>
+
       {channel.name !== "general" && role !== "GUEST" && (
         <div className="ml-auto flex items-center gap-x-2">
           <ActionTooltip label="Edit">

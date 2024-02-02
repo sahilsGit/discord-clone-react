@@ -15,7 +15,7 @@ const ErrorComponent = ({ error, setError, errorHeading = "Oops!" }) => {
       open={error?.message}
       onOpenChange={() => setError({ status: "", message: "" })}
     >
-      <DialogContent className="w-[500px] py-6 bg-zinc-700 pb-0 pl-0 pr-0">
+      <DialogContent className="max-w-[500px] py-6 bg-zinc-700 pb-0 pl-0 pr-0">
         <DialogHeader className="pl-6 pr-6 rounded-sm">
           <DialogTitle className="mb-1">{errorHeading}</DialogTitle>
           <DialogDescription>{error?.message}</DialogDescription>
