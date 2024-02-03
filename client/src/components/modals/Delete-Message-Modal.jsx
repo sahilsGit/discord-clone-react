@@ -21,8 +21,6 @@ export const DeleteMessageModal = () => {
   const { url, sender, message } = data;
   const authDispatch = useAuth("dispatch");
 
-  console.log(data);
-
   const [isLoading, setIsLoading] = useState(false);
 
   const onClick = async () => {
@@ -31,7 +29,7 @@ export const DeleteMessageModal = () => {
       await handleResponse(response, authDispatch);
       onClose();
     } catch (error) {
-      console.log(error);
+      // Ingulf
     }
   };
 

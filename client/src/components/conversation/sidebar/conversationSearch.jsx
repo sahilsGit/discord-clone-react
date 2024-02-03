@@ -35,7 +35,7 @@ const ConversationSearch = () => {
         open={open}
         onOpenChange={setOpen}
       >
-        <CommandInput disabled="true" placeholder="Search Friends" />
+        <CommandInput disabled={true} placeholder="Search Friends" />
         <div className="py-6 text-center text-sm">Coming Soon!</div>
         {/* <CommandList>
           <CommandEmpty>No results found!</CommandEmpty>

@@ -8,7 +8,7 @@ export const connect = async () => {
   try {
     await mongoose.connect(process.env.MONGO); // Connect to MongoDB using the MONGO environment variable;
     console.log("Connected to DB server");
-  } catch (err) {
-    console.log("Error connecting to MongoDB: ", err);
+  } catch (error) {
+    console.log("Error connecting to MongoDB: ", error);
   }
 };

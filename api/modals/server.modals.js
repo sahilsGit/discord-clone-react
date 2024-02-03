@@ -24,8 +24,6 @@ serverSchema.index({ profileId: 1 });
 
 // Add a pre-save hook to update the user's servers array
 serverSchema.pre("save", async function (next) {
-  console.log("inside pre");
-
   const isNewServer = this.isNew;
 
   if (isNewServer) {
@@ -48,8 +46,8 @@ serverSchema.pre("save", async function (next) {
         await member.save();
         await user.save(); // save user
       }
-    } catch (err) {
-      return next(err);
+    } catch (error) {
+      return next(error);
     }
   }
   next();
@@ -66,8 +64,8 @@ serverSchema.pre("remove", async function (next) {
       user.servers.pull(this._id); // Remove the server's ID from the array
       await user.save();
     }
-  } catch (err) {
-    return next(err);
+  } catch (error) {
+    return next(error);
   }
   next();
 });

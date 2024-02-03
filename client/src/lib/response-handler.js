@@ -31,10 +31,7 @@ const handleResponse = async (response, authDispatch) => {
     }
     // If response is not okay i.e., Error
   } else {
-    console.log(response.status);
     const parsedError = await response.json(); // Parse the error message
-
-    console.log(response.status);
 
     // Construct a new error object for error handler
     const error = {

@@ -33,7 +33,6 @@ const mountJoinConversationEvent = (socket) => {
   socket.on(ConversationEventEnum.JOIN_CONVERSATION, async (conversationId) => {
     try {
       await authenticateSocket(socket);
-      console.log(`User joined the conversation`, conversationId);
       socket.join(conversationId);
     } catch (error) {
       socket.emit(
@@ -82,14 +81,11 @@ const initializeSocket = (io) => {
       socket.join(socket.profile._id.toString());
       socket.emit(ConversationEventEnum.CONNECTED); // Emit "connection successful" event to the client
 
-      console.log("User connected. profileId: ", socket.profile._id.toString());
-
       mountJoinConversationEvent(socket);
       mountParticipantTypingEvent(socket);
       mountParticipantStoppedTypingEvent(socket);
 
       socket.on(ConversationEventEnum.DISCONNECT, () => {
-        console.log("User has disconnected. profileId: " + socket.profile?._id);
         if (socket.profile?._id) {
           socket.leave(socket.profile._id);
         }

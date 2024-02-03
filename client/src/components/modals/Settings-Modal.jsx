@@ -17,11 +17,15 @@ import { Avatar, AvatarImage } from "../ui/avatar";
 import { post, update } from "@/services/api-service";
 import { cn } from "@/lib/utils";
 import "../../App.css";
+import ChangePassword from "../changePassword";
 
 const SettingsModal = () => {
   const { isOpen, onClose, type, data, onOpen } = useModal();
   const isModalOpen =
-    isOpen && (type === "settings" || type === "emailVerification");
+    isOpen &&
+    (type === "settings" ||
+      type === "emailVerification" ||
+      type === "changePassword");
   const username = useAuth("user");
   const [avatarImage, setAvatarImage] = useState(null);
   const authDispatch = useAuth("dispatch");
@@ -30,6 +34,7 @@ const SettingsModal = () => {
   const [hasChanged, setHasChanged] = useState(true);
   const [loading, setLoading] = useState(false);
   const profileId = useAuth("id");
+  const [showChangePass, setShowChangePassword] = useState(false);
 
   useEffect(() => {
     if (isModalOpen && !hasChanged) {
@@ -66,8 +71,6 @@ const SettingsModal = () => {
     },
   });
 
-  console.log(data?.email?.isEmailVerified);
-
   const handleVerifyClick = () => {
     (async () => {
       try {
@@ -98,7 +101,6 @@ const SettingsModal = () => {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
 
-    // console.log("file", file);
     if (file) {
       setAvatarImage(file); // Set the AvatarImage state with the choose image
     }
@@ -107,7 +109,6 @@ const SettingsModal = () => {
   // Use effect to display selected-image preview
   useEffect(() => {
     if (avatarImage) {
-      // console.log("Kicking this as avatarImage is triggered", avatarImage);
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result); // Set avatar preview
@@ -137,8 +138,8 @@ const SettingsModal = () => {
         const { newFilename } = data; // Access the newFilename property
 
         return newFilename; // For DB storage
-      } catch (err) {
-        handleError(err, authDispatch);
+      } catch (error) {
+        handleError(error, authDispatch);
       }
     } else {
       return null;
@@ -165,11 +166,8 @@ const SettingsModal = () => {
     }
 
     if (Object.keys(updatedValues).length === 0) {
-      console.log("You did not change anything");
       return;
     }
-
-    console.log(updatedValues);
 
     try {
       const response = await update(
@@ -181,8 +179,8 @@ const SettingsModal = () => {
       const dataReceived = await handleResponse(response, authDispatch);
 
       authDispatch({ type: "SET_CUSTOM", payload: dataReceived.updatedData });
-    } catch (err) {
-      handleError(err, authDispatch);
+    } catch (error) {
+      handleError(error, authDispatch);
     } finally {
       setLoading(false);
       onClose();
@@ -379,6 +377,9 @@ const SettingsModal = () => {
                   <Button
                     variant="primary"
                     className="max-w-fit text-white text-xs font-normal bg-indigo-500 rounded-sm px-4 text-sm h-[40px]"
+                    onClick={() => {
+                      onOpen("changePassword", {});
+                    }}
                   >
                     Change Password
                   </Button>
@@ -393,7 +394,7 @@ const SettingsModal = () => {
                     variant="primary"
                     className="max-w-fit text-white text-xs font-normal bg-indigo-500 rounded-sm px-4 text-sm h-[40px]"
                   >
-                    Log Out all know devices
+                    Log Out all known devices
                   </Button>
                 </div>
               </div>
@@ -410,11 +411,10 @@ const SettingsModal = () => {
                   variant="primary"
                   className="max-w-fit text-white text-xs font-normal hover:bg-red-700 bg-red-600 rounded-sm px-4 text-sm h-[40px]"
                 >
-                  Log Out all know devices
+                  Delete Account
                 </Button>
               </div>
             </div>
-            {/* <div className="flex-1 min-w-[20px]"></div> */}
           </div>
         </ScrollArea>
       </DialogContent>

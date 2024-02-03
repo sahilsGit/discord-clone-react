@@ -23,9 +23,9 @@ const verifyToken = async (req, res, next) => {
     req.user = decoded;
 
     next(); // Let the user continue
-  } catch (err) {
+  } catch (error) {
     // If access_token's expired handle new token generation
-    if (err.name === "TokenExpiredError") {
+    if (error.name === "TokenExpiredError") {
       try {
         // Verify refreshToken
         const decoded = jwt.verify(refreshToken, process.env.REFRESH);
@@ -79,7 +79,7 @@ const verifyToken = async (req, res, next) => {
 
         // Call the next middleware
         next();
-      } catch (err) {
+      } catch (error) {
         // Don't issue new token if refresh_token is expired or invalid
         return res.status(401).send({ message: "Invalid Token" });
       }

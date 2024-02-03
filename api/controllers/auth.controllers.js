@@ -117,11 +117,10 @@ const register = async (req, res, next) => {
       name: newProfile.name,
       image: newProfile.image || "",
     });
-  } catch (err) {
-    err.status = 500;
-    err.message = "Internal server error!";
-
-    next(err);
+  } catch (error) {
+    error.status = 500;
+    error.message = "Internal server error!";
+    next(error);
   }
 };
 
@@ -131,9 +130,6 @@ const login = async (req, res, next) => {
   */
   try {
     // Validation
-
-    console.log("inside login controller");
-
     const email = req.body.email;
     const receivedPassword = req.body.password;
 
@@ -154,14 +150,10 @@ const login = async (req, res, next) => {
       });
     }
 
-    console.log(receivedPassword, userProfile.password);
-
     const isPasswordCorrect = await bcrypt.compare(
       receivedPassword,
       userProfile.password
     ); // Compare the password with its hashed version
-
-    console.log(isPasswordCorrect);
 
     if (!isPasswordCorrect) {
       return res.status(404).send({
@@ -219,11 +211,10 @@ const login = async (req, res, next) => {
       name: userProfile.name,
       image: userProfile.image || "",
     });
-  } catch (err) {
-    err.status = 500;
-    err.message = "Internal server error!";
-
-    next(err);
+  } catch (error) {
+    // error.status = 500;
+    // error.message = "Internal server error!";
+    next(error);
   }
 };
 
@@ -238,20 +229,15 @@ const handleLogout = async (req, res, next) => {
 
     // Send a response to the client
     res.send("Success! Cookies' gone");
-  } catch (err) {
-    err.status = 500;
-    err.message = "Internal server error!";
-
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
-const refreshUserDetails = async (req, res) => {
+const refreshUserDetails = async (req, res, next) => {
   // Extract tokens from cookies and headers
   try {
     const profile = await Profile.findById(req.user.profileId);
-
-    console.log(profile);
 
     res.status(200).send({
       user: profile.username,
@@ -261,9 +247,52 @@ const refreshUserDetails = async (req, res) => {
       email: { data: profile.email, isEmailVerified: profile.isEmailVerified },
       about: profile.about || "",
     });
-  } catch (err) {
-    return res.status(401).send({ message: "Invalid Token" });
+  } catch (error) {
+    next(error);
   }
 };
 
-export { handleLogout, refreshUserDetails, register, login };
+const resetPassword = async (req, res, next) => {
+  try {
+    const otp = req.body.code;
+    const newPassword = req.body.newPassword;
+    const confirmPassword = req.body.confirmPassword;
+
+    if (!otp) {
+      return res.status(404).send("No code received!");
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res
+        .status(400)
+        .send("New password and confirm Password field don't match");
+    }
+
+    // generate a hash from the token that we are receiving
+    const hashedCode = crypto
+      .createHash("sha256")
+      .update(otp.toString())
+      .digest("hex");
+
+    const profile = await Profile.findOne({
+      forgotPasswordToken: hashedCode,
+      forgotPasswordExpiry: { $gt: Date.now() },
+    });
+
+    if (!profile) {
+      return res.status(489).send("OTP is either incorrect or has expired");
+    }
+
+    profile.forgotPasswordToken = null;
+    profile.forgotPasswordExpiry = null;
+
+    profile.password = newPassword;
+    await profile.save();
+
+    return res.status(200).send("Password changed successfully!");
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { handleLogout, refreshUserDetails, register, login, resetPassword };

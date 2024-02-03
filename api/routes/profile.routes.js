@@ -22,6 +22,6 @@ router
   .get("/find", searchUser)
   .put("/verify/:profileId", sendEmailVerification)
   .put("/verifyCode", verifyEmail)
-  .put("/newPassword", changePassword);
+  .put("/changePassword", changePassword);
 
 export default router;

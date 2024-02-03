@@ -1,5 +1,3 @@
-// import { Profile, Server } from "../modals/Schema.js";
-
 import Profile from "../modals/profile.modals.js";
 import fs from "fs";
 import {
@@ -8,29 +6,9 @@ import {
   sendEmail,
 } from "../utils/mail.js";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
-// const about = async (req, res, next) => {
-//   try {
-//     console.log(req.user);
-//     const profile = await Profile.findById(req.user.profileId); // Use the id from JWT token
-
-//     console.log(profile);
-
-//     if (res.body) {
-//       res.body = { ...res.body, about: profile.about, email: profile.email };
-//     } else {
-//       res.body = { about: profile.about, email: profile.email };
-//     }
-
-//     res.status(200).send(res.body);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: err.message });
-//   }
-// };
-
-const searchUser = async (req, res) => {
-  console.log("searching");
+const searchUser = async (req, res, next) => {
   try {
     // Get the search query from the request query parameters
     const searchQuery = req.query.searchQuery;
@@ -47,8 +25,6 @@ const searchUser = async (req, res) => {
     const user = await Profile.find({
       username: { $regex: searchRegex },
     });
-
-    console.log(user);
 
     if (!user || !user?.length) {
       return res.status(200).send({ message: "No user found!" });
@@ -73,12 +49,11 @@ const searchUser = async (req, res) => {
 
     res.status(200).send(res.body);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    next(error);
   }
 };
 
-const updateProfile = async (req, res) => {
+const updateProfile = async (req, res, next) => {
   let oldImage;
 
   try {
@@ -114,18 +89,12 @@ const updateProfile = async (req, res) => {
 
     await profile.save(); // Save the updated server
 
-    console.log(oldImage);
-
     if (oldImage) {
       const imagePath = `./public/images/${oldImage}`;
 
-      console.log("Deleting image at path:", imagePath);
-
       fs.unlink(imagePath, (unlinkErr) => {
         if (unlinkErr) {
-          console.error("Error deleting image:", unlinkErr);
-        } else {
-          console.log("Image deleted successfully");
+          // Ingulf the error
         }
       });
     }
@@ -144,13 +113,12 @@ const updateProfile = async (req, res) => {
       res.body = { updatedData: updatedData };
     }
     res.status(200).send(res.body);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
-const sendEmailVerification = async (req, res) => {
+const sendEmailVerification = async (req, res, next) => {
   try {
     const profile = await Profile.findById(req.user.profileId);
 
@@ -176,14 +144,15 @@ const sendEmailVerification = async (req, res) => {
       content: emailVerificationMailContent(profile.username, unHashedCode),
     });
 
-    return res.status(200).send("Mail has been sent to your mail ID");
+    return res
+      .status(200)
+      .send({ message: "Mail has been sent to your mail ID" });
   } catch (error) {
-    console.log(error);
-    res.status(500).send(error.message);
+    next(error);
   }
 };
 
-const verifyEmail = async (req, res) => {
+const verifyEmail = async (req, res, next) => {
   try {
     const verificationCode = req.body.code;
 
@@ -196,8 +165,6 @@ const verifyEmail = async (req, res) => {
       .createHash("sha256")
       .update(verificationCode.toString())
       .digest("hex");
-
-    console.log(verificationCode, hashedCode);
 
     const profile = await Profile.findOne({
       emailVerificationToken: hashedCode,
@@ -218,47 +185,49 @@ const verifyEmail = async (req, res) => {
 
     return res.status(200).send("Email is verified");
   } catch (error) {
-    return res.status(500).send(error.message);
+    next(error);
   }
 };
 
-const changePassword = async (req, res) => {
+const changePassword = async (req, res, next) => {
   try {
-    const otp = req.body.code;
+    const oldPassword = req.body.old;
     const newPassword = req.body.newPassword;
+    const confirmPassword = req.body.confirmPassword;
 
-    if (!otp) {
-      return res.status(404).send("No code received!");
+    if (!oldPassword) {
+      return res.status(404).send("Old password not received");
     }
 
-    // generate a hash from the token that we are receiving
-    const hashedCode = crypto
-      .createHash("sha256")
-      .update(otp.toString())
-      .digest("hex");
-
-    const profile = await Profile.findOne({
-      forgotPasswordToken: hashedCode,
-      forgotPasswordExpiry: { $gt: Date.now() },
-    });
-
-    if (!profile) {
-      return res.status(489).send("OTP is either incorrect or has expired");
+    if (newPassword !== confirmPassword) {
+      return res
+        .status(400)
+        .send("New password and confirm Password field don't match");
     }
 
-    profile.forgotPasswordToken = null;
-    profile.forgotPasswordExpiry = null;
+    const profile = await Profile.findById(req.user.profileId);
+
+    const isPasswordCorrect = await bcrypt.compare(
+      oldPassword,
+      profile.password
+    ); // Compare the password with its hashed version
+
+    if (!isPasswordCorrect) {
+      return res.status(404).send({
+        message: "Incorrect Email or password.",
+      });
+    }
 
     profile.password = newPassword;
     await profile.save();
 
-    return res.status(200).send("Password changed successfully!");
+    return res.status(200).send({ message: "Password changed successfully!" });
   } catch (error) {
-    return res.status(500).send(error.message);
+    next(error);
   }
 };
 
-const forgotPasswordRequest = async (req, res) => {
+const forgotPasswordRequest = async (req, res, next) => {
   try {
     const { email } = req.body;
 
@@ -295,10 +264,11 @@ const forgotPasswordRequest = async (req, res) => {
       content: forgotPasswordMailContent(profile.username, unHashedCode),
     });
 
-    res.status(200).send("OTP has been sent to your registered email.");
+    res
+      .status(200)
+      .send({ message: "OTP has been sent to your registered email." });
   } catch (error) {
-    console.log(error);
-    res.status(500).send(error.message);
+    next(error);
   }
 };
 

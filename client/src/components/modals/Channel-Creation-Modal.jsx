@@ -101,8 +101,8 @@ const ChannelCreationModal = () => {
       );
       await handleResponse(response, authDispatch);
       window.location.reload();
-    } catch (err) {
-      handleError(err, authDispatch);
+    } catch (error) {
+      handleError(error, authDispatch);
     }
   };
 

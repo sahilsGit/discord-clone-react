@@ -1,14 +1,11 @@
 import Channel from "../modals/channel.modals.js";
 import DirectConversation from "../modals/directConversation.modals.js";
 import Profile from "../modals/profile.modals.js";
-import ServerConversation from "../modals/serverConversation.modals.js";
 
-export const getOrCreateConversation = async (req, res) => {
+export const getOrCreateConversation = async (req, res, next) => {
   try {
     const profileOneId = req.params.profileOneId;
     const profileTwoId = req.params.profileTwoId;
-
-    console.log(profileOneId, profileTwoId);
 
     if (profileOneId === profileTwoId) {
       return res
@@ -56,14 +53,13 @@ export const getOrCreateConversation = async (req, res) => {
 
     res.status(200).send(res.body);
   } catch (error) {
-    res.status(500).send(error.message);
+    next(error);
   }
 };
 
-export const getAllConversations = async (req, res) => {
+export const getAllConversations = async (req, res, next) => {
   try {
     const profileId = req.params.profileId;
-    console.log(profileId);
 
     const conversations = await DirectConversation.find({
       $or: [{ initiatedBy: profileId }, { initiatedFor: profileId }],
@@ -92,45 +88,9 @@ export const getAllConversations = async (req, res) => {
     }
     res.status(200).send(res.body);
   } catch (error) {
-    res.status(500).send(error.message);
+    next(error);
   }
 };
-
-// export const findConversationById = async (req, res) => {
-//   try {
-//     const conversationId = req.params.conversationId;
-
-//     // Check if a conversation with the given ID exists
-//     const conversation = await DirectConversation.findById(conversationId);
-
-//     if (!conversation) {
-//       return res.status(404).send("Conversation not found");
-//     }
-
-//     const profileOneId = conversation.initiatedBy;
-//     const profileTwoId = conversation.initiatedFor;
-
-//     const theirProfile = await Profile.findById(
-//       profileTwoId === req.user.profileId ? profileOneId : profileTwoId
-//     ).select("_id name image username");
-
-//     if (res.body) {
-//       res.body = {
-//         ...res.body,
-//         memberProfile: theirProfile,
-//         conversation: conversation,
-//       };
-//     } else {
-//       res.body = {
-//         memberProfile: theirProfile,
-//         conversation: conversation,
-//       };
-//     }
-//     res.status(200).send(res.body);
-//   } catch (error) {
-//     res.status(500).send(error.message);
-//   }
-// };
 
 export const getServerConversation = async (req, res, next) => {
   const channelId = req.params.channelId;
@@ -158,6 +118,6 @@ export const getServerConversation = async (req, res, next) => {
     }
     res.status(200).send(res.body);
   } catch (error) {
-    res.status(500).send(error.message);
+    next(error);
   }
 };

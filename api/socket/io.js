@@ -3,8 +3,6 @@ import Profile from "../modals/profile.modals.js";
 import { ConversationEventEnum } from "../utils/constants.js";
 
 const mountChannels = async (socket) => {
-  console.log(socket.profile._id.toString());
-
   const channels = await Profile.aggregate([
     {
       $match: {
@@ -54,10 +52,6 @@ const mountChannels = async (socket) => {
     const channelName = channel.toString("hex"); // Convert ObjectId to hexadecimal
     socket.join(channelName); // Joining all the channels
   });
-
-  socket.rooms.forEach((room) => {
-    console.log(`Socket is in room: ${room}`);
-  });
 };
 
 const mountParticipantTypingEvent = (socket) => {
@@ -75,7 +69,6 @@ const mountParticipantStoppedTypingEvent = (socket) => {
 const initializeSocket = (io) => {
   return io.on("connection", async (socket) => {
     try {
-      console.log("authorizing");
       // Extract the access_token out of the auth header
       const access_token = socket.handshake.auth?.access_token;
 
@@ -99,14 +92,11 @@ const initializeSocket = (io) => {
       socket.join(socket.profile._id.toString());
       socket.emit(ConversationEventEnum.CONNECTED); // Emit "connection successful" event to the client
 
-      console.log("User connected. profileId: ", socket.profile._id.toString());
-
       mountJoinConversationEvent(socket);
       mountParticipantTypingEvent(socket);
       mountParticipantStoppedTypingEvent(socket);
 
       socket.on(ConversationEventEnum.DISCONNECT, () => {
-        console.log("User has disconnected. profileId: " + socket.profile?._id);
         if (socket.profile?._id) {
           socket.leave(socket.profile._id);
         }

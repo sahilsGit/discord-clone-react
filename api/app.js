@@ -48,6 +48,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use("/api/auth", authRouter);
 
+initializeSocket(io);
+
 // Protected routes
 app.use("/api/servers", serverRouter);
 app.use("/api/members", membersRouter);
@@ -56,20 +58,17 @@ app.use("/api/conversations", conversationsRouter);
 app.use("/api/assets", assetsRouter);
 app.use("/api/messages", messagesRouter);
 app.use("/api/profiles", profileRouter);
-
 app.get("/api/getToken", getToken);
 
-initializeSocket(io);
+// error handler
+app.use((error, req, res, next) => {
+  const errorStatus = error.status || 500;
+  const errorMessage = "Something went wrong!";
 
-// // error handler
-// app.use((error, res) => {
-//   const errorStatus = error.status || 500;
-//   const errorMessage = error.message || "Something went wrong!";
-
-//   return res.status(errorStatus).json({
-//     success: false,
-//     status: errorStatus,
-//     message: errorMessage,
-//     stack: error.stack,
-//   });
-// });
+  return res.status(errorStatus).send({
+    success: false,
+    status: errorStatus,
+    message: errorMessage,
+    stack: error.stack,
+  });
+});

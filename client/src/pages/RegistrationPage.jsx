@@ -44,8 +44,6 @@ const RegistrationPage = () => {
     setFocused((prev) => [...prev, item]);
   };
 
-  console.log(code);
-
   const form = useForm({
     resolver: zodResolver(registerSchema), //Resolving registerSchema created before
     defaultValues: {
@@ -79,7 +77,7 @@ const RegistrationPage = () => {
         access_token
       );
 
-      const data = handleResponse(response, authDispatch);
+      await handleResponse(response, authDispatch);
     } catch (error) {
       handleError(error);
     }
@@ -107,8 +105,8 @@ const RegistrationPage = () => {
       const response = await post("/auth/register", JSON.stringify(body));
       await handleResponse(response, authDispatch);
       setShowDialog(true);
-    } catch (err) {
-      handleError(err);
+    } catch (error) {
+      handleError(error);
     }
   }
 
@@ -141,7 +139,7 @@ const RegistrationPage = () => {
                         }
                         {...field}
                         className={cn(
-                          "h-[45px]",
+                          "h-[45px] dark:bg-zinc-900",
                           fieldState.error &&
                             "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                         )}
@@ -171,7 +169,7 @@ const RegistrationPage = () => {
                           handleFocus(1);
                         }}
                         className={cn(
-                          "h-[45px]",
+                          "h-[45px] dark:bg-zinc-900",
                           fieldState.error &&
                             "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                         )}
@@ -209,7 +207,7 @@ const RegistrationPage = () => {
                           handleFocus(2);
                         }}
                         className={cn(
-                          "h-[45px]",
+                          "h-[45px] dark:bg-zinc-900",
                           fieldState.error &&
                             "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                         )}
@@ -244,7 +242,7 @@ const RegistrationPage = () => {
                         {...field}
                         type="password"
                         className={cn(
-                          "h-[45px]",
+                          "h-[45px] dark:bg-zinc-900",
                           fieldState.error &&
                             "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                         )}

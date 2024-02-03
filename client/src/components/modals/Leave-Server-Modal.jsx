@@ -30,7 +30,7 @@ const LeaveServerModal = () => {
 
       window.location.href = "/";
     } catch (error) {
-      console.log(error);
+      // ingulf
     } finally {
       setIsLoading(false);
     }

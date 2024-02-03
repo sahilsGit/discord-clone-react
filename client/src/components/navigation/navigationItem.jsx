@@ -31,8 +31,8 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
         const imageUrl = URL.createObjectURL(imageData);
 
         setImageSrc(imageUrl);
-      } catch (err) {
-        handleError(err, authDispatch);
+      } catch (error) {
+        handleError(error, authDispatch);
       }
     };
 

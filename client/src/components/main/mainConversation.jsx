@@ -5,16 +5,12 @@ import MainInput from "./mainInput";
 import MessageDirect from "../message/messageDirect";
 import useAuth from "@/hooks/useAuth";
 import useConversations from "@/hooks/useConversations";
-import { Construction } from "lucide-react";
 
 const MainConversation = ({ type, activeConversation }) => {
   const profileId = useAuth("id");
-  // const [key, setKey] = useState(0);
   const messages = useConversations("messages");
   const cursor = useConversations("cursor");
   const hasMore = useConversations("hasMore");
-
-  console.log(messages?.length);
 
   return (
     <div className="bg-white dark:bg-[#313338] flex flex-col justify-between h-full">

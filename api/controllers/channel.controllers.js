@@ -2,8 +2,6 @@ import Channel from "../modals/channel.modals.js";
 import Profile from "../modals/profile.modals.js";
 import Member from "../modals/member.modals.js";
 import Server from "../modals/server.modals.js";
-import mongoose from "mongoose";
-import ServerMessage from "../modals/serverMessage.modals.js";
 
 export const createChannel = async (req, res, next) => {
   try {
@@ -63,12 +61,12 @@ export const createChannel = async (req, res, next) => {
     }
 
     res.status(200).send(res.body);
-  } catch (err) {
-    res.send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
-export const getChannel = async (req, res) => {
+export const getChannel = async (req, res, next) => {
   try {
     let channel;
     let profile;
@@ -123,19 +121,7 @@ export const getChannel = async (req, res) => {
     }
 
     res.status(200).send(res.body);
-  } catch (err) {
-    console.log(err);
-    res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
-
-// {
-//   $project: {
-//     _id: {
-//       $concat: ["Type: ", { $type: "$_id" }],
-//     },
-//     profileId: {
-//       $concat: ["Type: ", { $type: "$$profileId" }],
-//     },
-//   },
-// },

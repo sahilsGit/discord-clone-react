@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import qs from "query-string";
 import { Input } from "@/components/ui/input";
-import { Plus, Smile } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useModal } from "@/hooks/useModals";
 import { post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
@@ -36,10 +36,9 @@ const MainInput = ({ type, apiUrl, query }) => {
       });
 
       await post(url, JSON.stringify(value), access_token);
-
       form.reset();
     } catch (error) {
-      console.log(error);
+      // Ingulf error
     }
   };
   return (

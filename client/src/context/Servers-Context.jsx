@@ -9,8 +9,6 @@ const initialState = {
 export const ServerContext = createContext(initialState);
 
 const serverReducer = (state, action) => {
-  console.log("RECEIVED SERVER DISPATCH:", action);
-
   switch (action.type) {
     case "SET_SERVERS":
       return { ...state, servers: action.payload };

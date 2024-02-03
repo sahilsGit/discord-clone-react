@@ -12,7 +12,6 @@ const initialState = {
 };
 
 const conversationsReducer = (state, action) => {
-  console.log(action);
   switch (action.type) {
     case "SET_CONVERSATIONS":
       return { ...state, conversations: action.payload };
@@ -88,8 +87,6 @@ export const ConversationsContextProvider = ({ children }) => {
       "conversationMessages",
       JSON.stringify(state.messages)
     );
-
-    console.log("changed ctx value", state.messages);
   }, [state.messages]);
 
   return (

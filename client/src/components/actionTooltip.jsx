@@ -3,7 +3,6 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-  TooltipArrow,
 } from "@/components/ui/tooltip";
 
 export const ActionTooltip = ({ label, children, side, align }) => {
@@ -16,7 +15,7 @@ export const ActionTooltip = ({ label, children, side, align }) => {
       >
         <TooltipTrigger>{children}</TooltipTrigger>
         <TooltipContent side={side} align={align}>
-          <p className="font-semibold text-xs capitalize">
+          <p className="font-semibold bg-white dark:bg-zinc-900 text-xs capitalize">
             {label.toLowerCase()}
           </p>
           {/* <TooltipArrow width={10} height={5} /> */}

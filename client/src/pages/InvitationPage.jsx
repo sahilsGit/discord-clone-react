@@ -31,8 +31,8 @@ const InvitationPage = () => {
         data.exists ? setExists(true) : setExists(false);
         setLoading(false);
         setServerPage(data.serverId);
-      } catch (err) {
-        handleError(err, authDispatch);
+      } catch (error) {
+        handleError(error, authDispatch);
       }
     };
 
@@ -49,7 +49,7 @@ const InvitationPage = () => {
       await handleResponse(response, authDispatch);
       // navigate(`/servers/${serverPage}`);
       navigate(`/@me/conversations`);
-    } catch (err) {
+    } catch (error) {
       handleError;
     }
   };

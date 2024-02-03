@@ -12,7 +12,6 @@ import {
 import { format } from "date-fns";
 
 const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
-  console.log(messages.length);
   const authDispatch = useAuth("dispatch");
   const [error, setError] = useState(false);
   const observerRef = useRef();
@@ -37,8 +36,6 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
   const handleEditChange = (status) => {
     setIsEditing([status[0], status[1]]);
   };
-
-  console.log(isEditing);
 
   /*
    * Handles the event when a new message is received.
@@ -179,6 +176,7 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
     </div>
   );
 
+  // TODO: Message error state
   if (error) {
     return <p>Something went wrong!</p>;
   }

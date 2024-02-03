@@ -51,8 +51,8 @@ channelSchema.pre("save", async function (next) {
 
       this.conversationId = newConversation._id;
       await newConversation.save();
-    } catch (err) {
-      return next(err);
+    } catch (error) {
+      return next(error);
     }
   }
   next();

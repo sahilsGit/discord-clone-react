@@ -109,8 +109,6 @@ const sendDirectMessage = async (req, res, next) => {
       ],
     });
 
-    console.log("ppp", myProfileId);
-
     // Create the server message
     const message = new DirectMessage({
       content,
@@ -145,13 +143,12 @@ const sendDirectMessage = async (req, res, next) => {
     );
 
     res.status(201).send(message);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({ error: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const sendServerMessage = async (req, res) => {
+const sendServerMessage = async (req, res, next) => {
   try {
     const { channelId, memberId } = req.query;
     const { content } = req.body;
@@ -216,13 +213,12 @@ const sendServerMessage = async (req, res) => {
     );
 
     res.status(201).send(message);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({ error: "Error creating server message" });
+  } catch (error) {
+    next(error);
   }
 };
 
-const fetchMessages = async (req, res) => {
+const fetchMessages = async (req, res, next) => {
   const channelId = req.query.channelId || req.params.channelId;
 
   // Conditionally choose the appropriate handler based on query params
@@ -282,12 +278,11 @@ const fetchServerMessages = async (req, res) => {
 
     res.status(200).send(res.body);
   } catch (error) {
-    console.log(error);
-    res.status(500).send(error.message);
+    next(error);
   }
 };
 
-const fetchDirectMessages = async (req, res) => {
+const fetchDirectMessages = async (req, res, next) => {
   const limit = 10;
   const { cursor, conversationId, myProfileId, memberProfileId } = req.query;
 
@@ -305,7 +300,6 @@ const fetchDirectMessages = async (req, res) => {
     let queryPipeline;
 
     if (conversationId) {
-      console.log("cvddcdcd", conversationId);
       queryPipeline = [
         {
           $match: {
@@ -338,8 +332,6 @@ const fetchDirectMessages = async (req, res) => {
       queryPipeline.push({ $match: { createdAt: { $lt: new Date(cursor) } } });
     queryPipeline.push({ $sort: { createdAt: -1 } }, { $limit: limit + 1 });
 
-    console.log(queryPipeline);
-
     const messages = await DirectMessage.aggregate(queryPipeline);
 
     const hasMoreDocuments = messages.length > limit;
@@ -368,12 +360,11 @@ const fetchDirectMessages = async (req, res) => {
 
     res.status(200).send(res.body);
   } catch (error) {
-    console.log(error);
-    res.status(500).send(error.message);
+    next(error);
   }
 };
 
-const updateMessage = async (req, res) => {
+const updateMessage = async (req, res, next) => {
   try {
     const { messageId, memberId } = req.params;
     const { content } = req.body;
@@ -393,8 +384,6 @@ const updateMessage = async (req, res) => {
     if (updatedMessage) {
       const channelId = updatedMessage.channelId.toHexString();
 
-      console.log("launching event");
-
       emitSocketEvent(
         req,
         channelId,
@@ -409,13 +398,11 @@ const updateMessage = async (req, res) => {
         .json({ success: false, message: "Message not found for update" });
     }
   } catch (error) {
-    // Handle errors and respond with an error status
-    console.error("Error updating message:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    next(error);
   }
 };
 
-const deleteMessage = async (req, res) => {
+const deleteMessage = async (req, res, next) => {
   try {
     const { messageId, memberId } = req.params;
     const content = "This message has been deleted!";
@@ -449,14 +436,11 @@ const deleteMessage = async (req, res) => {
         .json({ success: false, message: "Message not found for update" });
     }
   } catch (error) {
-    // Handle errors and respond with an error status
-    console.error("Error updating message:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    next(error);
   }
 };
 
-const updateDirectMessage = async (req, res) => {
-  console.log("here");
+const updateDirectMessage = async (req, res, next) => {
   try {
     const { messageId, profileId } = req.params;
     const { content } = req.body;
@@ -471,8 +455,6 @@ const updateDirectMessage = async (req, res) => {
       { $match: { _id: new mongoose.Types.ObjectId(messageId) } },
       ...directMessagePipeline,
     ]);
-
-    console.log(messageDocument);
 
     // Check if the message was found and updated
     if (updatedMessage) {
@@ -492,18 +474,14 @@ const updateDirectMessage = async (req, res) => {
         .json({ success: false, message: "Message not found for update" });
     }
   } catch (error) {
-    // Handle errors and respond with an error status
-    console.error("Error updating message:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    next(error);
   }
 };
 
-const deleteDirectMessage = async (req, res) => {
+const deleteDirectMessage = async (req, res, next) => {
   try {
     const { messageId, profileId } = req.params;
     const content = "This message has been deleted!";
-
-    console.log(req.params);
 
     // Find and update the message in the database
     const updatedMessage = await DirectMessage.findOneAndUpdate(
@@ -534,9 +512,7 @@ const deleteDirectMessage = async (req, res) => {
         .json({ success: false, message: "Message not found for update" });
     }
   } catch (error) {
-    // Handle errors and respond with an error status
-    console.error("Error updating message:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    next(error);
   }
 };
 
@@ -549,46 +525,3 @@ export {
   deleteMessage,
   deleteDirectMessage,
 };
-
-// db.directmessages.aggregate([
-//   {
-//     $match: {
-//       $or: [
-//         {
-//           senderId: ObjectId("6596af8a1ff3b6447eae0579"),
-//           receiverId: ObjectId("6596afd01ff3b6447eae058a"),
-//         },
-//         {
-//           receiverId: ObjectId("6596afd01ff3b6447eae058a"),
-//           senderId: ObjectId("6596afd01ff3b6447eae058a"),
-//         },
-//       ],
-//     },
-//   },
-//   {
-//     $lookup: {
-//       from: "profiles",
-//       localField: "senderId",
-//       foreignField: "_id",
-//       as: "sender",
-//     },
-//   },
-//   { $unwind: "$sender" },
-//   {
-//     $project: {
-//       _id: 1,
-//       content: 1,
-//       fileUrl: 1,
-//       senderId: 1,
-//       receiverId: 1,
-//       deleted: 1,
-//       createdAt: 1,
-//       updatedAt: 1,
-//       "sender._id": 1,
-//       "sender.name": 1,
-//       "sender.image": 1,
-//     },
-//   },
-//   { $sort: { createdAt: -1 } },
-//   { $limit: 10 + 1 },
-// ]);

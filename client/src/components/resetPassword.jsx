@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import ErrorComponent from "@/lib/error-Component";
+import ChangePassword from "./changePassword";
 
 const emailSchema = z.string().email();
 
@@ -135,18 +136,7 @@ const ResetPassword = ({ authDispatch }) => {
         />
       )}
       <Dialog open={apiSuccess} onOpenChange={() => setApiSuccess(false)}>
-        <DialogContent className="w-[500px] py-6">
-          <DialogHeader>
-            <DialogTitle>Create a new password</DialogTitle>
-            <DialogDescription>{apiError?.message}</DialogDescription>
-          </DialogHeader>
-          <Input placeholder="Old password / OTP"></Input>
-          <Input placeholder="new password"></Input>
-          <Input placeholder="confirm password"></Input>
-          <Button className="mt-3" type="button" variant="primary">
-            Submit
-          </Button>
-        </DialogContent>
+        <ChangePassword />
       </Dialog>
     </Dialog>
   );

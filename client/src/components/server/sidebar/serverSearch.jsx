@@ -21,7 +21,6 @@ const ServerSearch = ({ data }) => {
   const conversationsDispatch = useConversations("dispatch");
   const myProfileId = useAuth("id");
 
-  console.log("logging dd", data);
   useEffect(() => {
     const press = (e) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -61,12 +60,12 @@ const ServerSearch = ({ data }) => {
   return (
     <>
       <button
-        className="group px-2 py-[10px] w-full group"
+        className="group px-2 py-[10px] text-zinc-600 w-full group"
         onClick={() => {
           setOpen(true);
         }}
       >
-        <div className="flex py-1.5 px-2 h-[32px] w-full bg-main10 rounded-sm flex items-center transition group-hover:cursor-text justify-between overflow-hidden">
+        <div className="flex px-2 h-[32px] w-full bg-zinc-300/70 dark:bg-main10 rounded-sm flex items-center transition group-hover:cursor-text justify-between overflow-hidden">
           <p className="text-xs text-zinc-500 dark:text-zinc-400 transition">
             Search
           </p>
@@ -85,14 +84,13 @@ const ServerSearch = ({ data }) => {
           <CommandEmpty>No Results found</CommandEmpty>
           {data.map(({ label, contentArray }) => {
             if (!contentArray?.length) return null;
-
             return (
               <CommandGroup key={label} heading={label}>
                 {contentArray?.map(
                   ({ id, icon, name, profileId, itemType }) => {
                     return (
                       <CommandItem
-                        className="flex space-x-3"
+                        className="space-y-1 space-x-3 px-2 overflow-hidden"
                         key={id}
                         onSelect={() => onClick({ id, profileId, itemType })}
                       >

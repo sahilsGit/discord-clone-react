@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavigationSidebar from "@/components/navigation/navigationSidebar";
 import useServer from "@/hooks/useServer";
@@ -18,6 +18,7 @@ import {
 import { handleError } from "@/lib/response-handler";
 import { Loader2 } from "lucide-react";
 import MobileToggle from "@/components/mobileToggle";
+import ErrorComponent from "@/lib/error-Component";
 
 /*
  * MainPage
@@ -49,6 +50,7 @@ const MainPage = ({ type }) => {
   const conversationsDispatch = useConversations("dispatch");
   const activeChannel = useChannels("activeChannel");
   const channelsDispatch = useChannels("dispatch");
+  const [apiError, setApiError] = useState({ status: "", message: "" });
 
   // FetchMap for mapping utility functions to keywords so that queuing multiple fetches becomes easier and readable
   const fetchMap = {
@@ -84,6 +86,11 @@ const MainPage = ({ type }) => {
         conversationsDispatch
       );
     },
+  };
+
+  // Error setter for custom error component
+  const setError = ({ status, message }) => {
+    setApiError({ status: status, message: message });
   };
 
   useEffect(() => {
@@ -145,7 +152,8 @@ const MainPage = ({ type }) => {
         // Map the keys stored in fetchBatch to fetchMap and fetch all simultaneously
         await Promise.all(toFetchBatch.map((key) => fetchMap[key]()));
       } catch (error) {
-        handleError(error, authDispatch); // Error handler
+        const { status, message } = handleError(error, authDispatch); // Error handler
+        setApiError({ status: status, message: message });
       }
     }
 
@@ -203,6 +211,7 @@ const MainPage = ({ type }) => {
           <MainWrapper type={type} mainData={activeChannel} />
         )}
       </div>
+      <ErrorComponent error={apiError} setError={setError} />
     </main>
   );
 };

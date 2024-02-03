@@ -3,11 +3,10 @@ import ServerHeader from "../server/header/serverHeader";
 import useServer from "@/hooks/useServer";
 import MessageServer from "../message/messageServer";
 import { useState } from "react";
-import VideoCallWrapper from "../videoCall/videoCallWrapper";
 import useChannels from "@/hooks/useChannels";
+import CallWrapper from "../voice-video/callWrapper";
 
 const MainServer = ({ type }) => {
-  const [key, setKey] = useState(0);
   const messages = useChannels("messages");
   const activeChannel = useChannels("activeChannel");
   const cursor = useChannels("cursor");
@@ -22,7 +21,7 @@ const MainServer = ({ type }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-[#313338] flex flex-col justify-between h-full">
+    <div className="bg-white dark:bg-[#313338] flex flex-col overflow-hidden justify-between h-full">
       <ServerHeader type={type} activeChannel={activeChannel} />
       {channelType === "TEXT" && (
         <>
@@ -43,10 +42,10 @@ const MainServer = ({ type }) => {
         </>
       )}
       {channelType === "VIDEO" && (
-        <VideoCallWrapper key={key} channelId={channelId} />
+        <CallWrapper video={true} channelId={channelId} />
       )}
-      {channelType === "VOICE" && (
-        <VideoCallWrapper key={key} channelId={channelId} />
+      {channelType === "AUDIO" && (
+        <CallWrapper video={false} channelId={channelId} />
       )}
     </div>
   );

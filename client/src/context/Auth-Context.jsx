@@ -18,7 +18,6 @@ const AuthContext = createContext(INITIAL_STATE);
 
 // Reducer function for managing authentication state
 const AuthReducer = (state, action) => {
-  console.log("RECEIVED AUTH DISPATCH: ", action);
   switch (action.type) {
     case "RESET_STATE":
       return INITIAL_STATE;
@@ -74,11 +73,8 @@ const AuthContextProvider = ({ children }) => {
 
   // Store the user in local storage whenever it changes
   useEffect(() => {
-    console.log("setting");
     localStorage.setItem("access_token", JSON.stringify(state.access_token));
     localStorage.setItem("user", JSON.stringify(state.user));
-
-    console.log("logging state,", state);
   }, [state.access_token, state.user, state.email]);
 
   return (

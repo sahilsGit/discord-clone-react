@@ -70,16 +70,13 @@ export const createServer = async (req, res, next) => {
       res.body = { server: newServer };
     }
     res.status(200).send(res.body);
-  } catch (err) {
-    res.status(500).send(err.message);
-
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
 export const getAll = async (req, res, next) => {
   try {
-    // TODO : Possiblity for reducing db look for optimisation
     const profileId = req.user.profileId;
 
     const profile = await Profile.findById(profileId); // Use the id from JWT token
@@ -121,13 +118,12 @@ export const getAll = async (req, res, next) => {
     }
 
     res.status(200).send(res.body);
-  } catch (err) {
-    // console.error(err);
-    res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
-export const getOne = async (req, res) => {
+export const getOne = async (req, res, next) => {
   try {
     const profile = await Profile.findOne({
       _id: req.user.profileId,
@@ -310,9 +306,8 @@ export const getOne = async (req, res) => {
     }
 
     res.status(200).send(res.body);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -332,7 +327,7 @@ export const updateServerBasics = async (req, res, next) => {
     const server = await Server.findById(req.params.serverId); // Find the server by ID
 
     if (!server) {
-      return res.status(404).send(err.message);
+      return res.status(404).send(error.message);
     } // Check if the server exists
 
     if (name) {
@@ -349,13 +344,9 @@ export const updateServerBasics = async (req, res, next) => {
     if (oldImage) {
       const imagePath = `./public/images/${oldImage}`;
 
-      console.log("Deleting image at path:", imagePath);
-
       fs.unlink(imagePath, (unlinkErr) => {
         if (unlinkErr) {
-          console.error("Error deleting image:", unlinkErr);
-        } else {
-          console.log("Image deleted successfully");
+          // Ingulf the error
         }
       });
     }
@@ -375,9 +366,8 @@ export const updateServerBasics = async (req, res, next) => {
     }
 
     res.status(200).send(res.body);
-  } catch (err) {
-    // console.error(err);
-    res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -414,8 +404,8 @@ export const findServer = async (req, res, next) => {
       res.body = { exists: exists, serverId: server._id };
     }
     res.status(200).send(res.body);
-  } catch (err) {
-    res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -461,8 +451,8 @@ export const acceptInvite = async (req, res, next) => {
 
       res.status(200).send(res.body);
     }
-  } catch (err) {
-    res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -520,14 +510,14 @@ const leaveServer = async (req, res, next) => {
     } else {
       res.status(200).send({ message: "Member removed Successfully" });
     }
-  } catch (err) {
-    res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
 // MEMBERS' SPECIFIC APIs++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-export const getMembers = async (req, res) => {
+export const getMembers = async (req, res, next) => {
   const { skip } = req.query;
 
   try {
@@ -588,8 +578,6 @@ export const getMembers = async (req, res) => {
       },
     ]);
 
-    console.log(!populatedMembers.length);
-
     if (!populatedMembers.length) {
       return res.status(201).send("That's it, no more members to fetch!");
     }
@@ -601,9 +589,8 @@ export const getMembers = async (req, res) => {
     }
 
     res.status(200).send(res.body);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
+  } catch (error) {
+    next(error);
   }
 };
 

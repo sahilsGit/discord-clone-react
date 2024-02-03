@@ -5,7 +5,7 @@ function isPasswordValid(value) {
   return passwordRegex.test(value);
 }
 
-export const registerSchema = z.object({
+const registerSchema = z.object({
   username: z.string().min(3, "Must contain at least 3 characters").max(255),
   name: z.string().min(3, "Must contain at least 3 characters").max(255),
   email: z.string().email({ message: "Please enter a valid email" }),
@@ -17,3 +17,5 @@ export const registerSchema = z.object({
       message: "Password doesn't match the requirements",
     }),
 });
+
+export { isPasswordValid, registerSchema };

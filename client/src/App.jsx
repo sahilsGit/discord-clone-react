@@ -24,8 +24,6 @@ function App() {
    *
    */
 
-  console.log("APP");
-
   return (
     <>
       <div className={cn("bg-white dark:bg-[#313338]")}>

@@ -24,8 +24,6 @@ const DropdownTrigger = ({ role }) => {
   const isAdmin = role === "ADMIN";
   const isModerator = isAdmin || role === "MODERATOR";
 
-  // console.log(isAdmin, isModerator);
-
   return (
     <div className="flex items-center h-[48px] border-neutral-200 dark:border-neutral-800 border-b-2 overflow-hidden">
       <DropdownMenu>

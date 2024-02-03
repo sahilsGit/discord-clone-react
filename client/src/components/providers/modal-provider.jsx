@@ -8,6 +8,7 @@ import SettingsModal from "../modals/Settings-Modal";
 import LeaveServerModal from "../modals/Leave-Server-Modal";
 import { DeleteMessageModal } from "../modals/Delete-Message-Modal";
 import EmailVerificationModal from "../modals/Email-Verification-Modal";
+import ChangePasswordModal from "../modals/Change-Password-Modal";
 
 export const ModalProvider = () => {
   return (
@@ -22,6 +23,7 @@ export const ModalProvider = () => {
       <LeaveServerModal />
       <DeleteMessageModal />
       <EmailVerificationModal />
+      <ChangePasswordModal />
     </>
   );
 };

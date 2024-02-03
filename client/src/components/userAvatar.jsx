@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export const UserAvatar = ({ subject, className }) => {
-  const [imageSrc, setImageSrc] = useState("../../assets/images/fallback.jpg");
+  const [imageSrc, setImageSrc] = useState("/fallback/userFinal.jpg");
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
 
@@ -18,8 +18,8 @@ export const UserAvatar = ({ subject, className }) => {
       const imageData = await response.blob();
       const imageUrl = URL.createObjectURL(imageData);
       setImageSrc(imageUrl);
-    } catch (err) {
-      handleError(err, authDispatch);
+    } catch (error) {
+      handleError(error, authDispatch);
     }
   };
 

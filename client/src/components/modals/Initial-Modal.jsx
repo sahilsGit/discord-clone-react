@@ -59,8 +59,6 @@ const InitialModal = () => {
 
   // Use effect to display selected-image preview
   useEffect(() => {
-    // console.log("AvatarImage is being changed: ", avatarImage);
-
     if (avatarImage) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -80,7 +78,6 @@ const InitialModal = () => {
     // Upload image and save it in designated place
     if (avatarImage) {
       try {
-        // console.log(formData);
         const response = await post(
           "/assets/uploadFile",
           formData,
@@ -99,11 +96,10 @@ const InitialModal = () => {
         const { newFilename } = data;
 
         return newFilename; // For DB storage
-      } catch (err) {
-        handleError(err, authDispatch);
+      } catch (error) {
+        handleError(error, authDispatch);
       }
     } else {
-      // // console.log("Avatar image not found!");
       throw new Error("Avatar image not found"); // Reject the promise if avatarImage is not available
     }
   };
@@ -152,8 +148,8 @@ const InitialModal = () => {
 
       serverDispatch({ type: "SET_SERVERS", payload: data.servers });
       serverDispatch({ type: "SET_ACTIVE_SERVER", payload: data.servers[0] });
-    } catch (err) {
-      // console.log(err); // Being lazy
+    } catch (error) {
+      // Ingulf
     }
     form.reset();
   };

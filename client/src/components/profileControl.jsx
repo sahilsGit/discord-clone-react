@@ -89,7 +89,7 @@ const ProfileControl = () => {
             <div className="px-3 pt-4 pb-3 flex flex-col gap-y-2 rounded-md bg-white dark:bg-[#121212] ">
               <div className="group rounded-sm truncate flex flex-col gap-x-2 w-full">
                 <p className="px-1 text-md text-primary">{profileName}</p>
-                <p className="pt-1 px-1 text-zinc-700 text-white text-xs">
+                <p className="pt-1 px-1 text-zinc-700 dark:text-zinc-400 text-white text-xs">
                   {username}
                 </p>
               </div>
@@ -107,11 +107,12 @@ const ProfileControl = () => {
                 </>
               ) : null}
               <Separator className="h-[1px] bg-zinc-400/70" />
-              <div className="flex flex-col w-full">
-                <ActionTooltip label="Coming soon!" side="right" align="center">
+
+              <ActionTooltip label="Coming soon!" side="right" align="center">
+                <div className="flex flex-col w-full gap-y-0.5">
                   <Button
-                    disabled="true"
-                    className="bg-zinc-800 group h-[25px] px-2 rounded-sm flex justify-between items-center gap-x-1 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition"
+                    disabled={true}
+                    className="bg-zinc-200 dark:bg-zinc-800 group h-[25px] px-2 rounded-sm flex justify-between items-center gap-x-1 w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition"
                   >
                     <div className="flex text-xs gap-x-3 items-center">
                       <div className="h-3 w-3 bg-indigo-500 rounded-full group-hover:bg-zinc-500 transition"></div>
@@ -120,16 +121,16 @@ const ProfileControl = () => {
 
                     <ChevronRight className="h-4 w-4" />
                   </Button>
-
                   <Button
-                    disabled="true"
-                    className="bg-zinc-800 h-[25px] px-[5px] rounded-sm flex justify-start items-center gap-x-[10px] w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition"
+                    disabled={true}
+                    className="bg-zinc-200 dark:bg-zinc-800 h-[25px] px-[5px] rounded-sm flex justify-start items-center gap-x-[10px] w-full dark:hover:bg-zinc-700 hover:bg-zinc-700/20 transition"
                   >
                     <Smile className="text-zinc-500 h-[18px] w-[18px]" />
                     <p className="text-zinc-500 text-xs">Set custom status</p>
                   </Button>
-                </ActionTooltip>
-              </div>
+                </div>
+              </ActionTooltip>
+
               <Separator className="h-[1px] bg-zinc-400/70" />
               <div className="group px-2 rounded-sm flex items-center w-full dark:hover:bg-rose-700 hover:bg-rose-700/20 transition">
                 <button

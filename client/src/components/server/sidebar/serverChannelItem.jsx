@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Edit, Hash, Lock, Mic, Trash, Video } from "lucide-react";
 import { ActionTooltip } from "@/components/actionTooltip";
-import { useNavigate } from "react-router-dom";
 import useChannels from "@/hooks/useChannels";
 import { getChannelOnly } from "@/lib/context-helper";
 import useAuth from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const iconMap = {
   TEXT: Hash,
@@ -46,11 +46,11 @@ const ServerChannelItem = ({ channel, role, type, activeServer }) => {
       )}
       onClick={onClick}
     >
-      <Icon className="flex-shrink-0 w-4 h-4 dark:text-zinc-400" />
-      <div className="overflow-hidden truncate text-left w-[158px]">
+      <Icon className="flex-shrink-0 w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+      <div className="overflow-hidden truncate text-left w-[160px]">
         <p
           className={cn(
-            "font-medium text-sm dark:text-zinc-400 transition",
+            "font-medium text-sm text-zinc-600 dark:text-zinc-400 w-full transition",
             activeChannel?._id !== channel.id &&
               "dark:group-hover:text-zinc-300",
             activeChannel?._id === channel.id && "text-primary dark:text-white"
@@ -59,16 +59,15 @@ const ServerChannelItem = ({ channel, role, type, activeServer }) => {
           {channel.name}
         </p>
       </div>
-
       {channel.name !== "general" && role !== "GUEST" && (
-        <div className="ml-auto flex items-center gap-x-2">
-          <ActionTooltip label="Edit">
+        <button disabled className="ml-auto  flex items-center gap-x-2">
+          <ActionTooltip label="Coming Soon">
             <Edit
               onClick={(e) => onAction(e, "editChannel")}
-              className="hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition"
+              className="hidden  group-hover:block w-4 h-4 text-zinc-400 dark:text-zinc-400 transition"
             />
           </ActionTooltip>
-        </div>
+        </button>
       )}
       {channel.name === "general" && (
         <Lock className="ml-auto w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />

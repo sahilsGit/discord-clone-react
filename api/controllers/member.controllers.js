@@ -50,8 +50,8 @@ export const changeRole = async (req, res, next) => {
     }
 
     res.status(200).send(res.body);
-  } catch (err) {
-    res.send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -112,17 +112,14 @@ export const searchMember = async (req, res, next) => {
       },
     ]);
 
-    console.log(result);
-
     if (res.body) {
       res.body = { ...res.body, members: result };
     } else {
       res.body = { members: result };
     }
     res.status(200).send(res.body);
-  } catch (err) {
-    // console.error(err.message);
-    return res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -172,7 +169,7 @@ export const removeMember = async (req, res, next) => {
     } else {
       res.status(200).send({ message: "Member removed Successfully" });
     }
-  } catch (err) {
-    res.status(500).send(err.message);
+  } catch (error) {
+    next(error);
   }
 };

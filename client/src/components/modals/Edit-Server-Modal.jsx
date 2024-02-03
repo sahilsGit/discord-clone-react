@@ -65,8 +65,6 @@ const EditServerModal = () => {
   useEffect(() => {
     const fetchFormData = async () => {
       if (activeServer) {
-        console.log(activeServer.image);
-
         try {
           const response = await get(
             `/assets/getImage/${activeServer.image}`,
@@ -77,8 +75,8 @@ const EditServerModal = () => {
 
           const image = URL.createObjectURL(imageData);
           setImagePreview(image);
-        } catch (err) {
-          handleError(err, authDispatch);
+        } catch (error) {
+          handleError(error, authDispatch);
         }
       }
     };
@@ -104,8 +102,8 @@ const EditServerModal = () => {
 
             const image = URL.createObjectURL(imageData);
             setImagePreview(image);
-          } catch (err) {
-            handleError(err, authDispatch);
+          } catch (error) {
+            handleError(error, authDispatch);
           }
 
           form.setValue("name", activeServer.name);
@@ -118,7 +116,6 @@ const EditServerModal = () => {
   // Use effect to display selected-image preview
   useEffect(() => {
     if (avatarImage) {
-      // console.log("Kicking this as avatarImage is triggered", avatarImage);
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result); // Set avatar preview
@@ -133,7 +130,6 @@ const EditServerModal = () => {
   const uploadImage = async () => {
     // Upload image and save it in designated place
     if (avatarImage) {
-      // console.log("Got image on upload");
       const formData = new FormData();
       formData.append("image", avatarImage);
 
@@ -153,8 +149,8 @@ const EditServerModal = () => {
         const { newFilename } = data; // Access the newFilename property
 
         return newFilename; // For DB storage
-      } catch (err) {
-        handleError(err, authDispatch);
+      } catch (error) {
+        handleError(error, authDispatch);
       }
     } else {
       return null;
@@ -174,8 +170,6 @@ const EditServerModal = () => {
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-
-    // console.log("file", file);
     if (file) {
       setAvatarImage(file); // Set the AvatarImage state with the chosen image
     } else {
@@ -215,8 +209,6 @@ const EditServerModal = () => {
       const updatedServers = servers;
       servers[data.server.id] = data.server;
 
-      console.log(activeServer);
-
       serverDispatch({
         type: "SET_CUSTOM",
         payload: {
@@ -228,9 +220,8 @@ const EditServerModal = () => {
           },
         },
       });
-    } catch (err) {
-      console.log(err);
-      handleError(err, authDispatch);
+    } catch (error) {
+      handleError(error, authDispatch);
     }
 
     setLoading(false);

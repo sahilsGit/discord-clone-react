@@ -71,12 +71,11 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
               }
               setResults([...results, ...data.members]);
               setIsLoading(false);
-            } catch (err) {
-              handleError(err, authDispatch);
+            } catch (error) {
+              handleError(error, authDispatch);
             }
           } else {
             try {
-              console.log("fetching");
               const response = await get(
                 `/servers/${user}/${activeServer.id}/members?skip=${activeServer.members.length}`,
                 access_token
@@ -85,8 +84,8 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
               const data = await handleResponse(response, authDispatch);
 
               serverDispatch({ type: "ADD_MEMBERS", payload: data.members });
-            } catch (err) {
-              handleError(err, authDispatch);
+            } catch (error) {
+              handleError(error, authDispatch);
             }
           }
         }
@@ -128,11 +127,10 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
             return;
           }
 
-          console.log(data);
           setResults([...results, ...data.members]);
           setIsLoading(false);
-        } catch (err) {
-          handleError(err, authDispatch);
+        } catch (error) {
+          handleError(error, authDispatch);
         }
       }, 2000);
     },
@@ -173,8 +171,8 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
           ...results.slice(memberIndex + 1),
         ]);
       }
-    } catch (err) {
-      handleError(err, authDispatch);
+    } catch (error) {
+      handleError(error, authDispatch);
     }
   };
 
@@ -186,8 +184,8 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
       );
       await handleResponse(response, authDispatch);
       serverDispatch({ type: "REMOVE_MEMBER", payload: memberId });
-    } catch (err) {
-      handleError(err, authDispatch);
+    } catch (error) {
+      handleError(error, authDispatch);
     }
   };
 

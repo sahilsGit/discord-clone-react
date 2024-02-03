@@ -22,8 +22,8 @@ const getAllServers = async (user, authDispatch, serverDispatch) => {
     serverIds.length > 0
       ? serverDispatch({ type: "SET_SERVERS", payload: data.servers })
       : serverDispatch({ type: "SET_SERVERS", payload: [] });
-  } catch (err) {
-    handleError(err, authDispatch);
+  } catch (error) {
+    handleError(error, authDispatch);
   }
 };
 
@@ -64,7 +64,6 @@ const getConversationDetails = async (
       },
     });
   } catch (error) {
-    console.log("log", error);
     handleError(error, authDispatch);
   }
 };
@@ -85,8 +84,8 @@ const getAllConversations = async (
       type: "SET_CONVERSATIONS",
       payload: data.conversations,
     });
-  } catch (err) {
-    handleError(err, authDispatch);
+  } catch (error) {
+    handleError(error, authDispatch);
   }
 };
 
@@ -301,7 +300,6 @@ const processReceivedDirectMessage = (
   conversationsDispatch
 ) => {
   const newMessageArray = [message, ...messages];
-  console.log(newMessageArray);
 
   if (message.senderId === profileId || message.receiverId === profileId) {
     messages.length

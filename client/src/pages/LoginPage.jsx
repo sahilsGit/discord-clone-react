@@ -69,8 +69,8 @@ const LoginPage = () => {
       await handleResponse(response, authDispatch);
 
       navigate(from);
-    } catch (err) {
-      const { status, message } = handleError(err, authDispatch);
+    } catch (error) {
+      const { status, message } = handleError(error, authDispatch);
       setApiError({ status: status, message: message });
     } finally {
       setLoading(false);

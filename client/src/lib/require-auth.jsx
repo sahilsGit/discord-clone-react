@@ -1,8 +1,9 @@
 import useAuth from "@/hooks/useAuth";
 import { get } from "@/services/api-service";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleError, handleResponse } from "./response-handler";
+import ErrorComponent from "./error-Component";
 
 const RequireAuth = ({ children }) => {
   const user = useAuth("user");
@@ -14,12 +15,17 @@ const RequireAuth = ({ children }) => {
   const image = useAuth("image");
   const email = useAuth("email");
   const about = useAuth("about");
+  const [apiError, setApiError] = useState({ status: "", message: "" });
+
+  // Error setter for standard error component
+  const setError = ({ status, message }) => {
+    setApiError({ status: status, message: message });
+  };
 
   useEffect(() => {
     const refreshUserDetails = async () => {
       try {
         const response = await get("/auth/refresh", access_token);
-        console.log(response);
         const data = await handleResponse(response, authDispatch);
 
         authDispatch({
@@ -34,8 +40,8 @@ const RequireAuth = ({ children }) => {
           },
         });
       } catch (error) {
-        console.log("here", error);
-        handleError(error, authDispatch);
+        const { status, message } = handleError(error, authDispatch);
+        setApiError({ status: status, message: message });
       }
     };
 
@@ -54,9 +60,11 @@ const RequireAuth = ({ children }) => {
     !about === null ||
     !email ||
     !user ||
-    !access_token
-    ? null
-    : children;
+    !access_token ? null : apiError.message ? (
+    <ErrorComponent error={apiError} setError={setError} />
+  ) : (
+    children
+  );
 };
 
 export default RequireAuth;

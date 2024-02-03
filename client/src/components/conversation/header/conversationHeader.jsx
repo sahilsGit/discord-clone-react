@@ -19,7 +19,7 @@ const ConversationHeader = () => {
             <div>
               <Button
                 variant="custom"
-                disabled="true"
+                disabled={true}
                 className="hidden lg:block hover:bg-zinc-700/10 dark:hover:bg-zinc-600/50 dark:hover:text-zinc-200 transition px-2 rounded-sm text-zinc-400"
               >
                 Online
@@ -27,7 +27,7 @@ const ConversationHeader = () => {
 
               {/* <Button
                 variant="custom"
-                disabled="true"
+                disabled={true}
                 className="hover:bg-zinc-700/10 dark:hover:bg-zinc-600/50 dark:hover:text-zinc-200 transition px-2 rounded-sm text-zinc-400"
               >
                 All
@@ -35,7 +35,7 @@ const ConversationHeader = () => {
               {/* 
               <Button
                 variant="custom"
-                disabled="true"
+                disabled={true}
                 className="hover:bg-zinc-700/10 dark:hover:bg-zinc-600/50 dark:hover:text-zinc-200 transition px-2 rounded-sm text-zinc-400"
               >
                 Pending
@@ -47,13 +47,13 @@ const ConversationHeader = () => {
           <div className="flex gap-x-2 items-center justify-center">
             <Button
               variant="custom"
-              disabled="true"
+              disabled={true}
               className="hidden lg:block hover:bg-zinc-700/10 dark:hover:bg-zinc-600/50 dark:hover:text-zinc-200 transition px-2 rounded-sm text-zinc-400"
             >
               Blocked
             </Button>
             <Button
-              disabled="true"
+              disabled={true}
               className="h-[30px] bg-emerald-600 text-sm font-medium rounded-sm px-3"
             >
               Add Friend

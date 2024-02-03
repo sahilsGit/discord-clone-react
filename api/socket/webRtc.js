@@ -1,13 +1,13 @@
 import { AccessToken } from "livekit-server-sdk";
 
 const getToken = async (req, res) => {
-  const createToken = (channelId, memberId) => {
+  const createToken = (channelId, username) => {
     // if this room doesn't exist, it'll be automatically created when the first
     // client joins
     const roomName = channelId;
     // identifier to be used for participant.
     // it's available as LocalParticipant.identity with livekit-client SDK
-    const participantName = memberId;
+    const participantName = username;
 
     const at = new AccessToken(
       process.env.LK_API_KEY,
@@ -22,12 +22,12 @@ const getToken = async (req, res) => {
   };
 
   try {
-    const { channelId, memberId } = req.query;
+    const { channelId, username } = req.query;
 
-    const token = createToken(channelId, memberId);
+    const token = createToken(channelId, username);
     res.status(200).send({ token: token });
-  } catch (err) {
-    res.status(500).send({ message: err.message });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
   }
 };
 

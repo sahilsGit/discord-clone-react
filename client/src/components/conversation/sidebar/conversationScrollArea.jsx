@@ -150,14 +150,12 @@ const ConversationScrollArea = memo(
                 align="start"
                 className="rounded-md drop-shadow-xl w-[350px] sm:w-[440px] py-5 px-4 text-xs bg-main07 font-medium text-black dark:text-neutral-400"
               >
-                <div className="text-xl font-medium text-white">
-                  Search User
-                </div>
-                <p className="font-normal mt-[4px]">
+                <p className="text-xl font-medium text-primary">Search User</p>
+                <p className="dark:text-zinc-400 text-zinc-600 font-normal mt-[4px]">
                   Tip: Usernames are case sensitive.
                 </p>
                 <Input
-                  className="text-sm font-normal h-[40px] text-zinc-500 dark:text-zinc-400 mt-4 bg-main10 transition truncate"
+                  className="text-sm font-normal h-[40px] dark:text-zinc-500 dark:text-zinc-400 mt-4 bg-main10 transition truncate"
                   placeholder="Enter a username..."
                   onChange={(e) => {
                     // Set search query and reset the error state onChange
@@ -183,7 +181,7 @@ const ConversationScrollArea = memo(
                           <div className="flex flex-col w-full">
                             <div className="flex items-center gap-x-2">
                               <div className="ml-1 flex flex-col ">
-                                <p className="text-white font-semibold text-sm">
+                                <p className="text-primary font-semibold text-sm">
                                   {userData.name}
                                 </p>
                                 <p>{userData.username}</p>
@@ -196,7 +194,7 @@ const ConversationScrollArea = memo(
                         <ActionTooltip label="Coming soon!">
                           <Button
                             variant="primary"
-                            disabled="true"
+                            disabled={true}
                             className="px-4"
                           >
                             Add
@@ -207,7 +205,7 @@ const ConversationScrollArea = memo(
                   )}
                 </div>
 
-                <DropdownMenuSeparator className="h-[1px] mt-4 bg-zinc-700" />
+                <DropdownMenuSeparator className="h-[1px] mt-4 bg-zinc-300 dark:bg-zinc-700" />
                 {userData?.name ? (
                   <Button
                     variant="primary"

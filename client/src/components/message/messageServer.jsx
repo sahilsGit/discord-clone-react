@@ -13,7 +13,6 @@ import {
 import { format } from "date-fns";
 
 const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
-  console.log(messages);
   const name = activeChannel?.name;
   const authDispatch = useAuth("dispatch");
   const myMembership = useServer("activeServer").myMembership;
@@ -54,7 +53,6 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   };
 
   const onMessageEdited = (message) => {
-    console.log("server message being edited");
     processEditedServerMessage(
       message,
       messages,
@@ -66,7 +64,6 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   };
 
   const onMessageDeleted = (message) => {
-    console.log("server message being deleted");
     processEditedServerMessage(
       message,
       messages,
@@ -182,15 +179,15 @@ const MessageServer = memo(({ activeChannel, messages, cursor, hasMore }) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col-reverse overflow-y-auto">
+    <div className="flex-1 max-w-[1224px] flex flex-col-reverse overflow-y-auto">
       {messages?.length ? (
         <div className="flex flex-col-reverse">
           {messages?.map((message, index) => renderMessageItem(message, index))}
         </div>
       ) : null}
       {(!messages?.length || !hasMore) && (
-        <div className="flex flex-col pt-3">
-          <div className="flex-1" />
+        <div className="flex flex-col pt-3 pr-4">
+          <div />
           <MessageWelcome type="channel" name={name} />
         </div>
       )}

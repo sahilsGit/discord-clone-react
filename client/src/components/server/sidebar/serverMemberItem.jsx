@@ -68,7 +68,7 @@ const ServerMemberItem = ({ member, server }) => {
 
         <DropdownMenuItem
           className="text-xs focus:bg-main07 w-full"
-          disabled="true"
+          disabled={true}
           onClick={() => {}}
         >
           Avoid user

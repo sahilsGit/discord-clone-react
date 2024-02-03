@@ -2,13 +2,14 @@ import useConversations from "@/hooks/useConversations";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const ConversationFriends = () => {
   const [clicked, setClicked] = useState(false);
   const activeConversation = useConversations("activeConversation");
   const navigate = useNavigate();
   const conversationsDispatch = useConversations("dispatch");
+  const params = useParams();
 
   const onClick = () => {
     setClicked(true);
@@ -30,8 +31,22 @@ const ConversationFriends = () => {
           clicked && "bg-zinc-700/20 dark:bg-zinc-700"
         )}
       >
-        <Users />
-        <p className="line-clamp-1 font-semibold text-sm text-zinc-500 group-hover:text-zinc-600 dark:text-zinc-400 dark:group-hover:text-zinc-300 transition">
+        <Users
+          className={cn(
+            "line-clamp-1 font-semibold text-sm text-zinc-500 dark:text-zinc-400 transition",
+            params.memberProfileId
+              ? "group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
+              : "text-zinc-600 dark:text-zinc-300"
+          )}
+        />
+        <p
+          className={cn(
+            "line-clamp-1 font-semibold text-sm text-zinc-500 dark:text-zinc-400 transition",
+            params.memberProfileId
+              ? "group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
+              : "text-zinc-600 dark:text-zinc-300"
+          )}
+        >
           Friends
         </p>
       </button>
