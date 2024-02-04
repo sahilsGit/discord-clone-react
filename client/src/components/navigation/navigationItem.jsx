@@ -4,14 +4,14 @@ import { get } from "@/services/api-service";
 import { handleError } from "@/lib/response-handler";
 import useAuth from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import useServer from "@/hooks/useServer";
 import { getChannelAndServer } from "@/lib/context-helper";
 import useChannels from "@/hooks/useChannels";
 
 const NavigationItem = ({ name, id, image, firstChannel, type }) => {
   const activeServer = useServer("activeServer");
-  const [imageSrc, setImageSrc] = useState(null);
+  const [imageSrc, setImageSrc] = useState("/fallback/other.png");
   // const navigate = useNavigate();
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
@@ -28,9 +28,13 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
       try {
         const response = await get(`/assets/getImage/${image}`, access_token);
         const imageData = await response.blob();
-        const imageUrl = URL.createObjectURL(imageData);
 
-        setImageSrc(imageUrl);
+        console.log(response.status);
+
+        if (response.ok) {
+          const imageUrl = URL.createObjectURL(imageData);
+          setImageSrc(imageUrl);
+        }
       } catch (error) {
         handleError(error, authDispatch);
       }
@@ -38,6 +42,8 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
 
     getImage();
   }, [image]);
+
+  console.log(imageSrc);
 
   useEffect(() => {
     if (!activeServer) {

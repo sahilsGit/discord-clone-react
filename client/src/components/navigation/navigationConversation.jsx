@@ -55,20 +55,26 @@ const NavigationConversation = memo(
           <ActionTooltip side="right" align="center" label="Direct Messages">
             <div
               className={cn(
-                "relative h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all bg-main07 group-hover:bg-indigo-500",
+                "relative flex items-center justify-center h-[48px] w-[48px] rounded-[24px] overflow-hidden group-hover:rounded-[16px] transition-all bg-main07 group-hover:bg-indigo-500",
                 type === "conversation" && "rounded-[16px] bg-indigo-500"
               )}
             >
-              <img
-                className={cn(
-                  "absolute top-[4.5px] left-[5.5px] h-[37px] w-[37px]",
-                  theme === "light" &&
-                    "invert group-hover:invert-0 transition-all",
-                  type === "conversation" && "invert-0"
-                )}
-                src="../../../../../assets/images/logos/discord_logo.png"
-                alt=""
-              />
+              {theme === "light" ? (
+                <img
+                  src="/logos/icon_clyde_black_RGB.svg"
+                  alt=""
+                  className={cn(
+                    "h-7 w-7 group-hover:invert transition-all",
+                    type === "conversation" && "invert"
+                  )}
+                />
+              ) : (
+                <img
+                  src="/logos/icon_clyde_white_RGB.svg"
+                  alt=""
+                  className="h-7 w-7"
+                />
+              )}
             </div>
           </ActionTooltip>
         </button>

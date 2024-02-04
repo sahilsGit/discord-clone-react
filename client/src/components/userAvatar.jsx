@@ -16,8 +16,11 @@ export const UserAvatar = ({ subject, className }) => {
     try {
       const response = await get(`/assets/getImage/${image}`, access_token);
       const imageData = await response.blob();
-      const imageUrl = URL.createObjectURL(imageData);
-      setImageSrc(imageUrl);
+
+      if (response.ok) {
+        const imageUrl = URL.createObjectURL(imageData);
+        setImageSrc(imageUrl);
+      }
     } catch (error) {
       handleError(error, authDispatch);
     }

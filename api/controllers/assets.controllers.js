@@ -16,7 +16,7 @@ const getImage = async (req, res, next) => {
     }
 
     res.setHeader("Content-Type", "image/jpeg");
-    res.sendFile(imagePath);
+    res.status(200).sendFile(imagePath);
   } catch (error) {
     next(error);
   }
@@ -33,7 +33,7 @@ const getFile = async (req, res, next) => {
     }
 
     res.setHeader("Content-Type", "image/jpeg");
-    res.sendFile(imagePath);
+    res.status(200).sendFile(imagePath);
   } catch (error) {
     next(error);
   }
