@@ -112,8 +112,9 @@ const register = async (req, res, next) => {
     res.cookie("refresh_token", refresh, {
       httpOnly: true,
       path: "/",
-      sameSite: "Lax",
-      maxAge: 30 * 60 * 1000,
+      sameSite: "None",
+      secure: true,
+      maxAge: 6 * 60 * 60 * 1000, // Set maxAge to 6 hours in milliseconds
     });
 
     // Send access and other details via body
@@ -217,8 +218,9 @@ const login = async (req, res, next) => {
     res.cookie("refresh_token", refresh, {
       httpOnly: true,
       path: "/",
-      sameSite: "Lax",
-      maxAge: 30 * 60 * 1000,
+      sameSite: "None",
+      secure: true,
+      maxAge: 6 * 60 * 60 * 1000, // Set maxAge to 6 hours in milliseconds
     });
 
     res.status(200).send({
