@@ -17,7 +17,10 @@ import { Avatar, AvatarImage } from "../ui/avatar";
 import { post, update } from "@/services/api-service";
 import { cn } from "@/lib/utils";
 import "../../App.css";
-import ChangePassword from "../changePassword";
+import { ActionTooltip } from "../actionTooltip";
+import ErrorComponent from "@/lib/error-Component";
+import useServer from "@/hooks/useServer";
+import useChannels from "@/hooks/useChannels";
 
 const SettingsModal = () => {
   const { isOpen, onClose, type, data, onOpen } = useModal();
@@ -34,7 +37,8 @@ const SettingsModal = () => {
   const [hasChanged, setHasChanged] = useState(true);
   const [loading, setLoading] = useState(false);
   const profileId = useAuth("id");
-  const [showChangePass, setShowChangePassword] = useState(false);
+  const [apiError, setApiError] = useState({ status: "", message: "" });
+  const serverDispatch = useServer("dispatch");
 
   useEffect(() => {
     if (isModalOpen && !hasChanged) {
@@ -71,6 +75,11 @@ const SettingsModal = () => {
     },
   });
 
+  // Error setter for standard error component
+  const setError = ({ status, message }) => {
+    setApiError({ status: status, message: message });
+  };
+
   const handleVerifyClick = () => {
     (async () => {
       try {
@@ -91,6 +100,19 @@ const SettingsModal = () => {
   const handleClose = () => {
     setHasChanged(false);
     onClose();
+  };
+
+  const handleInvalidateSessions = async () => {
+    try {
+      await update("/auth/revokeToken", { profileId: profileId }, access_token);
+      localStorage.clear();
+      authDispatch({ type: "RESET_STATE" });
+      serverDispatch({ type: "RESET_STATE" });
+      handleClose();
+    } catch (error) {
+      const { status, message } = handleError(error, authDispatch);
+      setApiError({ status: status, message: message });
+    }
   };
 
   const handlePencilClick = () => {
@@ -139,7 +161,8 @@ const SettingsModal = () => {
 
         return newFilename; // For DB storage
       } catch (error) {
-        handleError(error, authDispatch);
+        const { status, message } = handleError(error, authDispatch);
+        setApiError({ status: status, message: message });
       }
     } else {
       return null;
@@ -180,7 +203,8 @@ const SettingsModal = () => {
 
       authDispatch({ type: "SET_CUSTOM", payload: dataReceived.updatedData });
     } catch (error) {
-      handleError(error, authDispatch);
+      const { status, message } = handleError(error, authDispatch);
+      setApiError({ status: status, message: message });
     } finally {
       setLoading(false);
       onClose();
@@ -384,18 +408,21 @@ const SettingsModal = () => {
                     Change Password
                   </Button>
                 </div>
-                <div className="flex flex-col gap-y-3">
+                <div className="flex flex-col items-start gap-y-3">
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Logged in on a public device? You can suspend all the active
-                    sessions by pressing <br></br>the button below. This will
-                    log you out of all the devices including this one.
+                    This lets you suspend all the active sessions by pressing{" "}
+                    the button below.<br></br> You will be logged out of all the
+                    devices including this one.
                   </p>
-                  <Button
-                    variant="primary"
-                    className="max-w-fit text-white text-xs font-normal bg-indigo-500 rounded-sm px-4 text-sm h-[40px]"
-                  >
-                    Log Out all known devices
-                  </Button>
+                  <ActionTooltip label={"Can take upto 5 minutes."}>
+                    <Button
+                      variant="primary"
+                      className="max-w-fit text-white text-xs font-normal bg-indigo-500 rounded-sm px-4 text-sm h-[40px]"
+                      onClick={handleInvalidateSessions}
+                    >
+                      Log-out of all known devices
+                    </Button>
+                  </ActionTooltip>
                 </div>
               </div>
               <Separator className="my-7 bg-main06 w-full h-[1px]" />
@@ -417,6 +444,7 @@ const SettingsModal = () => {
             </div>
           </div>
         </ScrollArea>
+        <ErrorComponent error={apiError} setError={setError} />
       </DialogContent>
     </Dialog>
   );

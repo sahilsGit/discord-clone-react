@@ -20,7 +20,17 @@ const AuthContext = createContext(INITIAL_STATE);
 const AuthReducer = (state, action) => {
   switch (action.type) {
     case "RESET_STATE":
-      return INITIAL_STATE;
+      return {
+        access_token: null,
+        user: null,
+        name: null,
+        about: null,
+        email: null,
+        profileId: null,
+        image: null,
+        loading: false, // Indicate if authentication actions are in progress
+        error: null, // Store any authentication-related errors
+      };
     case "LOGIN_START":
       return {
         access_token: null,

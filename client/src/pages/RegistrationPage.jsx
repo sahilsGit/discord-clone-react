@@ -25,8 +25,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Clock10 } from "lucide-react";
+import { Clock10, Eye, EyeOff } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
+import ErrorComponent from "@/lib/error-Component";
 
 const RegistrationPage = () => {
   const location = useLocation();
@@ -39,10 +40,19 @@ const RegistrationPage = () => {
   const [code, setCode] = useState(null);
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
+  const [watch, setWatch] = useState("password");
+  const [apiError, setApiError] = useState({ status: "", message: "" });
 
   const handleFocus = (item) => {
     setFocused((prev) => [...prev, item]);
   };
+
+  // Error setter for standard error component
+  const setError = ({ status, message }) => {
+    setApiError({ status: status, message: message });
+  };
+
+  console.log(apiError);
 
   const form = useForm({
     resolver: zodResolver(registerSchema), //Resolving registerSchema created before
@@ -79,7 +89,8 @@ const RegistrationPage = () => {
 
       await handleResponse(response, authDispatch);
     } catch (error) {
-      handleError(error);
+      const { status, message } = handleError(error);
+      setApiError({ status: status, message: message });
     }
   };
 
@@ -106,7 +117,8 @@ const RegistrationPage = () => {
       await handleResponse(response, authDispatch);
       setShowDialog(true);
     } catch (error) {
-      handleError(error);
+      const { status, message } = handleError(error);
+      setApiError({ status: status, message: message });
     }
   }
 
@@ -233,23 +245,36 @@ const RegistrationPage = () => {
                       Password
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder={
-                          fieldState.error
-                            ? fieldState.error.message
-                            : "Create a password"
-                        }
-                        {...field}
-                        type="password"
-                        className={cn(
-                          "h-[45px] dark:bg-zinc-900",
-                          fieldState.error &&
-                            "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
-                        )}
-                        onFocus={() => {
-                          handleFocus(3);
-                        }}
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder={
+                            fieldState.error
+                              ? fieldState.error.message
+                              : "Create a password"
+                          }
+                          {...field}
+                          type={watch}
+                          className={cn(
+                            "h-[45px] dark:bg-zinc-900",
+                            fieldState.error &&
+                              "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
+                          )}
+                          onFocus={() => {
+                            handleFocus(3);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            watch === "password"
+                              ? setWatch("text")
+                              : setWatch("password");
+                          }}
+                          className="absolute right-4 top-3 dark:text-zinc-500 dark:hover:text-zinc-200 transition"
+                        >
+                          {watch === "text" ? <Eye /> : <EyeOff />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormDescription
                       className={cn(
@@ -352,6 +377,7 @@ const RegistrationPage = () => {
           </Form>
         </CardContent>
       </Card>
+      <ErrorComponent error={apiError} setError={setError} />
     </div>
   );
 };

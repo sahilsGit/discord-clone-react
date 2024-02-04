@@ -65,7 +65,7 @@ const InvitationPage = () => {
       Go there
     </button>
   ) : (
-    <button onClick={acceptInvite}>Join</button>
+    <button onClick={acceptInvite}>Join Server</button>
   );
 };
 

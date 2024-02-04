@@ -40,8 +40,10 @@ const EmailVerificationModal = () => {
       );
 
       await handleResponse(response, authDispatch);
+      servers !== "null" ||
+        (servers !== "undefined" && window.location.reload());
     } catch (error) {
-      await handleError(error);
+      handleError(error);
     }
     onClose();
   };

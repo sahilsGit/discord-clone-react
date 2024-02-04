@@ -1,3 +1,4 @@
+import { ActionTooltip } from "@/components/actionTooltip";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -33,13 +34,13 @@ const DropdownTrigger = ({ role }) => {
             <ChevronDown className="h-4 w-4 ml-auto" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-48 text-xs font-medium text-black dark:text-neutral-400 space-y-[2px]">
+        <DropdownMenuContent className="w-48 dark:bg-zinc-950 text-xs font-medium text-black dark:text-neutral-400 space-y-[2px]">
           {isModerator && (
             <DropdownMenuItem
               onClick={() => {
                 onOpen("invite", { inviteCode: activeServer.inviteCode });
               }}
-              className="text-indigo-600 dark:text-indigo-400 px-3 py-2 text-xs cursor-pointer"
+              className="text-indigo-600 dark:text-indigo-400 dark:focus:text-white focus:text-white focus:bg-indigo-600 px-3 py-2 text-xs cursor-pointer"
             >
               Invite People
               <UserPlus className="h-4 w-4 ml-auto" />
@@ -50,7 +51,7 @@ const DropdownTrigger = ({ role }) => {
               onClick={() => {
                 onOpen("editServer", { activeServer: activeServer });
               }}
-              className="px-3 py-2 text-xs cursor-pointer"
+              className="focus:bg-indigo-600 focus:text-white px-3 py-2 text-xs cursor-pointer"
             >
               Server Settings
               <Settings className="h-4 w-4 ml-auto" />
@@ -61,7 +62,7 @@ const DropdownTrigger = ({ role }) => {
               onClick={() => {
                 onOpen("members", { activeServer: activeServer });
               }}
-              className="px-3 py-2 text-xs cursor-pointer"
+              className="focus:bg-indigo-600 focus:text-white px-3 py-2 text-xs cursor-pointer"
             >
               Manage Members
               <Users className="h-4 w-4 ml-auto" />
@@ -69,7 +70,7 @@ const DropdownTrigger = ({ role }) => {
           )}
           {isModerator && (
             <DropdownMenuItem
-              className="px-3 py-2 text-xs cursor-pointer"
+              className="focus:bg-indigo-600 focus:text-white px-3 py-2 text-xs cursor-pointer"
               onClick={() => {
                 onOpen("createChannel", { activeServer: activeServer });
               }}
@@ -80,7 +81,10 @@ const DropdownTrigger = ({ role }) => {
           )}
           {isModerator && <DropdownMenuSeparator />}
           {isAdmin && (
-            <DropdownMenuItem className="text-rose-500 px-3 py-2 text-xs cursor-pointer">
+            <DropdownMenuItem
+              disabled
+              className="text-rose-500 px-3 py-2 text-xs cursor-pointer"
+            >
               Delete Server
               <Trash className="h-4 w-4 ml-auto" />
             </DropdownMenuItem>
@@ -90,7 +94,7 @@ const DropdownTrigger = ({ role }) => {
               onClick={() => {
                 onOpen("leaveServer", { activeServer: activeServer });
               }}
-              className="px-3 py-2 text-xs cursor-pointer"
+              className="dark:focus:bg-rose-700 focus:bg-rose-600 focus:text-white px-3 py-2 text-xs cursor-pointer"
             >
               Leave Server
               <LogOut className="h-4 w-4 ml-auto" />

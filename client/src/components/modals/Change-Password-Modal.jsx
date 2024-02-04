@@ -22,6 +22,7 @@ import { useModal } from "@/hooks/useModals";
 import { Button } from "../ui/button";
 import SuccessComponent from "@/lib/success-Component";
 import { Separator } from "../ui/separator";
+import { Eye, EyeOff } from "lucide-react";
 
 const ChangePasswordModal = () => {
   const { isOpen, onClose, type, data } = useModal();
@@ -32,6 +33,8 @@ const ChangePasswordModal = () => {
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState({ status: "", message: "" });
   const [apiSuccess, setApiSuccess] = useState({ status: "", message: "" });
+  const [oldVisibility, setOldVisibility] = useState("password");
+  const [newVisibility, setNewVisibility] = useState("password");
 
   const setNewPasswordSchema = z
     .object({
@@ -57,8 +60,18 @@ const ChangePasswordModal = () => {
   // Success setter for standard error component
   const setSuccess = ({ status, message }) => {
     setApiSuccess({ status: status, message: message });
+    handleClose();
+  };
+
+  const handleClose = () => {
     form.reset();
     onClose();
+    setOldVisibility("password");
+    setNewVisibility("password");
+  };
+
+  const togglePasswordVisibility = (element, setElement) => {
+    element === "password" ? setElement("text") : setElement("password");
   };
 
   const form = useForm({
@@ -95,13 +108,7 @@ const ChangePasswordModal = () => {
   };
 
   return (
-    <Dialog
-      open={isModalOpen}
-      onOpenChange={() => {
-        form.reset();
-        onClose();
-      }}
-    >
+    <Dialog open={isModalOpen} onOpenChange={handleClose}>
       <DialogContent className="w-[500px] dark:bg-main08 py-6">
         <DialogHeader>
           <DialogTitle className="text-zinc-600 dark:text-zinc-400">
@@ -124,16 +131,30 @@ const ChangePasswordModal = () => {
                       <FormMessage className="text-xs ml-1 dark:text-red-700" />
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter your old password"
-                        type="password"
-                        className={cn(
-                          "h-[45px] dark:bg-zinc-900 bg-zinc-200",
-                          fieldState.error &&
-                            "focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
-                        )}
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder="Enter your old password"
+                          type={oldVisibility}
+                          className={cn(
+                            "h-[45px] dark:bg-zinc-900 bg-zinc-200",
+                            fieldState.error &&
+                              "focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
+                          )}
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            togglePasswordVisibility(
+                              oldVisibility,
+                              setOldVisibility
+                            );
+                          }}
+                          className="absolute right-4 top-3 dark:text-zinc-500 dark:hover:text-zinc-200 transition"
+                        >
+                          {oldVisibility === "text" ? <Eye /> : <EyeOff />}
+                        </button>
+                      </div>
                     </FormControl>
                   </FormItem>
                 )}
@@ -152,16 +173,30 @@ const ChangePasswordModal = () => {
                         <FormMessage className="text-xs ml-1 dark:text-red-700" />
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Enter new password"
-                          type="password"
-                          className={cn(
-                            "h-[45px] dark:bg-zinc-900 bg-zinc-200",
-                            fieldState.error &&
-                              "focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
-                          )}
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Input
+                            placeholder="Enter new password"
+                            type={newVisibility}
+                            className={cn(
+                              "h-[45px] dark:bg-zinc-900 bg-zinc-200",
+                              fieldState.error &&
+                                "focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
+                            )}
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              togglePasswordVisibility(
+                                newVisibility,
+                                setNewVisibility
+                              );
+                            }}
+                            className="absolute right-4 top-3 dark:text-zinc-500 dark:hover:text-zinc-200 transition"
+                          >
+                            {newVisibility === "text" ? <Eye /> : <EyeOff />}
+                          </button>
+                        </div>
                       </FormControl>
                     </FormItem>
                   )}
@@ -179,16 +214,30 @@ const ChangePasswordModal = () => {
                         <FormMessage className="text-xs ml-1 dark:text-red-700" />
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Confirm new password"
-                          type="password"
-                          className={cn(
-                            "h-[45px] dark:bg-zinc-900 bg-zinc-200",
-                            fieldState.error &&
-                              "focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
-                          )}
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Input
+                            placeholder="Confirm new password"
+                            type={newVisibility}
+                            className={cn(
+                              "h-[45px] dark:bg-zinc-900 bg-zinc-200",
+                              fieldState.error &&
+                                "focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
+                            )}
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              togglePasswordVisibility(
+                                newVisibility,
+                                setNewVisibility
+                              );
+                            }}
+                            className="absolute right-4 top-3 dark:text-zinc-500 dark:hover:text-zinc-200 transition"
+                          >
+                            {newVisibility === "text" ? <Eye /> : <EyeOff />}
+                          </button>
+                        </div>
                       </FormControl>
                     </FormItem>
                   )}

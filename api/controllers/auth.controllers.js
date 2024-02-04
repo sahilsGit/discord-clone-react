@@ -1,6 +1,7 @@
 import Profile from "../modals/profile.modals.js";
 import Session from "../modals/session.modals.js";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { emailVerificationMailContent, sendEmail } from "../utils/mail.js";
 
@@ -37,9 +38,6 @@ const register = async (req, res, next) => {
       return res.send({ error: "Password is Required" });
     }
 
-    // const salt = bcrypt.genSaltSync(10);
-    // const hash = bcrypt.hashSync(password, salt);
-
     const newProfile = new Profile({
       username,
       name,
@@ -65,8 +63,6 @@ const register = async (req, res, next) => {
     });
 
     await newProfile.save();
-
-    ////////////////////////////////////////////////////////////////////////
 
     // Create a session equivalent JWT token
     const access_token = jwt.sign(
@@ -118,6 +114,11 @@ const register = async (req, res, next) => {
       image: newProfile.image || "",
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(500).send({
+        message: "Username is already taken, please enter a new one.",
+      });
+    }
     error.status = 500;
     error.message = "Internal server error!";
     next(error);
@@ -253,19 +254,20 @@ const refreshUserDetails = async (req, res, next) => {
 };
 
 const resetPassword = async (req, res, next) => {
+  console.log(req.body);
   try {
-    const otp = req.body.code;
+    const otp = req.body.old;
     const newPassword = req.body.newPassword;
     const confirmPassword = req.body.confirmPassword;
 
     if (!otp) {
-      return res.status(404).send("No code received!");
+      return res.status(404).send({ message: "No code received!" });
     }
 
     if (newPassword !== confirmPassword) {
-      return res
-        .status(400)
-        .send("New password and confirm Password field don't match");
+      return res.status(400).send({
+        message: "New password and confirm Password field don't match",
+      });
     }
 
     // generate a hash from the token that we are receiving
@@ -280,7 +282,9 @@ const resetPassword = async (req, res, next) => {
     });
 
     if (!profile) {
-      return res.status(489).send("OTP is either incorrect or has expired");
+      return res
+        .status(489)
+        .send({ message: "OTP is either incorrect or has expired" });
     }
 
     profile.forgotPasswordToken = null;
@@ -289,10 +293,45 @@ const resetPassword = async (req, res, next) => {
     profile.password = newPassword;
     await profile.save();
 
-    return res.status(200).send("Password changed successfully!");
+    return res.status(200).send({ message: "Password changed successfully!" });
   } catch (error) {
     next(error);
   }
 };
 
-export { handleLogout, refreshUserDetails, register, login, resetPassword };
+const revokeToken = async (req, res, next) => {
+  try {
+    // Extract profileId from the request body
+    const { profileId } = req.body;
+
+    // Validate if profileId is provided
+    if (!profileId) {
+      return res
+        .status(400)
+        .send({ message: "ProfileId is required in the request body." });
+    }
+
+    // Find and remove sessions associated with the provided profileId
+    const result = await Session.deleteMany({ profileId });
+
+    // Check if any sessions were revoked
+    if (result.deletedCount > 0) {
+      return res.status(200).send({ message: "Token revoked successfully." });
+    } else {
+      return res
+        .status(404)
+        .send({ message: "No sessions found for the provided profileId." });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export {
+  handleLogout,
+  refreshUserDetails,
+  register,
+  login,
+  resetPassword,
+  revokeToken,
+};

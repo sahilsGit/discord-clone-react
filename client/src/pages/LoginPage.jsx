@@ -24,8 +24,9 @@ import useAuth from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import ResetPassword from "@/components/resetPassword";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import ErrorComponent from "@/lib/error-Component";
+import { ActionTooltip } from "@/components/actionTooltip";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email" }),
@@ -38,6 +39,7 @@ const LoginPage = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState({ status: "", message: "" });
+  const [watch, setWatch] = useState("password");
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -126,20 +128,33 @@ const LoginPage = () => {
                           Password
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder={
-                              fieldState.error
-                                ? fieldState.error.message
-                                : "Enter your Password"
-                            }
-                            {...field}
-                            type="password"
-                            className={cn(
-                              "h-[45px] bg-zinc-900",
-                              fieldState.error &&
-                                "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
-                            )}
-                          />
+                          <div className="relative">
+                            <Input
+                              placeholder={
+                                fieldState.error
+                                  ? fieldState.error.message
+                                  : "Enter your Password"
+                              }
+                              {...field}
+                              type={watch}
+                              className={cn(
+                                "h-[45px] bg-zinc-900 pr-[55px]",
+                                fieldState.error &&
+                                  "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
+                              )}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                watch === "password"
+                                  ? setWatch("text")
+                                  : setWatch("password");
+                              }}
+                              className="absolute right-4 top-3 dark:text-zinc-500 dark:hover:text-zinc-200 transition"
+                            >
+                              {watch === "text" ? <Eye /> : <EyeOff />}
+                            </button>
+                          </div>
                         </FormControl>
                         {/* <FormMessage /> */}
                       </FormItem>
@@ -178,9 +193,15 @@ const LoginPage = () => {
               Have a quick taste of the Discord-like experience
             </CardDescription>
           </CardHeader>
-          <Button className="h-[45px] text-md w-full" variant="primary">
-            Browse as guest
-          </Button>
+          <ActionTooltip label={"Under construction!"}>
+            <Button
+              className="h-[45px] text-md w-full"
+              disabled
+              variant="primary"
+            >
+              Browse as guest
+            </Button>
+          </ActionTooltip>
           <ErrorComponent error={apiError} setError={setError} />
         </div>
       </Card>

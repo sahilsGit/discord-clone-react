@@ -13,6 +13,7 @@ import { useModal } from "@/hooks/useModals";
 import useChannels from "@/hooks/useChannels";
 import { Button } from "./ui/button";
 import { ActionTooltip } from "./actionTooltip";
+import { useNavigate } from "react-router-dom";
 
 /*
  * ProfileControl
@@ -32,6 +33,7 @@ const ProfileControl = () => {
   const email = useAuth("email");
   const about = useAuth("about");
   const channelsDispatch = useChannels("dispatch");
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.clear();

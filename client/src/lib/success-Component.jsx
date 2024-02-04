@@ -23,7 +23,7 @@ const SuccessComponent = ({
       <DialogContent className="max-w-[500px] py-6 dark:bg-zinc-700 pb-0 pl-0 pr-0">
         <DialogHeader className="pl-6 pr-6 rounded-sm">
           <DialogTitle className="mb-1">{successHeading}</DialogTitle>
-          <DialogDescription className="text-zinc-500">
+          <DialogDescription className="dark:text-zinc-400">
             {success?.message}
           </DialogDescription>
         </DialogHeader>
