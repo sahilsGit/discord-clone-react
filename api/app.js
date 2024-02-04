@@ -29,8 +29,10 @@ export const io = new Server(httpServer, {
   },
 });
 
-httpServer.listen(process.env.URL, () => {
-  console.log("Server is listening at port 4000");
+const port = process.env.PORT || 3000;
+
+httpServer.listen(port, "0.0.0.0", () => {
+  console.log("Server is listening!");
 });
 
 app.set("io", io);
