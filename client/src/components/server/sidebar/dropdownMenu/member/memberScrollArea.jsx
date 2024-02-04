@@ -45,6 +45,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const observerRef = useRef();
   const timeoutId = useRef(null);
   const activeServer = useServer("activeServer");
+  const myRole = activeServer.myMembership.role;
   // const debouncedSearch = useDebounce(searchTerm);
 
   useEffect(() => {
@@ -152,7 +153,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const onRoleChange = async (memberId, role) => {
     try {
       const response = await update(
-        `/members/${activeServer.id}/${memberId}`,
+        `/members/${activeServer.id}/${memberId}?myRole=${myRole}`,
         { role: role },
         access_token
       );
@@ -179,7 +180,7 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
   const kickMember = async (memberId) => {
     try {
       const response = await remove(
-        `/members/${activeServer.id}/${memberId}/remove`,
+        `/members/${activeServer.id}/${memberId}/remove?myRole=${myRole}`,
         access_token
       );
       await handleResponse(response, authDispatch);

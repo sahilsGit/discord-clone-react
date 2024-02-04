@@ -10,7 +10,6 @@ import {
 import React from "react";
 
 const ErrorComponent = ({ error, setError, errorHeading = "Oops!" }) => {
-  console.log(error);
   return (
     <Dialog
       open={error?.message}

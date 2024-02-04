@@ -52,8 +52,6 @@ const RegistrationPage = () => {
     setApiError({ status: status, message: message });
   };
 
-  console.log(apiError);
-
   const form = useForm({
     resolver: zodResolver(registerSchema), //Resolving registerSchema created before
     defaultValues: {

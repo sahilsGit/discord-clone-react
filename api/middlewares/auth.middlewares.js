@@ -68,7 +68,18 @@ const verifyToken = async (req, res, next) => {
         // Attach decoded JWT payload to the request
         req.user = decoded;
 
-        // Add newAccessToken to the response for client token
+        /*
+         * Add newAccessToken to the response so that client can update the token.
+         * From now on every authenticated request will check if body is present,
+         * A "if(res.body)" evaluating to true will indicate that a newAccessToken
+         * has been attached. So the body will be spread to attach endpoint
+         * specific data and new body will be sent.
+         *
+         * res.body = { ...res.body, data: endPointSpecificData }
+         * res.status(200).send(res.body)
+         *
+         */
+
         res.body = {
           newAccessToken: newAccessToken,
           username: decoded.username,

@@ -7,8 +7,11 @@ import { emailVerificationMailContent, sendEmail } from "../utils/mail.js";
 
 const register = async (req, res, next) => {
   /*
-  Handles user Registration
-  */
+   *
+   * Handles user Registration
+   *
+   */
+
   try {
     const { username, name, email, password } = req.body;
 
@@ -23,19 +26,19 @@ const register = async (req, res, next) => {
       return res.send({ message: "Email is Required" });
     }
 
+    // Check if user already exists
     const existingProfile = await Profile.findOne({ email });
 
-    // Checking if user already exists
     if (existingProfile) {
       return res.status(200).send({
         success: false,
-        message: "Already Registered, you can login",
+        message: "Already Registered, you can login!",
       });
     }
 
     // If not, then carry on with the registration process
     if (!password) {
-      return res.send({ error: "Password is Required" });
+      return res.status(400).send({ message: "Password is Required" });
     }
 
     const newProfile = new Profile({
@@ -45,23 +48,27 @@ const register = async (req, res, next) => {
       password: password,
     });
 
-    // Checking if optional data given
+    // Checking if optional data is provided
     if (req.body.image) {
       newProfile.image = req.body.image;
     }
 
+    // Generate verification code for email verification using schema method
     const { unHashedCode, hashedCode, tokenExpiry } =
       newProfile.generateVerificationCode();
 
+    // Save token temporarily in DB
     newProfile.emailVerificationToken = hashedCode;
     newProfile.emailVerificationExpiry = tokenExpiry;
 
+    // Send verification email email using nodemailer
     await sendEmail({
       email: newProfile?.email,
       subject: "Please verify your email",
       content: emailVerificationMailContent(newProfile.username, unHashedCode),
     });
 
+    // Save user
     await newProfile.save();
 
     // Create a session equivalent JWT token
@@ -74,10 +81,11 @@ const register = async (req, res, next) => {
       },
       process.env.JWT,
       {
-        expiresIn: "5m", // Token expiration time
+        expiresIn: "5m", // Short Token expiration time for safety
       }
-    ); // Authorize user using the secret key
+    );
 
+    // Create a refresh token to be saved on Database to revoke sessions on demand
     const refresh = jwt.sign(
       {
         username: newProfile.username,
@@ -87,10 +95,11 @@ const register = async (req, res, next) => {
       },
       process.env.REFRESH,
       {
-        expiresIn: "30m", // Token expiration time
+        expiresIn: "6hr", // Token expiration time
       }
-    ); // Authorize user using the secret key
+    );
 
+    // Save the refresh token inside database
     const newSession = new Session({
       token: refresh,
       profileId: newProfile._id,
@@ -99,6 +108,7 @@ const register = async (req, res, next) => {
 
     await newSession.save();
 
+    // Send refresh token via HTTPONLY cookies
     res.cookie("refresh_token", refresh, {
       httpOnly: true,
       path: "/",
@@ -106,6 +116,7 @@ const register = async (req, res, next) => {
       maxAge: 30 * 60 * 1000,
     });
 
+    // Send access and other details via body
     res.status(200).send({
       username: newProfile.username,
       newAccessToken: access_token,
@@ -118,7 +129,9 @@ const register = async (req, res, next) => {
       return res.status(500).send({
         message: "Username is already taken, please enter a new one.",
       });
-    }
+    } // Mongoose "Not unique" error
+
+    // Handle other errors
     error.status = 500;
     error.message = "Internal server error!";
     next(error);
@@ -127,8 +140,13 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   /*
-  Handles user login
-  */
+   *
+   *
+   * Handles user login
+   *
+   *
+   */
+
   try {
     // Validation
     const email = req.body.email;
@@ -136,8 +154,7 @@ const login = async (req, res, next) => {
 
     if (!email || !receivedPassword) {
       return res.status(404).send({
-        success: false,
-        message: "email or password can't be empty",
+        message: "Email or password can't be empty!",
       });
     }
 
@@ -146,8 +163,7 @@ const login = async (req, res, next) => {
     // Check if the user exists
     if (!userProfile) {
       return res.status(404).send({
-        success: false,
-        message: "Profile not found, register before logging in",
+        message: "Profile not found, kindly register before logging in!",
       });
     }
 
@@ -186,7 +202,7 @@ const login = async (req, res, next) => {
       },
       process.env.REFRESH,
       {
-        expiresIn: "30m", // Token expiration time
+        expiresIn: "6hr", // Token expiration time
       }
     ); // Authorize user using the secret key
 
@@ -213,33 +229,48 @@ const login = async (req, res, next) => {
       image: userProfile.image || "",
     });
   } catch (error) {
-    // error.status = 500;
-    // error.message = "Internal server error!";
+    // Handle general error
     next(error);
   }
 };
 
 const handleLogout = async (req, res, next) => {
+  /*
+   *
+   * Handles logout along with revoking current session
+   *
+   */
   try {
+    // Extract cookies from the request
     const cookies = req.cookies;
+
+    // Check if a refresh token exists in the cookies
     if (cookies.refresh_token) {
+      // Clear the refresh token cookie
       res.clearCookie("refresh_token");
     }
 
+    // Remove the session from the database based on the provided refresh token
     await Session.findOneAndRemove({ token: cookies.refresh_token });
 
-    // Send a response to the client
-    res.send("Success! Cookies' gone");
+    // Send a success message to the client
+    res.send({ message: "Success! Refresh token cleared." });
   } catch (error) {
+    // Pass any encountered errors to the next middleware
     next(error);
   }
 };
 
 const refreshUserDetails = async (req, res, next) => {
-  // Extract tokens from cookies and headers
+  /*
+   *
+   * Sends updated user details on clients request
+   *
+   */
   try {
     const profile = await Profile.findById(req.user.profileId);
 
+    // Send updated data
     res.status(200).send({
       user: profile.username,
       profileId: profile._id,
@@ -249,13 +280,19 @@ const refreshUserDetails = async (req, res, next) => {
       about: profile.about || "",
     });
   } catch (error) {
+    // process general error
     next(error);
   }
 };
 
 const resetPassword = async (req, res, next) => {
-  console.log(req.body);
+  /*
+   *
+   * Handles reset password request
+   *
+   */
   try {
+    // Get data from body
     const otp = req.body.old;
     const newPassword = req.body.newPassword;
     const confirmPassword = req.body.confirmPassword;
@@ -264,6 +301,7 @@ const resetPassword = async (req, res, next) => {
       return res.status(404).send({ message: "No code received!" });
     }
 
+    // Although comes pre-validated, but re-validating at server side is a good practice
     if (newPassword !== confirmPassword) {
       return res.status(400).send({
         message: "New password and confirm Password field don't match",
@@ -276,6 +314,7 @@ const resetPassword = async (req, res, next) => {
       .update(otp.toString())
       .digest("hex");
 
+    // Query DB so that it gets profile with matching hashCode and give expiry date
     const profile = await Profile.findOne({
       forgotPasswordToken: hashedCode,
       forgotPasswordExpiry: { $gt: Date.now() },
@@ -287,19 +326,27 @@ const resetPassword = async (req, res, next) => {
         .send({ message: "OTP is either incorrect or has expired" });
     }
 
+    // Reset the token - only one-time-use is allowed
     profile.forgotPasswordToken = null;
     profile.forgotPasswordExpiry = null;
 
+    // Set new password - Password is hashed using mongoose method
     profile.password = newPassword;
     await profile.save();
 
     return res.status(200).send({ message: "Password changed successfully!" });
   } catch (error) {
+    // Handle general error
     next(error);
   }
 };
 
-const revokeToken = async (req, res, next) => {
+const invalidateAllSessions = async (req, res, next) => {
+  /*
+   *
+   * Invalidates all active sessions
+   *
+   */
   try {
     // Extract profileId from the request body
     const { profileId } = req.body;
@@ -333,5 +380,5 @@ export {
   register,
   login,
   resetPassword,
-  revokeToken,
+  invalidateAllSessions,
 };

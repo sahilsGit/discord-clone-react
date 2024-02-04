@@ -2,16 +2,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useModal } from "@/hooks/useModals";
 
 const formSchema = z.object({
@@ -43,7 +34,7 @@ export const MessageFileModal = () => {
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
-      <DialogContent className="p-8 overflow-hidden w-[400px]">
+      <DialogContent className="p-8 overflow-hidden bg-zinc-800 w-[400px]">
         <p className="py-6 text-center">
           Uploading files and images has been disabled temporarily to prevent
           abuse.

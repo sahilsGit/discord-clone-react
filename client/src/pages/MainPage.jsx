@@ -183,7 +183,7 @@ const MainPage = ({ type }) => {
       <div className="w-screen h-screen flex items-center justify-center">
         <Loader2
           strokeWidth={3}
-          className="lg:w-6 lg:h-6 sm:w-2 sm:h-2 animate-spin"
+          className="lg:w-6 lg:h-6 sm:w-4 sm:h-4 animate-spin"
         />
       </div>
     );

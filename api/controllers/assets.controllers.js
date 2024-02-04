@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// General endpoint for getting images
 const getImage = async (req, res, next) => {
   try {
     const imageName = req.params.imageName;
@@ -21,6 +22,7 @@ const getImage = async (req, res, next) => {
   }
 };
 
+// General endpoint for getting files
 const getFile = async (req, res, next) => {
   try {
     const imageName = req.params.imageName;
@@ -37,6 +39,7 @@ const getFile = async (req, res, next) => {
   }
 };
 
+// General endpoint for uploading files
 const uploadFile = async (req, res, next) => {
   try {
     const newFilename = req.file.filename;

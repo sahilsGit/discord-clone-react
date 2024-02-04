@@ -3,10 +3,17 @@ import Profile from "../modals/profile.modals.js";
 import Member from "../modals/member.modals.js";
 import Server from "../modals/server.modals.js";
 
-export const createChannel = async (req, res, next) => {
+const createChannel = async (req, res, next) => {
+  /*
+   *
+   * Handles channel creation logic
+   *
+   */
   try {
+    // Get name and type of channel
     const { name, type } = req.body;
 
+    // Validate
     if (!name || !type) {
       return res.send({
         message: "Server must have a name and a type!",
@@ -17,15 +24,16 @@ export const createChannel = async (req, res, next) => {
     const server = await Server.findById(req.params.serverId);
 
     if (!profile) {
-      res.status(401).send("No user found");
+      res.status(401).send({ message: "No user found!" });
     }
 
     if (!server) {
-      res.status(401).send("Server Id missing");
+      res.status(401).send({ message: "Server Id missing!" });
     }
 
+    // General channel is default the channel that's created on server creation
     if (name.toLowerCase() === "general") {
-      res.status(400).send("Name cannot be 'general'");
+      res.status(400).send({ message: "Name cannot be 'general'" });
     }
 
     // Check if the user is an ADMIN or MODERATOR
@@ -37,7 +45,7 @@ export const createChannel = async (req, res, next) => {
     if (!member || (member.role !== "ADMIN" && member.role !== "MODERATOR")) {
       return res
         .status(403)
-        .send("You do not have permission to create channels");
+        .send({ message: "You do not have permission to create channels" });
     }
 
     // Create the channel
@@ -51,6 +59,9 @@ export const createChannel = async (req, res, next) => {
 
     await channel.save();
 
+    // Response is customized to fulfill token-related demand,
+    // Refer to auth.middlewares.js (71-82) for more information.
+
     if (res.body) {
       res.body = {
         ...res.body,
@@ -60,17 +71,24 @@ export const createChannel = async (req, res, next) => {
       res.body = { server: channel };
     }
 
+    // Send body
     res.status(200).send(res.body);
   } catch (error) {
     next(error);
   }
 };
 
-export const getChannel = async (req, res, next) => {
+const getChannel = async (req, res, next) => {
+  /*
+   *
+   * Name is self explanatory, returns basic channel details after proper validation
+   *
+   */
   try {
     let channel;
     let profile;
 
+    // To check if the profile is part of the server whose channel info is being requested
     [profile, channel] = await Promise.all([
       Profile.findOne({
         _id: req.user.profileId,
@@ -86,14 +104,13 @@ export const getChannel = async (req, res, next) => {
     ]);
 
     if (!profile) {
-      console.error(
-        "Server not found, either it doesn't exist or you are not a member"
-      );
-      return res.status(404).json({
-        error:
+      return res.status(404).send({
+        message:
           "Server not found, either it doesn't exist or you are not a member",
       });
     }
+
+    // If the requested channel doesn't exist then return the first channel that the server has
 
     if (!channel) {
       channel = await Channel.findOne({ serverId: req.params.serverId }).sort({
@@ -101,6 +118,7 @@ export const getChannel = async (req, res, next) => {
       });
     }
 
+    // Structure data for transport
     const channelData = {
       _id: channel._id,
       name: channel.name,
@@ -108,6 +126,9 @@ export const getChannel = async (req, res, next) => {
       conversationId: channel.conversationId,
       serverId: channel.serverId,
     };
+
+    // Response is customized to fulfill token-related demand,
+    // Refer to auth.middlewares.js (71-82) for more information.
 
     if (res.body) {
       res.body = {
@@ -120,8 +141,12 @@ export const getChannel = async (req, res, next) => {
       };
     }
 
+    // Send response
     res.status(200).send(res.body);
   } catch (error) {
+    // Handle general error
     next(error);
   }
 };
+
+export { createChannel, getChannel };

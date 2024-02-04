@@ -8,6 +8,7 @@ import { ConversationEventEnum } from "../utils/constants.js";
 import { getLocalPath, getStaticFilePath } from "../utils/helpers.js";
 import DirectConversation from "../modals/directConversation.modals.js";
 
+// Common serverMessages pipeline
 const commonMessagesPipeline = [
   {
     $lookup: {
@@ -51,6 +52,7 @@ const commonMessagesPipeline = [
   },
 ];
 
+// Common directMessages pipeline
 const directMessagePipeline = [
   {
     $lookup: {
@@ -80,11 +82,20 @@ const directMessagePipeline = [
 ];
 
 const sendDirectMessage = async (req, res, next) => {
+  /*
+   *
+   * Handles direct message sending logic
+   *
+   */
   try {
+    // Get details of both the participants
     const { myProfileId, memberProfileId } = req.query;
+
+    // Get content
     const { content } = req.body;
     const messageFiles = [];
 
+    // To store attachments and associate those with their names
     if (req.files && req.files.attachments?.length > 0) {
       req.files.attachments?.map((attachment) => {
         messageFiles.push({
@@ -97,16 +108,16 @@ const sendDirectMessage = async (req, res, next) => {
     // Validate required fields
     if (!memberProfileId || !myProfileId) {
       return res.status(400).send({
-        error: "memberProfileId and your profileIds are required",
+        message: "At least two participants are required!",
       });
     }
 
-    // Find the conversation for this channel + server
+    // Find the conversation
     const conversation = await DirectConversation.findOne({
       $or: [
         { initiatedBy: memberProfileId, initiatedFor: myProfileId },
         { initiatedBy: myProfileId, initiatedFor: memberProfileId },
-      ],
+      ], // Conversation could have been initiated by any of the party
     });
 
     // Create the server message
@@ -117,17 +128,22 @@ const sendDirectMessage = async (req, res, next) => {
       conversationId: conversation._id,
     });
 
+    // Save the message
     await message.save();
 
     // Add message to conversation
     conversation.messages.push(message);
     await conversation.save();
 
+    // Create the newly sent message's info payload for client
     const messageDocument = await DirectMessage.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(message._id) } },
       ...directMessagePipeline,
     ]);
 
+    // Emit the socket event with message details
+
+    // To sender
     emitSocketEvent(
       req,
       message.senderId.toHexString(),
@@ -135,6 +151,7 @@ const sendDirectMessage = async (req, res, next) => {
       messageDocument[0]
     );
 
+    // To receiver
     emitSocketEvent(
       req,
       message.receiverId.toHexString(),
@@ -142,19 +159,28 @@ const sendDirectMessage = async (req, res, next) => {
       messageDocument[0]
     );
 
-    res.status(201).send(message);
+    res.status(201).send({ message: "Message sent successfully" });
   } catch (error) {
+    // Handle any left over error
     next(error);
   }
 };
 
 const sendServerMessage = async (req, res, next) => {
+  /*
+   *
+   * Handles server message sending logic
+   *
+   */
   try {
+    // Get details of channel and member who is sending the message
     const { channelId, memberId } = req.query;
-    const { content } = req.body;
 
+    // Get content
+    const { content } = req.body;
     const messageFiles = [];
 
+    // To store attachments and associate those with their names
     if (req.files && req.files.attachments?.length > 0) {
       req.files.attachments?.map((attachment) => {
         messageFiles.push({
@@ -171,7 +197,7 @@ const sendServerMessage = async (req, res, next) => {
         .send({ error: "channelId and serverId are required" });
     }
 
-    // Find the conversation for this channel + server
+    // Find the conversation for this channel
     const conversation = await ServerConversation.findOne({
       channelId,
     });
@@ -185,8 +211,10 @@ const sendServerMessage = async (req, res, next) => {
       memberId: memberId,
     });
 
+    // Save the message
     await message.save();
 
+    // Add the messageId to the messages list of all the messages sent by this member
     await Member.updateOne(
       {
         _id: memberId,
@@ -200,11 +228,13 @@ const sendServerMessage = async (req, res, next) => {
     conversation.messages.push(message);
     await conversation.save();
 
+    // Create the newly sent message's info payload for client
     const messageDocument = await ServerMessage.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(message._id) } },
       ...commonMessagesPipeline,
     ]);
 
+    // Emit the socket event with message details
     emitSocketEvent(
       req,
       channelId,
@@ -212,54 +242,80 @@ const sendServerMessage = async (req, res, next) => {
       messageDocument[0]
     );
 
-    res.status(201).send(message);
+    res.status(201).send({ message: "Message sent successfully" });
   } catch (error) {
+    // Handle any left over error
     next(error);
   }
 };
 
 const fetchMessages = async (req, res, next) => {
+  /*
+   *
+   * Fetch messages wrapper for infinite scroll
+   *
+   */
   const channelId = req.query.channelId || req.params.channelId;
 
   // Conditionally choose the appropriate handler based on query params
-  if (channelId) {
-    await fetchServerMessages(req, res); // Call the server messages handler
-  } else {
-    await fetchDirectMessages(req, res); // Call the direct messages handler
+  try {
+    channelId
+      ? await fetchServerMessages(req, res) // Call the server messages handler
+      : await fetchDirectMessages(req, res); // Call the direct messages handler
+  } catch (error) {
+    // Handle any left over error
+    next(error);
   }
 };
 
-const fetchServerMessages = async (req, res) => {
+const fetchServerMessages = async (req, res, next) => {
+  /*
+   *
+   * Fetches messages for infinite scroll
+   *
+   */
+
+  // Set limit and get latest cursor
   const limit = 10;
   const { cursor, channelId } = req.query;
 
+  // Validate
   try {
     if (!channelId) {
-      res.status(404).send("Can't find conversation without channelId");
+      res
+        .status(404)
+        .send({ message: "Can't find conversation without channelId" });
     }
 
+    // Extend pipeline
     const queryPipeline = [
       { $match: { channelId: new mongoose.Types.ObjectId(channelId) } },
       ...commonMessagesPipeline,
     ];
 
+    // If the request has cursor then add logic to process cursor so that it fetches messages older then cursor date
     if (cursor && cursor !== "null" && cursor !== "undefined")
       queryPipeline.push({ $match: { createdAt: { $lt: new Date(cursor) } } });
     queryPipeline.push({ $sort: { createdAt: -1 } }, { $limit: limit + 1 });
 
+    // Get the messages
     let messages = await ServerMessage.aggregate(queryPipeline);
 
+    // Check if there are more messages to fetch for next batch by fetching one extra message and popping it
     const hasMoreDocuments = messages.length > limit;
     if (hasMoreDocuments) {
-      // Remove the extra document fetched for checking
       messages.pop();
     }
 
     // New cursor is timestamp of the last message returned
     let newCursor;
 
+    // TODO: Explain what's going on here! //
     if (channelId) newCursor = messages[messages.length - 1]?.createdAt;
     else newCursor = messages?.createdAt;
+
+    // Response is customized to fulfill token-related demand,
+    // Refer to auth.middlewares.js (71-82) for more information.
 
     if (res.body) {
       res.body = {
@@ -276,6 +332,7 @@ const fetchServerMessages = async (req, res) => {
       };
     }
 
+    // Send response
     res.status(200).send(res.body);
   } catch (error) {
     next(error);
@@ -292,7 +349,7 @@ const fetchDirectMessages = async (req, res, next) => {
         res
           .status(404)
           .send(
-            "Either ConversationId or profileId of both the persons are need to find the conversation"
+            "Either ConversationId or profileId of both the persons are needed to find the conversation"
           );
       }
     }
