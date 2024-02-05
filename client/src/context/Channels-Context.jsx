@@ -66,32 +66,11 @@ export const ChannelsContextProvider = ({ children }) => {
   const value = { ...state, dispatch };
 
   useEffect(() => {
-    localStorage.setItem("channels", JSON.stringify(state.channels));
-  }, [state.channels]);
-
-  useEffect(() => {
-    localStorage.setItem("activeChannel", JSON.stringify(state.activeChannel));
     state.activeChannel &&
       navigate(
         `/servers/${state.activeChannel.serverId}/${state.activeChannel._id}`
       );
   }, [state.activeChannel]);
-
-  useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(state.messages));
-  }, [state.messages]);
-
-  useEffect(() => {
-    localStorage.setItem("cursor", JSON.stringify(state.cursor));
-  }, [state.cursor]);
-
-  useEffect(() => {
-    localStorage.setItem("hasMore", JSON.stringify(state.hasMore));
-  }, [state.hasMore]);
-
-  useEffect(() => {
-    localStorage.setItem("cache", JSON.stringify(state.cache));
-  }, [state.cache]);
 
   return (
     <ChannelsContext.Provider value={value}>

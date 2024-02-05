@@ -67,27 +67,11 @@ export const ConversationsContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    localStorage.setItem("conversations", JSON.stringify(state.conversations));
-  }, [state.conversations]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "activeConversation",
-      JSON.stringify(state.activeConversation)
-    );
-
     state.activeConversation &&
       navigate(
         `/@me/conversations/${state.activeConversation.theirProfileId}/${profileId}`
       );
   }, [state.activeConversation]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "conversationMessages",
-      JSON.stringify(state.messages)
-    );
-  }, [state.messages]);
 
   return (
     <ConversationsContext.Provider value={value}>

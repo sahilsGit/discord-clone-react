@@ -84,7 +84,6 @@ const AuthContextProvider = ({ children }) => {
   // Store the user in local storage whenever it changes
   useEffect(() => {
     localStorage.setItem("access_token", JSON.stringify(state.access_token));
-    localStorage.setItem("user", JSON.stringify(state.user));
   }, [state.access_token, state.user, state.email]);
 
   return (

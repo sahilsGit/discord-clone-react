@@ -81,30 +81,6 @@ const serverReducer = (state, action) => {
 export const ServerContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(serverReducer, initialState);
 
-  useEffect(() => {
-    localStorage.setItem("servers", JSON.stringify(state.servers));
-  }, [state.servers]);
-
-  useEffect(() => {
-    localStorage.setItem("activeServer", JSON.stringify(state.activeServer));
-  }, [state.activeServer]);
-
-  useEffect(() => {
-    localStorage.setItem("channels", JSON.stringify(state.channels));
-  }, [state.channels]);
-
-  useEffect(() => {
-    localStorage.setItem("activeChannel", JSON.stringify(state.activeChannel));
-  }, [state.activeChannel]);
-
-  useEffect(() => {
-    localStorage.setItem("serverCache", JSON.stringify(state.cache));
-  }, [state.cache]);
-
-  // useEffect(() => {
-  //   if (access_token && user && profileId) fetchServers();
-  // }, [access_token, user, profileId]);
-
   return (
     <ServerContext.Provider
       value={{
