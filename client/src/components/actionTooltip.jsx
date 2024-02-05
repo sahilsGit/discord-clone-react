@@ -4,8 +4,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
-export const ActionTooltip = ({ label, children, side, align }) => {
+export const ActionTooltip = ({ label, children, side, align, className }) => {
   return (
     <TooltipProvider>
       <Tooltip
@@ -15,8 +16,13 @@ export const ActionTooltip = ({ label, children, side, align }) => {
       >
         <TooltipTrigger>{children}</TooltipTrigger>
         <TooltipContent side={side} align={align}>
-          <p className="font-semibold bg-white dark:bg-zinc-900 text-xs capitalize">
-            {label.toLowerCase()}
+          <p
+            className={cn(
+              "font-semibold bg-white dark:bg-zinc-900 text-xs",
+              className
+            )}
+          >
+            {label}
           </p>
           {/* <TooltipArrow width={10} height={5} /> */}
         </TooltipContent>

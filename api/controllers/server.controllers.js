@@ -10,20 +10,21 @@ export const createServer = async (req, res, next) => {
     const { name, inviteCode, username, image } = req.body;
     // Validations
     if (!name) {
-      return res.send({ message: "Server must have a name!" });
+      return res.status(400).send({ message: "Server must have a name!" });
     }
     if (!username) {
-      return res.send({
+      return res.status(400).send({
         message: "The server must be associated with a user!",
       });
     }
-    if (!image) {
-      return res.send({
-        message: "The server must have an image!",
-      });
-    }
+    // if (!image) {
+    //   return res.send({
+    //     message: "The server must have an image!",
+    //   });
+    // }
+
     if (!inviteCode) {
-      return res.send({
+      return res.status(400).send({
         message: "An invite code must be provided!",
       });
     }
@@ -38,7 +39,7 @@ export const createServer = async (req, res, next) => {
       name,
       inviteCode,
       profileId,
-      image,
+      image: image || null,
     });
 
     await newServer.save();

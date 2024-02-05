@@ -26,7 +26,7 @@ const NavigationSidebar = ({ type }) => {
   const profileId = useAuth("id");
 
   return (
-    <div className="flex flex-col h-full justify-between pt-[14px] pb-[14px]">
+    <div className="flex flex-col h-full pt-[14px] pb-[14px]">
       <div className="flex flex-col items-center h-full text-primary gap-[7px]">
         {/* Button to header over to the conversations page  */}
         <NavigationConversation
@@ -58,13 +58,14 @@ const NavigationSidebar = ({ type }) => {
             <Separator className="mt-[1px] h-[1px] bg-zinc-300 dark:bg-zinc-700 rounded-md w-[32px]" />
           </>
         ) : null}
-
         {/* Display NavigationAction component */}
         <NavigationAction />
+        {servers && Object.keys(servers)?.length < 10 && (
+          <div className="grow m-0 p-0"></div>
+        )}
+        {/* Display ModeToggle component */}
+        <ModeToggle />
       </div>
-
-      {/* Display ModeToggle component */}
-      <ModeToggle />
     </div>
   );
 };

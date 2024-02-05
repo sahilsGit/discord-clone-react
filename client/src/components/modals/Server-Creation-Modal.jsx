@@ -23,11 +23,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X, Plus, Image } from "lucide-react";
 import { v4 } from "uuid";
-import { post } from "@/services/api-service";
+import { get, post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { useModal } from "@/hooks/useModals";
 import useServer from "@/hooks/useServer";
+import { ActionTooltip } from "../actionTooltip";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -106,7 +107,8 @@ const ServerCreationModal = () => {
         handleError(error, authDispatch);
       }
     } else {
-      throw new Error("Avatar image not found"); // Reject the promise if avatarImage is not available
+      // Ingulf this error for now
+      // throw new Error("Avatar image not found"); Reject the promise if avatarImage is not available
     }
   };
 
@@ -141,13 +143,13 @@ const ServerCreationModal = () => {
     };
 
     try {
-      const response = post(
+      const response = await post(
         "/servers/create",
         JSON.stringify(toBeSent),
         access_token
       );
 
-      await handleResponse(response, authDispatch);
+      // await handleResponse(response, authDispatch);
 
       // Now fetching all the servers once again
       const res = await get(`/servers/${user}/getAll`, access_token);
@@ -156,12 +158,13 @@ const ServerCreationModal = () => {
       serverDispatch({ type: "SET_SERVERS", payload: data.servers });
       serverDispatch({ type: "SET_ACTIVE_SERVER", payload: data.servers[0] });
     } catch (error) {
+      const { status, message } = handleError(error, authDispatch);
       // ingulf
+
+      console.log(status, message);
     }
-    setTimeout(() => {
-      onClose();
-      form.reset();
-    }, 1000);
+    onClose();
+    form.reset();
   };
 
   const handleClose = () => {
@@ -184,25 +187,37 @@ const ServerCreationModal = () => {
         </DialogHeader>
         <div className="flex flex-col w-full items-center pt-1">
           {/*Transfer click to <input> tag to initiate the image uploading process*/}
-          <Avatar className="relative bg-zinc-200" onClick={handleAvatarClick}>
-            <AvatarImage src={imagePreview} />
-            <AvatarFallback className="flex flex-col">
-              <Image strokeWidth="2" color="grey" size={24} />
-            </AvatarFallback>
-          </Avatar>
+          <ActionTooltip
+            label={
+              "Uploading images has been disabled till I find a better place to save images!"
+            }
+            className="text-center max-w-[200px]"
+          >
+            <Avatar
+              className="relative bg-zinc-200 cursor-not-allowed"
+              onClick={handleAvatarClick}
+            >
+              <AvatarImage src={imagePreview} />
+              <AvatarFallback className="flex flex-col">
+                <Image strokeWidth="2" color="grey" size={24} />
+              </AvatarFallback>
+            </Avatar>
+          </ActionTooltip>
           {/* Conditionally render either X or Plus comp. based on avatarImage's state */}
           {avatarImage ? (
             <button
-              className="bg-rose-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm"
+              className="bg-rose-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm cursor-not-allowed"
               onClick={handleDeleteImage}
+              disabled
             >
               {/* Remove image on user's request */}
               <X className="h-3 w-3" />
             </button>
           ) : (
             <button
-              className="bg-indigo-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm"
+              className="bg-indigo-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm cursor-not-allowed"
               onClick={handleAvatarClick}
+              disabled
             >
               <Plus className="h-3 w-3" />
             </button>
@@ -219,6 +234,7 @@ const ServerCreationModal = () => {
                   accept=".png, .jpeg, .jpg"
                   className="hidden imageField bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
                   onChange={handleAvatarChange}
+                  disabled
                 />
                 {/* onChange to handle the imageChange */}
 
