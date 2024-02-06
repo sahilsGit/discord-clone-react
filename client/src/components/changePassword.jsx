@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -21,15 +21,14 @@ import { update } from "@/services/api-service";
 import { Separator } from "./ui/separator";
 import { Eye, EyeOff } from "lucide-react";
 import SuccessComponent from "@/lib/success-Component";
-import { useNavigate } from "react-router-dom";
+import { forApiErrorInitial, forApiSuccessInitial } from "@/lib/misc";
 
 const ChangePassword = () => {
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState({ status: "", message: "" });
-  const [apiSuccess, setApiSuccess] = useState({ status: "", message: "" });
+  const [forApiError, setForApiError] = useState(forApiErrorInitial);
+  const [forApiSuccess, setForApiSuccess] = useState(forApiSuccessInitial);
   const [oldVisibility, setOldVisibility] = useState("password");
   const [newVisibility, setNewVisibility] = useState("password");
-  const navigate = useNavigate();
 
   const setNewPasswordSchema = z
     .object({
@@ -47,16 +46,15 @@ const ChangePassword = () => {
       message: "Passwords do not match",
     });
 
-  // Error setter for standard error component
-  const setError = ({ status, message }) => {
-    setApiError({ status: status, message: message });
-  };
+  const resetError = useCallback(() => {
+    setForApiError(forApiErrorInitial);
+  }, []);
 
-  const setSuccess = ({ status, message }) => {
-    setApiSuccess({ status: status, message: message });
+  // Error setter for standard error component
+  const resetSuccess = useCallback(() => {
+    setForApiSuccess(forApiSuccessInitial);
     form.reset();
-    navigate("/login");
-  };
+  }, []);
 
   const togglePasswordVisibility = (element, setElement) => {
     element === "password" ? setElement("text") : setElement("password");
@@ -77,15 +75,16 @@ const ChangePassword = () => {
     try {
       const response = await update("/auth/resetPassword", data, null);
       await handleResponse(response, null);
-      setApiSuccess({
-        status: 200,
+      setForApiSuccess({
+        ...forApiSuccess,
         message: "Changed password Successfully!",
+        action: "refresh",
       });
     } catch (error) {
-      const { status, message } = handleError(error, null);
-      setApiError({
-        status: status,
-        message: message || "Something went wrong, try again later.",
+      const { message } = handleError(error, null);
+      setForApiError({
+        ...forApiError,
+        message: message,
       });
     }
   };
@@ -229,8 +228,11 @@ const ChangePassword = () => {
           </Button>
         </form>
       </Form>
-      <ErrorComponent error={apiError} setError={setError} />
-      <SuccessComponent success={apiSuccess} setSuccess={setSuccess} />
+      <ErrorComponent apiError={forApiError} resetError={resetError} />
+      <SuccessComponent
+        apiSuccess={forApiSuccess}
+        resetSuccess={resetSuccess}
+      />
     </DialogContent>
   );
 };

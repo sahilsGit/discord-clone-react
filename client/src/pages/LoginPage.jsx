@@ -23,10 +23,11 @@ import { handleError, handleResponse } from "@/lib/response-handler";
 import useAuth from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import ResetPassword from "@/components/resetPassword";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import ErrorComponent from "@/lib/error-Component";
 import { ActionTooltip } from "@/components/actionTooltip";
+import { forApiErrorInitial } from "@/lib/misc";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email" }),
@@ -38,8 +39,8 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState({ status: "", message: "" });
-  const [watch, setWatch] = useState("password");
+  const [fieldType, setFieldType] = useState("password");
+  const [forApiError, setForApiError] = useState(forApiErrorInitial);
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -49,10 +50,9 @@ const LoginPage = () => {
     },
   });
 
-  // Error setter for standard error component
-  const setError = ({ status, message }) => {
-    setApiError({ status: status, message: message });
-  };
+  const resetError = useCallback(() => {
+    setForApiError(forApiErrorInitial);
+  }, []);
 
   const from = location.state ? location.state.from : "/@me/conversations";
 
@@ -73,7 +73,11 @@ const LoginPage = () => {
       navigate(from);
     } catch (error) {
       const { status, message } = handleError(error, authDispatch);
-      setApiError({ status: status, message: message });
+      // setApiError({ status: status, message: message });
+      setForApiError({
+        ...forApiError,
+        message: message,
+      });
     } finally {
       setLoading(false);
     }
@@ -136,7 +140,7 @@ const LoginPage = () => {
                                   : "Enter your Password"
                               }
                               {...field}
-                              type={watch}
+                              type={fieldType}
                               className={cn(
                                 "h-[45px] bg-zinc-900 pr-[55px]",
                                 fieldState.error &&
@@ -146,13 +150,13 @@ const LoginPage = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                watch === "password"
-                                  ? setWatch("text")
-                                  : setWatch("password");
+                                fieldType === "password"
+                                  ? setFieldType("text")
+                                  : setFieldType("password");
                               }}
                               className="absolute right-4 top-3 dark:text-zinc-500 dark:hover:text-zinc-200 transition"
                             >
-                              {watch === "text" ? <Eye /> : <EyeOff />}
+                              {fieldType === "text" ? <Eye /> : <EyeOff />}
                             </button>
                           </div>
                         </FormControl>
@@ -202,7 +206,7 @@ const LoginPage = () => {
               Browse as guest
             </Button>
           </ActionTooltip>
-          <ErrorComponent error={apiError} setError={setError} />
+          <ErrorComponent apiError={forApiError} resetError={resetError} />
         </div>
       </Card>
     </div>

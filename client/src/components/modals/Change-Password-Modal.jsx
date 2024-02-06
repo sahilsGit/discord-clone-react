@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { z } from "zod";
 import { isPasswordValid } from "@/services/auth-validator";
 import { useForm } from "react-hook-form";
@@ -23,6 +23,7 @@ import { Button } from "../ui/button";
 import SuccessComponent from "@/lib/success-Component";
 import { Separator } from "../ui/separator";
 import { Eye, EyeOff } from "lucide-react";
+import { forApiErrorInitial, forApiSuccessInitial } from "@/lib/misc";
 
 const ChangePasswordModal = () => {
   const { isOpen, onClose, type, data } = useModal();
@@ -31,8 +32,8 @@ const ChangePasswordModal = () => {
   const authDispatch = useAuth("dispatch");
 
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState({ status: "", message: "" });
-  const [apiSuccess, setApiSuccess] = useState({ status: "", message: "" });
+  const [forApiError, setForApiError] = useState(forApiErrorInitial);
+  const [forApiSuccess, setForApiSuccess] = useState(forApiSuccessInitial);
   const [oldVisibility, setOldVisibility] = useState("password");
   const [newVisibility, setNewVisibility] = useState("password");
 
@@ -52,16 +53,16 @@ const ChangePasswordModal = () => {
       message: "Passwords do not match",
     });
 
-  // Error setter for standard error component
-  const setError = ({ status, message }) => {
-    setApiError({ status: status, message: message });
-  };
+  const resetError = useCallback(() => {
+    setForApiError(forApiErrorInitial);
+  }, []);
 
-  // Success setter for standard error component
-  const setSuccess = ({ status, message }) => {
-    setApiSuccess({ status: status, message: message });
+  // Error setter for standard error component
+  const resetSuccess = useCallback(() => {
+    setForApiSuccess(forApiSuccessInitial);
+    form.reset();
     handleClose();
-  };
+  }, []);
 
   const handleClose = () => {
     form.reset();
@@ -94,14 +95,14 @@ const ChangePasswordModal = () => {
       );
 
       await handleResponse(response, null);
-      setApiSuccess({
-        status: 200,
+      setForApiSuccess({
+        ...forApiSuccess,
         message: "Changed password Successfully!",
       });
     } catch (error) {
-      const { status, message } = handleError(error, authDispatch);
-      setApiError({
-        status: status,
+      const { message } = handleError(error, authDispatch);
+      setForApiError({
+        ...forApiError,
         message: message,
       });
     }
@@ -254,8 +255,11 @@ const ChangePasswordModal = () => {
             </Button>
           </form>
         </Form>
-        <ErrorComponent error={apiError} setError={setError} />
-        <SuccessComponent success={apiSuccess} setSuccess={setSuccess} />
+        <ErrorComponent apiError={forApiError} resetError={resetError} />
+        <SuccessComponent
+          apiSuccess={forApiSuccess}
+          resetSuccess={resetSuccess}
+        />
       </DialogContent>
     </Dialog>
   );

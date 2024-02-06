@@ -1,9 +1,11 @@
 import useAuth from "@/hooks/useAuth";
 import { get } from "@/services/api-service";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleError, handleResponse } from "./response-handler";
 import ErrorComponent from "./error-Component";
+import { Loader2 } from "lucide-react";
+import { forApiErrorInitial } from "./misc";
 
 const RequireAuth = ({ children }) => {
   const user = useAuth("user");
@@ -15,12 +17,12 @@ const RequireAuth = ({ children }) => {
   const image = useAuth("image");
   const email = useAuth("email");
   const about = useAuth("about");
-  const [apiError, setApiError] = useState({ status: "", message: "" });
+  const [forApiError, setForApiError] = useState(forApiErrorInitial);
 
-  // Error setter for standard error component
-  const setError = ({ status, message }) => {
-    setApiError({ status: status, message: message });
-  };
+  // Error re-setter for standard error component
+  const resetError = useCallback(() => {
+    setForApiError(forApiErrorInitial);
+  }, []);
 
   useEffect(() => {
     const refreshUserDetails = async () => {
@@ -40,8 +42,11 @@ const RequireAuth = ({ children }) => {
           },
         });
       } catch (error) {
-        const { status, message } = handleError(error, authDispatch);
-        setApiError({ status: status, message: message });
+        const { message } = handleError(error, authDispatch);
+        setForApiError({
+          ...forApiError,
+          message: message,
+        });
       }
     };
 
@@ -60,8 +65,15 @@ const RequireAuth = ({ children }) => {
     !about === null ||
     !email ||
     !user ||
-    !access_token ? null : apiError.message ? (
-    <ErrorComponent error={apiError} setError={setError} />
+    !access_token ? (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <Loader2
+        strokeWidth={3}
+        className="lg:w-6 lg:h-6 sm:w-4 sm:h-4 animate-spin"
+      />
+    </div>
+  ) : forApiError.message ? (
+    <ErrorComponent apiError={forApiError} resetError={resetError} />
   ) : (
     children
   );

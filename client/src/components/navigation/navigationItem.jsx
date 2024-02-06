@@ -29,8 +29,6 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
         const response = await get(`/assets/getImage/${image}`, access_token);
         const imageData = await response.blob();
 
-        console.log(response.status);
-
         if (response.ok) {
           const imageUrl = URL.createObjectURL(imageData);
           setImageSrc(imageUrl);
@@ -42,8 +40,6 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
 
     getImage();
   }, [image]);
-
-  console.log(imageSrc);
 
   useEffect(() => {
     if (!activeServer) {
@@ -79,8 +75,10 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
       <div
         className={cn(
           "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
+
           params.serverId !== id && "group-hover:h-[20px]",
-          clicked && params.serverId === id ? "h-[36px]" : "h-[8px]"
+          clicked && params.serverId === id ? "h-[36px]" : "h-[8px]",
+          clicked && params.serverId !== id && "h-[20px]"
         )}
       ></div>
       <ActionTooltip side="right" align="center" label={name}>
@@ -90,7 +88,8 @@ const NavigationItem = ({ name, id, image, firstChannel, type }) => {
             clicked && params.serverId === id && "rounded-[16px]",
             ((id === params.serverId && params.serverId !== activeServer?.id) ||
               (id !== activeServer?.id && clicked)) &&
-              "translate-y-[1.5px]"
+              "translate-y-[1.5px]",
+            clicked && params.serverId !== id && "rounded-[16px]"
           )}
         >
           <img className="" src={imageSrc} />

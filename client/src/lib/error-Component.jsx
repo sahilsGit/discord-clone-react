@@ -7,19 +7,34 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import React from "react";
+import React, { memo } from "react";
+import { useNavigate } from "react-router-dom";
 
-const ErrorComponent = ({ error, setError, errorHeading = "Oops!" }) => {
+const ErrorComponent = memo(({ apiError, resetError }) => {
+  const navigate = useNavigate();
+
+  const navigationMap = {
+    toHomepage: () => navigate("/"),
+    toLoginPage: () => navigate("/login"),
+    refresh: () => window.location.reload(),
+  };
+
+  const onAction = () => {
+    resetError();
+
+    if (apiError?.action) {
+      const action = apiError?.action;
+      navigationMap[action]();
+    }
+  };
+
   return (
-    <Dialog
-      open={error?.message}
-      onOpenChange={() => setError({ status: "", message: "" })}
-    >
+    <Dialog open={apiError?.message} onOpenChange={onAction}>
       <DialogContent className="max-w-[500px] py-6 dark:bg-zinc-700 pb-0 pl-0 pr-0">
         <DialogHeader className="pl-6 pr-6 rounded-sm">
-          <DialogTitle className="mb-1 ">{errorHeading}</DialogTitle>
+          <DialogTitle className="mb-1 ">{apiError?.heading}</DialogTitle>
           <DialogDescription className="text-zinc-500 dark:text-zinc-400">
-            {error?.message}
+            {apiError?.message}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="dark:bg-zinc-800/40 bg-gray-100 px-6 py-4">
@@ -27,7 +42,7 @@ const ErrorComponent = ({ error, setError, errorHeading = "Oops!" }) => {
             className="min-w-[100px]"
             type="button"
             variant="primary"
-            onClick={() => setError({ status: "", message: "" })}
+            onClick={onAction}
           >
             Okay
           </Button>
@@ -35,6 +50,6 @@ const ErrorComponent = ({ error, setError, errorHeading = "Oops!" }) => {
       </DialogContent>
     </Dialog>
   );
-};
+});
 
 export default ErrorComponent;

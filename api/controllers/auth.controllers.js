@@ -17,28 +17,28 @@ const register = async (req, res, next) => {
 
     // Validations
     if (!username) {
-      return res.send({ message: "A unique username is required" });
+      return res
+        .status(400)
+        .send({ message: "A unique username is required!" });
     }
     if (!name) {
-      return res.send({ message: "Full name is Required" });
+      return res.status(400).send({ message: "Full name is Required!" });
     }
     if (!email) {
-      return res.send({ message: "Email is Required" });
+      return res.status(400).send({ message: "Email is Required!" });
+    }
+    if (!password) {
+      return res.status(400).send({ message: "Password is Required!" });
     }
 
     // Check if user already exists
     const existingProfile = await Profile.findOne({ email });
 
     if (existingProfile) {
-      return res.status(200).send({
-        success: false,
-        message: "Already Registered, you can login!",
+      return res.status(409).send({
+        message:
+          "You are already Registered, you can login using your email and password!",
       });
-    }
-
-    // If not, then carry on with the registration process
-    if (!password) {
-      return res.status(400).send({ message: "Password is Required" });
     }
 
     const newProfile = new Profile({
@@ -61,15 +61,15 @@ const register = async (req, res, next) => {
     newProfile.emailVerificationToken = hashedCode;
     newProfile.emailVerificationExpiry = tokenExpiry;
 
+    // Save user
+    await newProfile.save();
+
     // Send verification email email using nodemailer
     await sendEmail({
       email: newProfile?.email,
       subject: "Please verify your email",
       content: emailVerificationMailContent(newProfile.username, unHashedCode),
     });
-
-    // Save user
-    await newProfile.save();
 
     // Create a session equivalent JWT token
     const access_token = jwt.sign(
@@ -127,7 +127,7 @@ const register = async (req, res, next) => {
     });
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(500).send({
+      return res.status(400).send({
         message: "Username is already taken, please enter a new one.",
       });
     } // Mongoose "Not unique" error

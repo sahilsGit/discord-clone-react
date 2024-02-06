@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Hash } from "lucide-react";
 import React, { memo } from "react";
 
@@ -16,7 +17,12 @@ const ServerHeader = memo(({ type, activeChannel, activeConversation }) => {
         <Hash className="w-5 h-5 text-zinc-500 dark:text-zinc-400 mr-1" />
       )}
       <div className="flex justify-between overflow-hidden truncate w-full">
-        <p className="font-semibold text-md text-black dark:text-white">
+        <p
+          className={cn(
+            "font-semibold text-md text-black dark:text-white",
+            type === "conversation" && "lg:pl-3"
+          )}
+        >
           {name}
         </p>
       </div>

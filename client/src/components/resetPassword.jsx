@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { z } from "zod";
 import { post } from "@/services/api-service";
 import { handleError, handleResponse } from "@/lib/response-handler";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import ErrorComponent from "@/lib/error-Component";
 import ChangePassword from "./changePassword";
+import { forApiErrorInitial } from "@/lib/misc";
 
 const emailSchema = z.string().email();
 
@@ -27,6 +28,7 @@ const ResetPassword = ({ authDispatch }) => {
   const [apiError, setApiError] = useState({ status: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [apiSuccess, setApiSuccess] = useState(false);
+  const [forApiError, setForApiError] = useState(forApiErrorInitial);
 
   const validateEmail = (value) => {
     try {
@@ -37,15 +39,14 @@ const ResetPassword = ({ authDispatch }) => {
     }
   };
 
+  const resetError = useCallback(() => {
+    setForApiError(forApiErrorInitial);
+  }, []);
+
   const onKeyDown = (e) => {
     if (e.target.value && e.key === "Enter") {
       handleSubmit();
     }
-  };
-
-  // Error setter for standard error component
-  const setError = ({ status, message }) => {
-    setApiError({ status: status, message: message });
   };
 
   const handleSubmit = async () => {
@@ -67,8 +68,11 @@ const ResetPassword = ({ authDispatch }) => {
       await handleResponse(response, authDispatch);
       setApiSuccess(true);
     } catch (error) {
-      const { status, message } = handleError(error, authDispatch);
-      setApiError({ status: status, message: message });
+      const { message } = handleError(error, authDispatch);
+      setForApiError({
+        ...forApiError,
+        message: message,
+      });
     } finally {
       setLoading(false);
     }
@@ -128,13 +132,7 @@ const ResetPassword = ({ authDispatch }) => {
           </Button>
         </DialogFooter>
       </DialogContent>
-      {apiError?.message && (
-        <ErrorComponent
-          error={apiError}
-          setError={setError}
-          errorHeading={"Reset Password"}
-        />
-      )}
+      <ErrorComponent apiError={forApiError} resetError={resetError} />
       <Dialog open={apiSuccess} onOpenChange={() => setApiSuccess(false)}>
         <ChangePassword />
       </Dialog>

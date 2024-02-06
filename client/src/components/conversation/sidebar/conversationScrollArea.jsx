@@ -16,7 +16,10 @@ import { handleError, handleResponse } from "@/lib/response-handler";
 import useAuth from "@/hooks/useAuth";
 import { get } from "@/services/api-service";
 import { UserAvatar } from "@/components/userAvatar";
-import { getConversationDetails } from "@/lib/context-helper";
+import {
+  getAllConversations,
+  getConversationDetails,
+} from "@/lib/context-helper";
 
 /*
  * ConversationScrollArea
@@ -108,6 +111,7 @@ const ConversationScrollArea = memo(
     // Creates a conversation and sets the same as activeConversation
     const handleCreateDM = async () => {
       try {
+        // Get or create that conversation
         await getConversationDetails(
           userData.id,
           profileId,
@@ -115,6 +119,12 @@ const ConversationScrollArea = memo(
           conversationsDispatch
         );
 
+        // Update all conversations list
+        await getAllConversations(
+          profileId,
+          authDispatch,
+          conversationsDispatch
+        );
         const event = new KeyboardEvent("keydown", { key: "Escape" });
         document.dispatchEvent(event);
       } catch (error) {

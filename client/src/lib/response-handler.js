@@ -1,15 +1,20 @@
 const handleResponse = async (response, authDispatch) => {
-  // If response is ok
-  if (response.ok) {
-    if (response.headers.get("Content-Length") == 0) {
-      return; // Return nothing if content is missing
-    }
+  try {
+    let data = await response.json(); // Parse the response
 
-    // Else
-    try {
-      const data = await response.json(); // Parse the response
+    if (response.ok) {
+      /*
+       *
+       * If Response is okay
+       *
+       */
 
-      // See if new token is received along with response
+      // Return empty-handed if content is missing
+      if (response.headers.get("Content-Length") == 0) {
+        return;
+      }
+
+      // See if new access_token is received
       if (data.newAccessToken) {
         authDispatch({
           type: "TOKEN_RECEIVED",
@@ -21,50 +26,44 @@ const handleResponse = async (response, authDispatch) => {
             image: data.image,
             about: data.about,
           },
-        });
-      } // Update the token
+        }); // Update the token
 
-      return data; // Return the data
-    } catch (error) {
-      // This error here is most probably a JSON error throw it
-      throw new Error("Error parsing JSON response");
+        // Filter the newAccessToken out as other components don't need it
+        delete data.newAccessToken;
+      }
+
+      // Finally return the api specific data
+      return data;
+
+      // If response is not okay i.e., Error
+    } else {
+      // Construct a new error object for error handler
+      const error = {
+        status: response.status,
+        message: data.message,
+      };
+
+      return Promise.reject(error); // Reject the promise to be caught by outer catch block
     }
-    // If response is not okay i.e., Error
-  } else {
-    const parsedError = await response.json(); // Parse the error message
-
-    // Construct a new error object for error handler
-    const error = {
-      status: response.status,
-      message: parsedError.message,
-    };
-
-    return Promise.reject(error); // Reject the promise to be caught by outer catch block
+  } catch (error) {
+    // This error here is most probably a JSON error throw it
+    throw new Error("Something went wrong!");
   }
 };
 
 const handleError = (error, authDispatch) => {
   // Handle error based on their status codes
 
-  switch (error.status) {
+  if (!error?.status) {
+    error.status = 500;
+  }
+
+  if (error.status === 401 || error.status === 403) {
     // Un-authorized or un-authenticated request is suspicious, reset everything
-    case 401 || 403:
-      localStorage.clear();
-      authDispatch({ type: "RESET_STATE" });
-      return (window.location.href = "/");
+    localStorage.clear();
+    authDispatch({ type: "RESET_STATE" });
 
-    // TODO: Handle errors
-    case 404:
-      break;
-
-    case error.status >= 400 && error.status < 500:
-      break;
-
-    case error.status >= 500:
-      break;
-
-    default:
-      break;
+    return (window.location.href = "/");
   }
 
   // Return the error object for custom error handling within each component

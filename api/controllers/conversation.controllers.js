@@ -46,6 +46,15 @@ const getOrCreateConversation = async (req, res, next) => {
       }
     );
 
+    await Profile.updateMany(
+      {
+        _id: { $in: [profileOneId, profileTwoId] },
+      },
+      {
+        $addToSet: { directConversations: conversation._id },
+      }
+    );
+
     // Response is customized to fulfill token-related demand,
     // Refer to auth.middlewares.js (71-82) for more information.
     if (res.body) {

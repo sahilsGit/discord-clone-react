@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { handleError, handleResponse } from "@/lib/response-handler";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,32 +28,61 @@ import { Separator } from "@/components/ui/separator";
 import { Clock10, Eye, EyeOff } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
 import ErrorComponent from "@/lib/error-Component";
+import { forApiErrorInitial, forApiSuccessInitial } from "@/lib/misc";
+import SuccessComponent from "@/lib/success-Component";
 
 const RegistrationPage = () => {
+  /*
+   * RegistrationPage
+   *
+   *
+   * Handles user registration process
+   * Also handles user verification process
+   *
+   *
+   * TODO: Modularize, remove verification logic out of here
+   *
+   */
+
   const location = useLocation();
   const navigate = useNavigate();
   const displayName = location.state && location.state?.displayName;
-  const [focused, setFocused] = useState([null, false]);
   const [showDialog, setShowDialog] = useState(false);
   const [resendCodeTimeout, setResendCodeTimeout] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(null);
   const [code, setCode] = useState(null);
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
-  const [watch, setWatch] = useState("password");
-  const [apiError, setApiError] = useState({ status: "", message: "" });
+  const [fieldType, setFieldType] = useState("password");
+  const [forApiError, setForApiError] = useState(forApiErrorInitial);
+  const [forApiSuccess, setForApiSuccess] = useState(forApiSuccessInitial);
 
-  const handleFocus = (item) => {
-    setFocused((prev) => [...prev, item]);
+  // To track which fields have been visited
+  const [focused, setFocused] = useState({
+    name: false,
+    username: false,
+    password: false,
+  });
+
+  // To mark fields as visited
+  const handleFocus = (field) => {
+    !focused[field] &&
+      setFocused((prevFocused) => ({ ...prevFocused, [field]: true }));
   };
 
-  // Error setter for standard error component
-  const setError = ({ status, message }) => {
-    setApiError({ status: status, message: message });
-  };
+  // Error resetter for custom error component to conditionally render error message
+  const resetError = useCallback(() => {
+    setForApiError(forApiErrorInitial);
+  }, []);
 
+  // Success resetter for standard success component to conditionally render success message
+  const resetSuccess = useCallback(() => {
+    setForApiSuccess(forApiSuccessInitial);
+  }, []);
+
+  // React-hook for with zod Validation
   const form = useForm({
-    resolver: zodResolver(registerSchema), //Resolving registerSchema created before
+    resolver: zodResolver(registerSchema), // Resolver
     defaultValues: {
       username: "",
       name: displayName || "",
@@ -63,7 +92,7 @@ const RegistrationPage = () => {
   });
 
   const handleResendCode = async () => {
-    // Perform email code resend logic here
+    // Handles resendCode request logic
 
     setResendCodeTimeout(
       setTimeout(() => {
@@ -75,6 +104,7 @@ const RegistrationPage = () => {
     setTimeRemaining(60); // Set initial time remaining
   };
 
+  // Submits verification code
   const submitCode = async () => {
     try {
       const response = await update(
@@ -85,13 +115,27 @@ const RegistrationPage = () => {
         access_token
       );
 
-      await handleResponse(response, authDispatch);
+      const data = await handleResponse(response, authDispatch);
+
+      // Show Success message & Navigate the user to homepage after acknowledgement
+      setForApiSuccess({
+        ...forApiSuccess,
+        message: data.message,
+        action: "toHomepage",
+      });
     } catch (error) {
       const { status, message } = handleError(error);
-      setApiError({ status: status, message: message });
+
+      // Show error and take actions based on status code
+      setForApiError({
+        ...forApiError,
+        message: message,
+        action: status === 489 ? "" : "toHomepage",
+      });
     }
   };
 
+  // For reset Password timeout
   useEffect(() => {
     if (resendCodeTimeout) {
       const intervalId = setInterval(() => {
@@ -102,6 +146,7 @@ const RegistrationPage = () => {
     }
   }, [resendCodeTimeout]);
 
+  // Submits registration form
   async function onSubmit(data) {
     const body = {
       username: data.username,
@@ -113,10 +158,18 @@ const RegistrationPage = () => {
     try {
       const response = await post("/auth/register", JSON.stringify(body));
       await handleResponse(response, authDispatch);
+
+      // Open user verification Dialog box
       setShowDialog(true);
     } catch (error) {
       const { status, message } = handleError(error);
-      setApiError({ status: status, message: message });
+
+      // Show error and take actions based on status code
+      setForApiError({
+        ...forApiError,
+        message: message,
+        action: status === 409 ? "toLoginPage" : "",
+      });
     }
   }
 
@@ -176,7 +229,7 @@ const RegistrationPage = () => {
                         }
                         {...field}
                         onFocus={() => {
-                          handleFocus(1);
+                          handleFocus("name");
                         }}
                         className={cn(
                           "h-[45px] dark:bg-zinc-900",
@@ -188,7 +241,7 @@ const RegistrationPage = () => {
                     <FormDescription
                       className={cn(
                         "hidden transition-all",
-                        focused.includes(1) && "block animate-open-ver"
+                        focused.name && "block animate-open-ver"
                       )}
                     >
                       Others see you with this. You can use emojis and special
@@ -214,7 +267,7 @@ const RegistrationPage = () => {
                         }
                         {...field}
                         onFocus={() => {
-                          handleFocus(2);
+                          handleFocus("username");
                         }}
                         className={cn(
                           "h-[45px] dark:bg-zinc-900",
@@ -226,7 +279,7 @@ const RegistrationPage = () => {
                     <FormDescription
                       className={cn(
                         "hidden transition-all",
-                        focused.includes(2) && "block animate-open-ver"
+                        focused.username && "block animate-open-ver"
                       )}
                     >
                       Only use numbers, letters, underscores or periods.
@@ -251,33 +304,33 @@ const RegistrationPage = () => {
                               : "Create a password"
                           }
                           {...field}
-                          type={watch}
+                          type={fieldType}
                           className={cn(
                             "h-[45px] dark:bg-zinc-900",
                             fieldState.error &&
                               "placeholder:text-red-400 focus-visible:ring-red-400 border-red-500 focus-visible:border-none"
                           )}
                           onFocus={() => {
-                            handleFocus(3);
+                            handleFocus("password");
                           }}
                         />
                         <button
                           type="button"
                           onClick={() => {
-                            watch === "password"
-                              ? setWatch("text")
-                              : setWatch("password");
+                            fieldType === "password"
+                              ? setFieldType("text")
+                              : setFieldType("password");
                           }}
                           className="absolute right-4 top-3 dark:text-zinc-500 dark:hover:text-zinc-200 transition"
                         >
-                          {watch === "text" ? <Eye /> : <EyeOff />}
+                          {fieldType === "text" ? <Eye /> : <EyeOff />}
                         </button>
                       </div>
                     </FormControl>
                     <FormDescription
                       className={cn(
                         "hidden transition-all",
-                        focused.includes(3) && "block animate-open-ver"
+                        focused.password && "block animate-open-ver"
                       )}
                     >
                       Use at least 8 characters, mix cases, numbers and special
@@ -375,7 +428,11 @@ const RegistrationPage = () => {
           </Form>
         </CardContent>
       </Card>
-      <ErrorComponent error={apiError} setError={setError} />
+      <ErrorComponent apiError={forApiError} resetError={resetError} />
+      <SuccessComponent
+        apiSuccess={forApiSuccess}
+        resetSuccess={resetSuccess}
+      />
     </div>
   );
 };

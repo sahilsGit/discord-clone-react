@@ -67,7 +67,7 @@ const updateProfile = async (req, res, next) => {
     const profile = await Profile.findById(req.user.profileId); // Find the server by ID
 
     if (!profile) {
-      return res.status(404).send("Profile not found");
+      return res.status(404).send({ message: "Profile not found" });
     } // Check if the server exists
 
     if (name) {
@@ -123,12 +123,12 @@ const sendEmailVerification = async (req, res, next) => {
     const profile = await Profile.findById(req.user.profileId);
 
     if (!profile) {
-      res.status(404).send("Profile is already verified");
+      res.status(404).send({ message: "Profile is already verified" });
     }
 
     // if email is already verified throw an error
     if (profile.isEmailVerified) {
-      res.status(409).send("Profile is already verified");
+      res.status(409).send({ message: "Profile is already verified!" });
     }
 
     const { unHashedCode, hashedCode, tokenExpiry } =
@@ -157,7 +157,7 @@ const verifyEmail = async (req, res, next) => {
     const verificationCode = req.body.code;
 
     if (!verificationCode) {
-      return res.status(404).send("No code received!");
+      return res.status(400).send({ message: "No code received!" });
     }
 
     // generate a hash from the token that we are receiving
@@ -172,18 +172,21 @@ const verifyEmail = async (req, res, next) => {
     });
 
     if (!profile) {
-      return res.status(489).send("Code is either incorrect or expired");
+      return res
+        .status(489)
+        .send({ message: "Code is either incorrect or has expired" });
     }
 
     // If we found the profile that means the token is valid
     // Now we can remove the associated email token and expiry date as we no  longer need them
+
     profile.emailVerificationToken = null;
     profile.emailVerificationExpiry = null;
 
     profile.isEmailVerified = true;
     await profile.save();
 
-    return res.status(200).send("Email is verified");
+    return res.status(200).send({ message: "Email verified successfully!" });
   } catch (error) {
     next(error);
   }
@@ -196,13 +199,13 @@ const changePassword = async (req, res, next) => {
     const confirmPassword = req.body.confirmPassword;
 
     if (!oldPassword) {
-      return res.status(404).send("Old password not received");
+      return res.status(404).send({ message: "Old password not received" });
     }
 
     if (newPassword !== confirmPassword) {
-      return res
-        .status(400)
-        .send("New password and confirm Password field don't match");
+      return res.status(400).send({
+        message: "New password and confirm Password field don't match",
+      });
     }
 
     const profile = await Profile.findById(req.user.profileId);
@@ -232,14 +235,16 @@ const forgotPasswordRequest = async (req, res, next) => {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(404).send("No email received!");
+      return res.status(404).send({ message: "No email received!" });
     }
 
     // Check if user exists
     const profile = await Profile.findOne({ email });
 
     if (!profile) {
-      return res.status(404).send("No registered matches this email!");
+      return res
+        .status(404)
+        .send({ message: "No registered matches this email!" });
     }
 
     if (!profile.isEmailVerified) {

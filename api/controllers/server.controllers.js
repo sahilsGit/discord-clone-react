@@ -32,7 +32,7 @@ export const createServer = async (req, res, next) => {
     const profileId = req.user.profileId;
 
     if (req.user.username != username) {
-      res.status(401).send("Token does not match the given user");
+      res.status(401).send({ message: "Token does not match the given user" });
     }
 
     const newServer = new Server({
@@ -469,7 +469,7 @@ const leaveServer = async (req, res, next) => {
     });
 
     if (!member) {
-      return res.status(404).send("Member not found");
+      return res.status(404).send({ message: "Member not found" });
     }
 
     const server = await Server.findById(serverId);
@@ -580,7 +580,9 @@ export const getMembers = async (req, res, next) => {
     ]);
 
     if (!populatedMembers.length) {
-      return res.status(201).send("That's it, no more members to fetch!");
+      return res
+        .status(201)
+        .send({ message: "That's it, no more members to fetch!" });
     }
 
     if (res.body) {

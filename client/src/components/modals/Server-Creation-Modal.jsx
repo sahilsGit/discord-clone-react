@@ -160,8 +160,6 @@ const ServerCreationModal = () => {
     } catch (error) {
       const { status, message } = handleError(error, authDispatch);
       // ingulf
-
-      console.log(status, message);
     }
     onClose();
     form.reset();

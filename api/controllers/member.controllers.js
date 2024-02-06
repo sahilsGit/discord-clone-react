@@ -176,11 +176,23 @@ const removeMember = async (req, res, next) => {
       return res.status(404).send({ message: "Member not found" });
     }
 
+    if (member.role === "ADMIN") {
+      return res
+        .status(400)
+        .send({ message: "You can't just throw ADMIN out of the server!" });
+    }
+
+    if (member.profileId === req.user.profileId) {
+      return res
+        .status(400)
+        .send({ message: "You can't kick yourself out of the server!" });
+    }
+
     const server = await Server.findById(member.serverId);
 
     // The server in the member document that's fetched above is not same as the server whose id is provided in params
     if (req.params.serverId !== server._id.toHexString()) {
-      return res.status(404).send("Something went wrong");
+      return res.status(404).send({ message: "Something went wrong" });
     }
 
     // Remove member from Profile

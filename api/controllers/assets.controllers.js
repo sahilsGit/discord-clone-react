@@ -12,7 +12,7 @@ const getImage = async (req, res, next) => {
     const imagePath = path.join(__dirname, "../public/images", imageName);
 
     if (!fs.existsSync(imagePath)) {
-      return res.status(404).send("Image not found");
+      return res.status(404).send({ message: "Image not found" });
     }
 
     res.setHeader("Content-Type", "image/jpeg");
@@ -30,7 +30,7 @@ const getFile = async (req, res, next) => {
     const imagePath = path.join(__dirname, "../public/images", imageName);
 
     if (!fs.existsSync(imagePath)) {
-      return res.status(404).send("Image not found");
+      return res.status(404).send({ message: "Image not found" });
     }
 
     res.setHeader("Content-Type", "image/jpeg");

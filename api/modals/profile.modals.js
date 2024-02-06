@@ -46,7 +46,7 @@ const profileSchema = new mongoose.Schema(
     members: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Member", required: true },
     ],
-    DirectConversation: [
+    directConversation: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "DirectConversation",

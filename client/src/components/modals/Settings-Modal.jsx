@@ -1,5 +1,5 @@
 import { useModal } from "@/hooks/useModals";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { Separator } from "../ui/separator";
 import { UserAvatar } from "../userAvatar";
@@ -7,7 +7,7 @@ import useAuth from "@/hooks/useAuth";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scrollArea";
 import { Pencil } from "lucide-react";
-import { Form, FormField } from "../ui/form";
+import { Form, FormField, FormMessage } from "../ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Input } from "../ui/input";
@@ -21,6 +21,7 @@ import { ActionTooltip } from "../actionTooltip";
 import ErrorComponent from "@/lib/error-Component";
 import useServer from "@/hooks/useServer";
 import useChannels from "@/hooks/useChannels";
+import { forApiErrorInitial } from "@/lib/misc";
 
 const SettingsModal = () => {
   const { isOpen, onClose, type, data, onOpen } = useModal();
@@ -37,7 +38,7 @@ const SettingsModal = () => {
   const [hasChanged, setHasChanged] = useState(true);
   const [loading, setLoading] = useState(false);
   const profileId = useAuth("id");
-  const [apiError, setApiError] = useState({ status: "", message: "" });
+  const [forApiError, setForApiError] = useState(forApiErrorInitial);
   const serverDispatch = useServer("dispatch");
 
   useEffect(() => {
@@ -75,10 +76,10 @@ const SettingsModal = () => {
     },
   });
 
-  // Error setter for standard error component
-  const setError = ({ status, message }) => {
-    setApiError({ status: status, message: message });
-  };
+  // Error re-setter for standard error component
+  const resetError = useCallback(() => {
+    setForApiError(forApiErrorInitial);
+  }, []);
 
   const handleVerifyClick = () => {
     (async () => {
@@ -110,8 +111,11 @@ const SettingsModal = () => {
       serverDispatch({ type: "RESET_STATE" });
       handleClose();
     } catch (error) {
-      const { status, message } = handleError(error, authDispatch);
-      setApiError({ status: status, message: message });
+      const { message } = handleError(error, authDispatch);
+      setForApiError({
+        ...forApiError,
+        message: message,
+      });
     }
   };
 
@@ -161,8 +165,11 @@ const SettingsModal = () => {
 
         return newFilename; // For DB storage
       } catch (error) {
-        const { status, message } = handleError(error, authDispatch);
-        setApiError({ status: status, message: message });
+        const { message } = handleError(error, authDispatch);
+        setForApiError({
+          ...forApiError,
+          message: message,
+        });
       }
     } else {
       return null;
@@ -203,8 +210,11 @@ const SettingsModal = () => {
 
       authDispatch({ type: "SET_CUSTOM", payload: dataReceived.updatedData });
     } catch (error) {
-      const { status, message } = handleError(error, authDispatch);
-      setApiError({ status: status, message: message });
+      const { message } = handleError(error, authDispatch);
+      setForApiError({
+        ...forApiError,
+        message: message,
+      });
     } finally {
       setLoading(false);
       onClose();
@@ -455,7 +465,7 @@ const SettingsModal = () => {
             </div>
           </div>
         </ScrollArea>
-        <ErrorComponent error={apiError} setError={setError} />
+        <ErrorComponent apiError={forApiError} resetError={resetError} />
       </DialogContent>
     </Dialog>
   );
