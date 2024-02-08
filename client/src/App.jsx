@@ -7,7 +7,6 @@ import { ModalProvider } from "@/components/providers/modal-provider";
 
 import { cn } from "@/lib/utils";
 import RequireAuth from "@/lib/require-auth";
-import InitialModal from "@/components/modals/Initial-Modal";
 import MainPage from "@/pages/MainPage";
 import RegistrationPage from "@/pages/RegistrationPage";
 import LoginPage from "@/pages/LoginPage";
@@ -97,15 +96,6 @@ function App() {
                 </RequireAuth>
               }
             />
-            <Route
-              path="/servers/create"
-              element={
-                <RequireAuth>
-                  <InitialModal />
-                </RequireAuth>
-              }
-            />
-
             <Route
               path="/invite/:inviteCode"
               element={

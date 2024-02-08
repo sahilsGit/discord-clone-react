@@ -1,5 +1,5 @@
 // imports
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -29,6 +29,9 @@ import { handleError, handleResponse } from "@/lib/response-handler";
 import { useModal } from "@/hooks/useModals";
 import useServer from "@/hooks/useServer";
 import { ActionTooltip } from "../actionTooltip";
+import { getAllServers } from "@/lib/context-helper";
+import ErrorComponent from "@/lib/error-Component";
+import { forApiErrorInitial } from "@/lib/misc";
 
 // zod form schema for validation
 const formSchema = z.object({
@@ -46,9 +49,8 @@ const ServerCreationModal = () => {
   // For setting server image
   const authDispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
   const serverDispatch = useServer("dispatch");
-
+  const [forApiError, setForApiError] = useState(forApiErrorInitial);
   const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
-
   const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
   const access_token = useAuth("token"); // For authorization
 
@@ -132,34 +134,25 @@ const ServerCreationModal = () => {
   };
 
   const onSubmit = async (data) => {
-    const image = await uploadImage(); // Wait for image you get upon resolution
-
-    // Request pre-requisites
-    const toBeSent = {
-      name: data.name,
-      image: image, // Store the name
-      inviteCode: v4(),
-      username: user, // profileId from global context
-    };
-
     try {
-      const response = await post(
-        "/servers/create",
-        JSON.stringify(toBeSent),
-        access_token
-      );
+      const image = await uploadImage(); // Wait for image you get upon resolution
 
-      // await handleResponse(response, authDispatch);
+      // Request pre-requisites
+      const toBeSent = {
+        name: data.name,
+        image: image, // Store the name
+        inviteCode: v4(),
+        username: user, // profileId from global context
+      };
 
-      // Now fetching all the servers once again
-      const res = await get(`/servers/${user}/getAll`, access_token);
-      const data = await handleResponse(res, authDispatch);
-
-      serverDispatch({ type: "SET_SERVERS", payload: data.servers });
-      serverDispatch({ type: "SET_ACTIVE_SERVER", payload: data.servers[0] });
+      await post("/servers/create", JSON.stringify(toBeSent), access_token);
+      await getAllServers(user, authDispatch, serverDispatch);
     } catch (error) {
-      const { status, message } = handleError(error, authDispatch);
-      // ingulf
+      const { message } = handleError(error, authDispatch);
+      setForApiError({
+        ...forApiError,
+        message: message,
+      });
     }
     onClose();
     form.reset();
@@ -169,6 +162,11 @@ const ServerCreationModal = () => {
     form.reset();
     onClose();
   };
+
+  // Error resetter for custom error component to conditionally render error message
+  const resetError = useCallback(() => {
+    setForApiError(forApiErrorInitial);
+  }, []);
 
   // Scadcn UI's Dialog box
   return (
@@ -283,6 +281,7 @@ const ServerCreationModal = () => {
           </form>
         </Form>
       </DialogContent>
+      <ErrorComponent apiError={forApiError} resetError={resetError} />
     </Dialog>
   );
 };

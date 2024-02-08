@@ -18,8 +18,7 @@ const getImage = async (req, res, next) => {
     res.setHeader("Content-Type", "image/jpeg");
     res.status(200).sendFile(imagePath);
   } catch (error) {
-    // fail silently
-    // next(error);
+    next(error);
   }
 };
 
@@ -36,8 +35,7 @@ const getFile = async (req, res, next) => {
     res.setHeader("Content-Type", "image/jpeg");
     res.status(200).sendFile(imagePath);
   } catch (error) {
-    // fail silently
-    // next(error);
+    next(error);
   }
 };
 
@@ -47,8 +45,7 @@ const uploadFile = async (req, res, next) => {
     const newFilename = req.file.filename;
     res.json({ newFilename });
   } catch (error) {
-    // fail silently
-    // next(error);
+    next(error);
   }
 };
 

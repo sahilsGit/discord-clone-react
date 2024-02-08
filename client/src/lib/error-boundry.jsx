@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ErrorHandler from "./error-handler";
+import ErrorComponent from "./error-Component";
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -11,15 +11,19 @@ class ErrorBoundary extends Component {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error, errorInfo) {
-    console.error("Error Boundary caught an error:", error, errorInfo);
-  }
-
   render() {
-    const { hasError, error } = this.state;
+    const { hasError } = this.state;
 
     if (hasError) {
-      return <ErrorHandler error={error} />;
+      return (
+        <ErrorComponent
+          apiError={{
+            message: "Something went wrong!",
+            action: "refresh",
+            heading: "Oops",
+          }}
+        />
+      );
     }
 
     return this.props.children;

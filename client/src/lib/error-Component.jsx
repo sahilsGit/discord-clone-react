@@ -20,11 +20,18 @@ const ErrorComponent = memo(({ apiError, resetError }) => {
   };
 
   const onAction = () => {
-    resetError();
+    if (resetError) resetError();
 
     if (apiError?.action) {
-      const action = apiError?.action;
-      navigationMap[action]();
+      // Check if string action is provided
+      if (typeof apiError.action === "string") {
+        const action = apiError?.action;
+        navigationMap[action]();
+      }
+      // check if a function action is provided
+      else if (typeof apiError.action === "function") {
+        apiError.action();
+      }
     }
   };
 

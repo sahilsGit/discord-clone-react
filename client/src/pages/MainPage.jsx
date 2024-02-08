@@ -43,17 +43,21 @@ const MainPage = ({ type }) => {
   const profileId = useAuth("id");
   const authDispatch = useAuth("dispatch");
   const user = useAuth("user");
+
   const servers = useServer("servers");
   const activeServer = useServer("activeServer");
   const serverDispatch = useServer("dispatch");
+
   const conversations = useConversations("conversations");
   const activeConversation = useConversations("activeConversation");
   const conversationsDispatch = useConversations("dispatch");
+
   const activeChannel = useChannels("activeChannel");
   const channelsDispatch = useChannels("dispatch");
+
   const [forApiError, setForApiError] = useState(forApiErrorInitial);
 
-  // Error re-setter for standard error component
+  // Error resetter for standard error component
   const resetError = useCallback(() => {
     setForApiError(forApiErrorInitial);
   }, []);
@@ -169,7 +173,9 @@ const MainPage = ({ type }) => {
      *
      * Explanation of Dependencies:
      *
-     * Empty Dependency: Since all the navigation is reactive in nature, this means data is fetched before user is navigated, so we won't need to re-fetch anything after initial render.
+     * Empty Dependency: Since all the navigation is reactive in nature, this
+     * means data is fetched before user is navigated, so we won't need to
+     * re-fetch anything after initial render.
      *
      *
      */
