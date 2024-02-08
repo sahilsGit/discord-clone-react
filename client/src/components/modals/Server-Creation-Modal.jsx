@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { X, Plus, Image } from "lucide-react";
+import { X, Plus, Image, Loader2 } from "lucide-react";
 import { v4 } from "uuid";
 import { get, post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
@@ -50,8 +50,8 @@ const ServerCreationModal = () => {
   const authDispatch = useAuth("dispatch"); //Auth-Context if response brings in a new access_token
   const serverDispatch = useServer("dispatch");
   const [forApiError, setForApiError] = useState(forApiErrorInitial);
-  const [avatarImage, setAvatarImage] = useState(null); // To hold the choosen image before uploading
-  const [imagePreview, setImagePreview] = useState(null); // To preview the choosen image
+  const [avatarImage, setAvatarImage] = useState(null); // To hold the chosen image before uploading
+  const [imagePreview, setImagePreview] = useState(null); // To preview the chosen image
   const access_token = useAuth("token"); // For authorization
 
   const user = useAuth("user"); // For Server creation
@@ -154,13 +154,15 @@ const ServerCreationModal = () => {
         message: message,
       });
     }
-    onClose();
+    handleClose();
     form.reset();
   };
 
   const handleClose = () => {
     form.reset();
     onClose();
+    setAvatarImage(null);
+    setImagePreview(null);
   };
 
   // Error resetter for custom error component to conditionally render error message
@@ -183,37 +185,25 @@ const ServerCreationModal = () => {
         </DialogHeader>
         <div className="flex flex-col w-full items-center pt-1">
           {/*Transfer click to <input> tag to initiate the image uploading process*/}
-          <ActionTooltip
-            label={
-              "Uploading images has been disabled till I find a better place to save images!"
-            }
-            className="text-center max-w-[200px]"
-          >
-            <Avatar
-              className="relative bg-zinc-200 cursor-not-allowed"
-              onClick={handleAvatarClick}
-            >
-              <AvatarImage src={imagePreview} />
-              <AvatarFallback className="flex flex-col">
-                <Image strokeWidth="2" color="grey" size={24} />
-              </AvatarFallback>
-            </Avatar>
-          </ActionTooltip>
+          <Avatar className="relative bg-zinc-200" onClick={handleAvatarClick}>
+            <AvatarImage src={imagePreview} />
+            <AvatarFallback className="flex flex-col">
+              <Image strokeWidth="2" color="grey" size={24} />
+            </AvatarFallback>
+          </Avatar>
           {/* Conditionally render either X or Plus comp. based on avatarImage's state */}
           {avatarImage ? (
             <button
-              className="bg-rose-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm cursor-not-allowed"
+              className="bg-rose-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm"
               onClick={handleDeleteImage}
-              disabled
             >
               {/* Remove image on user's request */}
               <X className="h-3 w-3" />
             </button>
           ) : (
             <button
-              className="bg-indigo-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm cursor-not-allowed"
+              className="bg-indigo-500 text-white p-1 rounded-full absolute top-100 right-40 shadow-sm"
               onClick={handleAvatarClick}
-              disabled
             >
               <Plus className="h-3 w-3" />
             </button>
@@ -230,7 +220,6 @@ const ServerCreationModal = () => {
                   accept=".png, .jpeg, .jpg"
                   className="hidden imageField bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
                   onChange={handleAvatarChange}
-                  disabled
                 />
                 {/* onChange to handle the imageChange */}
 
@@ -256,7 +245,7 @@ const ServerCreationModal = () => {
                   )}
                 />
                 <div className="text-left text-zinc-500 text-xxs">
-                  By creating a server, you agree to our Community <br></br>{" "}
+                  By creating a server, you agree to our Community <br></br>
                   Guidelines
                 </div>
               </div>
@@ -266,6 +255,8 @@ const ServerCreationModal = () => {
                 size="custom"
                 className="bg-gray-100 hover:bg-gray-100 p-0"
                 disabled={isLoading}
+                type="button"
+                onClick={handleClose}
               >
                 Back
               </Button>
@@ -274,7 +265,14 @@ const ServerCreationModal = () => {
                 size="custom"
                 variant="primary"
                 disabled={isLoading}
+                className="w-[105px]"
               >
+                {isLoading && (
+                  <Loader2
+                    className="m-0 animate-spin h-4 w-4 mr-1.5"
+                    strokeWidth={3}
+                  />
+                )}
                 Create
               </Button>
             </div>

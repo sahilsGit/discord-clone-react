@@ -19,7 +19,9 @@ class ErrorBoundary extends Component {
         <ErrorComponent
           apiError={{
             message: "Something went wrong!",
-            action: "refresh",
+            action: () => {
+              window.location.href = "/";
+            },
             heading: "Oops",
           }}
         />
