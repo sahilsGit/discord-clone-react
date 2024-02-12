@@ -6,14 +6,24 @@ import useConversations from "@/hooks/useConversations";
 import { getConversationDetails } from "@/lib/context-helper";
 
 const ConversationItem = ({ conversation, profile }) => {
-  const [clicked, setClicked] = useState(false);
+  /*
+   *
+   * Renders a specific conversation item to be shown in conversations sidebar
+   * Triggers a new conversation fetch thereby updating "activeConversation"
+   *
+   *
+   */
+
   const activeConversation = useConversations("activeConversation");
   const profileId = useAuth("id");
   const authDispatch = useAuth("dispatch");
   const conversationsDispatch = useConversations("dispatch");
+  const [clicked, setClicked] = useState(false); // For conditional styling needs
 
   const onClick = () => {
     setClicked(true);
+
+    // Fetch the conversation and dispatch
     getConversationDetails(
       profile._id,
       profileId,
@@ -27,10 +37,6 @@ const ConversationItem = ({ conversation, profile }) => {
       setClicked(false);
     }
   }, [activeConversation]);
-
-  const onAction = (e, action) => {
-    e.stopPropagation();
-  };
 
   return (
     <button

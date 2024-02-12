@@ -13,6 +13,8 @@ import express from "express";
 const router = express.Router();
 router.use(verifyToken);
 
+console.log("here");
+
 router.post("/direct", sendDirectMessage);
 router.post("/server", sendServerMessage);
 router.get("/fetch", fetchMessages);

@@ -7,7 +7,7 @@ import useAuth from "@/hooks/useAuth";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scrollArea";
 import { Pencil } from "lucide-react";
-import { Form, FormField, FormMessage } from "../ui/form";
+import { Form, FormField } from "../ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Input } from "../ui/input";
@@ -59,8 +59,8 @@ const SettingsModal = () => {
     username: z.string().min(1, {
       message: "We can't call you 'nothing' or can we?",
     }),
-    about: z.string().max(60, {
-      message: "Can't exceed 60 characters.",
+    about: z.string().max(200, {
+      message: "Can't exceed 200 characters.",
     }),
     // email: z.string().email(),
   });
@@ -237,7 +237,6 @@ const SettingsModal = () => {
                   accept=".png, .jpeg, .jpg"
                   className="hidden imageField"
                   onChange={handleAvatarChange}
-                  disabled
                 />
                 <div className="absolute top-10 left-4">
                   {avatarImage ? (
@@ -251,23 +250,13 @@ const SettingsModal = () => {
                     />
                   )}
 
-                  <ActionTooltip
-                    label={
-                      "Uploading images has been disabled till I find a better place to save images!"
-                    }
-                    className="text-center max-w-[200px]"
-                    side="center"
+                  <button
+                    className="flex items-center justify-center absolute top-[68px] left-[78px] rounded-full h-[40px] hover:bg-zinc-200 hover:text-zinc-700 dark:text-primary border-8 border-main07 bg-main06 dark:hover:bg-zinc-500 w-[40px] transition"
+                    onClick={handlePencilClick}
+                    type="button"
                   >
-                    {" "}
-                    <button
-                      className="flex items-center justify-center absolute top-[68px] left-[78px] rounded-full h-[40px] hover:bg-zinc-200 hover:text-zinc-700 dark:text-primary border-8 border-main07 bg-main06 cursor-not-allowed hover:bg-main05 dark:hover:text-zinc-800 w-[40px] transition"
-                      onClick={handlePencilClick}
-                      type="button"
-                      disabled
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                  </ActionTooltip>
+                    <Pencil className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
               <Form {...form}>

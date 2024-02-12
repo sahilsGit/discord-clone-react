@@ -4,7 +4,6 @@ import useAuth from "@/hooks/useAuth";
 import ProfileControl from "@/components/profileControl";
 import ServerScrollArea from "./serverScrollArea";
 import ServerSearch from "./serverSearch";
-import { memo } from "react";
 import useServer from "@/hooks/useServer";
 import useChannels from "@/hooks/useChannels";
 
@@ -24,6 +23,11 @@ const ServerSidebar = () => {
   const profileId = useAuth("id");
   const activeServer = useServer("activeServer");
   const channels = useChannels("channels");
+  const profileName = useAuth("name");
+  const username = useAuth("user");
+  const profileImage = useAuth("image");
+  const email = useAuth("email");
+  const about = useAuth("about");
 
   const textChannels = channels.filter((channel) => channel.type === "TEXT");
   const audioChannels = channels.filter((channel) => channel.type === "AUDIO");
@@ -92,7 +96,13 @@ const ServerSidebar = () => {
       <ServerSearch data={data} />
       <ServerScrollArea data={data} role={role} activeServer={activeServer} />
       <div className="h-53px">
-        <ProfileControl />
+        <ProfileControl
+          profileName={profileName}
+          username={username}
+          profileImage={profileImage}
+          email={email}
+          about={about}
+        />
       </div>
     </div>
   );

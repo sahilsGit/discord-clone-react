@@ -464,11 +464,37 @@ const deleteMessage = async (req, res, next) => {
     const { messageId, memberId } = req.params;
     const content = "This message has been deleted!";
 
+    let updatedMessage;
+
     // Find and update the message in the database
-    const updatedMessage = await ServerMessage.findOneAndUpdate(
+    updatedMessage = await ServerMessage.findOneAndUpdate(
       { _id: messageId, memberId: memberId },
       { $set: { content: content, deleted: true } }
     );
+
+    if (!updatedMessage) {
+      const [message, member] = await Promise.all([
+        ServerMessage.findById(messageId),
+        Member.findById(memberId),
+      ]);
+
+      console.log(message, member);
+
+      if (
+        message.serverId.toHexString() === member.serverId.toHexString() &&
+        (member.role === "ADMIN" || member.role === "MODERATOR")
+      ) {
+        updatedMessage = await ServerMessage.findOneAndUpdate(
+          { _id: messageId },
+          {
+            $set: {
+              content: `This message has been deleted by the ${member.role}!`,
+              deleted: true,
+            },
+          }
+        );
+      }
+    }
 
     const messageDocument = await ServerMessage.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(messageId) } },
@@ -524,6 +550,13 @@ const updateDirectMessage = async (req, res, next) => {
         messageDocument[0]
       );
 
+      emitSocketEvent(
+        req,
+        receiverId,
+        ConversationEventEnum.MESSAGE_EDITED,
+        messageDocument[0]
+      );
+
       res.status(200).send(res.body);
     } else {
       res
@@ -554,10 +587,18 @@ const deleteDirectMessage = async (req, res, next) => {
     // Check if the message was found and updated
     if (updatedMessage) {
       const senderId = updatedMessage.senderId.toHexString();
+      const receiverId = updatedMessage.receiverId.toHexString();
 
       emitSocketEvent(
         req,
         senderId,
+        ConversationEventEnum.MESSAGE_DELETED,
+        messageDocument[0]
+      );
+
+      emitSocketEvent(
+        req,
+        receiverId,
         ConversationEventEnum.MESSAGE_DELETED,
         messageDocument[0]
       );

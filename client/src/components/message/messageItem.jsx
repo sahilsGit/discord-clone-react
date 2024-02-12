@@ -13,6 +13,7 @@ import useAuth from "@/hooks/useAuth";
 import { update } from "@/services/api-service";
 import { handleError, handleResponse } from "@/lib/response-handler";
 import { useModal } from "@/hooks/useModals";
+import useServer from "@/hooks/useServer";
 
 const roleIconMap = {
   GUEST: null,
@@ -33,10 +34,10 @@ const MessageItem = ({
   setIsEditing,
   timeStamp,
 }) => {
-  // const [isEditing, setIsEditing] = useState(false);
   const access_token = useAuth("token");
   const authDispatch = useAuth("dispatch");
   const { onOpen } = useModal();
+  const myRole = useServer("activeServer")?.myMembership.role;
 
   useEffect(() => {
     const pressEsc = (e) => {
@@ -69,8 +70,6 @@ const MessageItem = ({
         updatedData,
         access_token
       );
-
-      await handleResponse(response, authDispatch);
       form.reset();
       setIsEditing([false], "");
     } catch (error) {
@@ -84,7 +83,7 @@ const MessageItem = ({
     });
   }, [message.content]);
 
-  const isAdmin = sender?.role === "ADMIN";
+  const isAdmin = myRole === "ADMIN";
   const isModerator = sender?.role === "MODERATOR";
   const isOwner = sender?._id === myDetails._id;
   const canDeleteMessage =

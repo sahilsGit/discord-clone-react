@@ -2,11 +2,19 @@ import MainInput from "./mainInput";
 import ServerHeader from "../server/header/serverHeader";
 import useServer from "@/hooks/useServer";
 import MessageServer from "../message/messageServer";
-import { useState } from "react";
 import useChannels from "@/hooks/useChannels";
 import CallWrapper from "../voice-video/callWrapper";
 
 const MainServer = ({ type }) => {
+  /*
+   *
+   * Responsible for rendering the main area of the mainPage.
+   * Renders whole mainPage minus all sidebars & corresponds to "channel" type.
+   * This is where all the real stuff happens, chat messages across channels
+   *
+   * "MainConversation" is it's shadow component for when type is "conversation"
+   *
+   */
   const messages = useChannels("messages");
   const activeChannel = useChannels("activeChannel");
   const cursor = useChannels("cursor");

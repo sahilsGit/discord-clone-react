@@ -84,7 +84,9 @@ const MemberScrollArea = ({ searchTerm, results, setResults }) => {
 
               const data = await handleResponse(response, authDispatch);
 
-              serverDispatch({ type: "ADD_MEMBERS", payload: data.members });
+              if (data.members) {
+                serverDispatch({ type: "ADD_MEMBERS", payload: data.members });
+              }
             } catch (error) {
               handleError(error, authDispatch);
             }

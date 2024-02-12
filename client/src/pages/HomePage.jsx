@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../App.css";
 import useAuth from "@/hooks/useAuth";
 import GetStarted from "@/components/getStarted";

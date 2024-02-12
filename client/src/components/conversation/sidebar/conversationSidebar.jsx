@@ -20,6 +20,11 @@ const ConversationSidebar = () => {
   const conversations = useConversations("conversations");
   const profileId = useAuth("id");
   const activeConversation = useConversations("activeConversation");
+  const profileName = useAuth("name");
+  const username = useAuth("user");
+  const profileImage = useAuth("image");
+  const email = useAuth("email");
+  const about = useAuth("about");
 
   return (
     <div className="flex h-full flex-col">
@@ -38,7 +43,13 @@ const ConversationSidebar = () => {
 
       {/* Ever present profile control */}
       <div className="h-[53px]">
-        <ProfileControl />
+        <ProfileControl
+          profileName={profileName}
+          username={username}
+          profileImage={profileImage}
+          email={email}
+          about={about}
+        />
       </div>
     </div>
   );

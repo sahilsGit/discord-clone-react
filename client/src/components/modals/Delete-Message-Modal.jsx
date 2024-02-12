@@ -25,8 +25,7 @@ export const DeleteMessageModal = () => {
 
   const onClick = async () => {
     try {
-      const response = await remove(`${url}`, access_token);
-      await handleResponse(response, authDispatch);
+      await remove(`${url}`, access_token);
       onClose();
     } catch (error) {
       // Ingulf

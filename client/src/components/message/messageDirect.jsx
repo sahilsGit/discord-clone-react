@@ -12,34 +12,43 @@ import {
 import { format } from "date-fns";
 
 const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
-  const authDispatch = useAuth("dispatch");
-  const [error, setError] = useState(false);
-  const observerRef = useRef();
-  const lastItemRef = useRef();
-  const { socket } = useSocket();
-  const [isConnected, setIsConnected] = useState(false);
-  const profileId = useAuth("id");
-  const [isEditing, setIsEditing] = useState([false, ""]);
+  /*
+   *
+   * Responsible for rendering messages and managing related socket events
+   * Also handles pagination logic using intersection observer and cursor
+   * Corresponds to "conversation" type, thereby handling direct messages
+   *
+   *
+   * "MessageServer" is it's shadow component for when type is "channel"
+   *
+   */
 
+  const observerRef = useRef(); // For intersection observer
+  const lastItemRef = useRef(); // For tracking last message
+  const { socket } = useSocket();
+  const authDispatch = useAuth("dispatch");
+  const profileId = useAuth("id");
+  const conversationsDispatch = useConversations("dispatch");
+  const name = activeConversation?.theirName;
+  const [isEditing, setIsEditing] = useState([false, ""]);
+  const [error, setError] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+
+  // Map socket-related events
   const CONNECTED_EVENT = "connected";
   const DISCONNECT_EVENT = "disconnect";
-  const TYPING_EVENT = "typing";
-  const STOP_TYPING_EVENT = "stopTyping";
   const MESSAGE_RECEIVED_EVENT = "messageReceived";
   const MESSAGE_EDITED_EVENT = "messageEdited";
   const MESSAGE_DELETED_EVENT = "messageDeleted";
 
-  const conversationsDispatch = useConversations("dispatch");
-  const name = activeConversation?.theirName;
   const DATE_FORMAT = "d-MM-yyyy, HH:mm";
 
+  // For when a specific message is being edited
   const handleEditChange = (status) => {
     setIsEditing([status[0], status[1]]);
   };
 
-  /*
-   * Handles the event when a new message is received.
-   */
+  // Handles socket's onMessageReceived event
   const onMessageReceived = (message) => {
     processReceivedDirectMessage(
       message,
@@ -48,9 +57,10 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
       cursor,
       hasMore,
       conversationsDispatch
-    );
+    ); // Processor utility function
   };
 
+  // Handles socket's onMessageEdited event
   const onMessageEdited = (message) => {
     processEditedDirectMessage(
       message,
@@ -59,9 +69,10 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
       cursor,
       hasMore,
       conversationsDispatch
-    );
+    ); // Processor utility function
   };
 
+  // Handles socket's onMessageDeleted event
   const onMessageDeleted = (message) => {
     processEditedDirectMessage(
       message,
@@ -70,18 +81,7 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
       cursor,
       hasMore,
       conversationsDispatch
-    );
-  };
-
-  /**
-   * Handles the "typing" event on the socket.
-   */
-  const handleOnSocketTyping = () => {
-    setIsTyping(true);
-  };
-
-  const handleOnSocketStopTyping = () => {
-    setIsTyping(false);
+    ); // Processor utility function
   };
 
   const onConnect = () => {
@@ -93,13 +93,16 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
   };
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    // Create an observer and start observing
+    observerRef.current = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
+          // Don't fetch while editing a message to avoid bugs
           if (isEditing[0]) {
             return;
           }
 
+          // Fetching another batch when observer intersects and store error if any
           const errorStatusAfterFetch = await getMoreDirectMessages(
             activeConversation._id,
             cursor,
@@ -108,6 +111,7 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
             messages
           );
 
+          // If error update the error state
           if (errorStatusAfterFetch) {
             setError(errorStatusAfterFetch);
           }
@@ -116,12 +120,12 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
       { threshold: 0.5 }
     );
 
-    observerRef.current = observer;
-
+    // Start observing the message that's stored in lastItemRef i.e., last message
     if (lastItemRef.current) {
       observerRef?.current?.observe(lastItemRef.current);
     }
 
+    // Cleanup Observer to avoid memory leak
     return () => {
       observerRef?.current?.disconnect();
     };
@@ -133,8 +137,6 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
     // Set up event listeners for various socket events:
     socket.on(CONNECTED_EVENT, onConnect);
     socket.on(DISCONNECT_EVENT, onDisconnect);
-    socket.on(TYPING_EVENT, handleOnSocketTyping);
-    socket.on(STOP_TYPING_EVENT, handleOnSocketStopTyping);
     socket.on(MESSAGE_RECEIVED_EVENT, onMessageReceived);
     socket.on(MESSAGE_EDITED_EVENT, onMessageEdited);
     socket.on(MESSAGE_DELETED_EVENT, onMessageDeleted);
@@ -143,24 +145,30 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
       // Remove all the event listeners to avoid memory leaks.
       socket.off(CONNECTED_EVENT, onConnect);
       socket.off(DISCONNECT_EVENT, onDisconnect);
-      socket.off(TYPING_EVENT, handleOnSocketTyping);
-      socket.off(STOP_TYPING_EVENT, handleOnSocketStopTyping);
       socket.off(MESSAGE_RECEIVED_EVENT, onMessageReceived);
       socket.off(MESSAGE_EDITED_EVENT, onMessageEdited);
       socket.off(MESSAGE_DELETED_EVENT, onMessageDeleted);
     };
   }, [socket, messages]);
 
+  // TODO: Message error state
+  if (error) {
+    return <p>Something went wrong!</p>;
+  }
+
+  // Render a single message item
   const renderMessageItem = (message, index) => (
     <div
       className="group"
       key={message._id}
       ref={(element) => {
+        // Check if it's the last message, if yes then update ref and start observing
         if (index === messages.length - 1) {
           lastItemRef.current = element;
         }
       }}
     >
+      {/* Render the message item */}
       <MessageItem
         message={message}
         timeStamp={format(new Date(message.createdAt), DATE_FORMAT)}
@@ -176,11 +184,6 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
     </div>
   );
 
-  // TODO: Message error state
-  if (error) {
-    return <p>Something went wrong!</p>;
-  }
-
   return (
     <div className="flex-1 flex flex-col-reverse overflow-y-auto">
       {messages?.length ? (
@@ -188,6 +191,7 @@ const MessageDirect = ({ activeConversation, messages, cursor, hasMore }) => {
           {messages?.map((message, index) => renderMessageItem(message, index))}
         </div>
       ) : null}
+      {/* Display chat welcome if it's the end of the conversation */}
       {(!messages?.length || !hasMore) && (
         <div className="flex flex-col pt-3">
           <div className="flex-1" />

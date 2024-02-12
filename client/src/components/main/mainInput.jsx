@@ -11,12 +11,19 @@ import { post } from "@/services/api-service";
 import useAuth from "@/hooks/useAuth";
 import { EmojiPicker } from "../emojiPicker";
 
+// Message schema
 const formSchema = z.object({
   content: z.string().min(1),
 });
 
-const MainInput = ({ type, apiUrl, query }) => {
-  const { onOpen } = useModal();
+const MainInput = ({ apiUrl, query }) => {
+  /*
+   *
+   * Renders Input area that's used to write messages
+   * Handles message sending logic for both "channel" & "conversation" type.
+   *
+   */
+  const { onOpen } = useModal(); // To open the file upload modal
   const access_token = useAuth("token");
 
   const form = useForm({
@@ -29,6 +36,7 @@ const MainInput = ({ type, apiUrl, query }) => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (value) => {
+    // Sends message, message type depends on qpiUrl prop
     try {
       const url = qs.stringifyUrl({
         url: apiUrl,

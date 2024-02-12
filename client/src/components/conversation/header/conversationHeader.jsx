@@ -5,9 +5,18 @@ import { Users } from "lucide-react";
 import React from "react";
 
 const ConversationHeader = () => {
+  /*
+   *
+   *
+   * Renders Header that's shown on main pane
+   * Corresponds to "conversation" type
+   * Shows us only when activeConversation is null
+   *
+   *
+   */
+
   return (
     <div className="text-md lg:px-3 flex items-center h-[48px] border-neutral-200 dark:border-neutral-800 border-b-2 pl-1 pr-3">
-      {/* <MobileToggle type="conversation" /> */}
       <div className="flex group justify-between gap-x-2 w-full">
         <div className="flex items-center gap-x-2">
           <div className="pl-14 lg:pl-1 flex items-center gap-x-2">
@@ -24,22 +33,6 @@ const ConversationHeader = () => {
               >
                 Online
               </Button>
-
-              {/* <Button
-                variant="custom"
-                disabled={true}
-                className="hover:bg-zinc-700/10 dark:hover:bg-zinc-600/50 dark:hover:text-zinc-200 transition px-2 rounded-sm text-zinc-400"
-              >
-                All
-              </Button> */}
-              {/* 
-              <Button
-                variant="custom"
-                disabled={true}
-                className="hover:bg-zinc-700/10 dark:hover:bg-zinc-600/50 dark:hover:text-zinc-200 transition px-2 rounded-sm text-zinc-400"
-              >
-                Pending
-              </Button> */}
             </div>
           </ActionTooltip>
         </div>
@@ -61,7 +54,6 @@ const ConversationHeader = () => {
           </div>
         </ActionTooltip>
       </div>
-      <p className="font-semibold text-md text-black dark:text-white">{name}</p>
     </div>
   );
 };

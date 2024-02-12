@@ -5,19 +5,30 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const ConversationFriends = () => {
-  const [clicked, setClicked] = useState(false);
-  const activeConversation = useConversations("activeConversation");
+  /*
+   *
+   * Render "friends" button that's shown in conversation sidebar
+   * Gets user out of an activeConversation
+   * Takes user to the "friends" section [Coming soon!]
+   *
+   */
+
   const navigate = useNavigate();
-  const conversationsDispatch = useConversations("dispatch");
   const params = useParams();
+  const activeConversation = useConversations("activeConversation");
+  const conversationsDispatch = useConversations("dispatch");
+  const [clicked, setClicked] = useState(false); // State for conditional styling
 
   const onClick = () => {
+    // Gets rid of activeConversation
     setClicked(true);
-
     conversationsDispatch({ type: "SET_ACTIVE_CONVERSATION", payload: null });
+
+    // Navigate user out of an activeConversation
     navigate("/@me/conversations");
   };
 
+  // For conditional styling
   useEffect(() => {
     activeConversation ? setClicked(false) : setClicked(true);
   }, [activeConversation]);
