@@ -59,7 +59,9 @@ As shown in the **flow chart**, the authentication design closely resembles a **
 - **Only using refresh_token when** the access_token comes clean but is expired.
 - **Database lookup** before using a refresh_token to issue a new access_token.
 
-_AuthFlow Image here_
+<p align="center">
+  <img src="/assets/authFlow.jpg" />
+</p>
 
 A **database lookup** before issuing a new access_token **is critical to let users invalidate sessions**. Since JWTs are stateless, there is no way to invalidate them until expiration. With a stolen refresh_token, an attacker could keep issuing new access_tokens indefinitely.
 
@@ -68,8 +70,9 @@ However, **requiring a database call to verify the refresh_token before issuing 
 ### Context Management
 
 The application relies heavily on context, whether it be a typical Auth-Context or a custom Servers-Context. **Instead of letting a single Global context handle everything**, thereby introducing the **God-Object problem**, **various smaller sub-contexts are used**, each minding their own business.
-
-_Context Management Image here_
+<p align="center">
+  <img src="/assets/conHi.jpg" />
+</p>
 
 - This **increases performance**; now state change inside a nested-child context **won’t trigger a re-render** to its parent context.
 - **Decreases memorizing overhead**; components that don't rely on a nested context won’t be wrapped by it, thereby not having to memoize them to prevent re-render when a particular context variable changes.
@@ -77,6 +80,10 @@ _Context Management Image here_
 ### Modularity
 
 A **"type"-based conditional rendering** has been set, where the **same components render different components or the same components differently based on the “type” provided**. This increases reusability; just pass a different “type” with different props (wherever required) and you have a whole new page.
+
+<p align="center">
+  <img src="/assets/modularType.jpg" />
+</p>
 
 ```
 <div>
@@ -146,7 +153,9 @@ root
 
 **Each file within a folder is prefixed** with the **respective folder name** to make them more readable, e.g., messageWelcome.jsx inside the "message" folder.
 
-_Folder Image here_
+<p align="center">
+  <img src="/assets/namingFiles.png" />
+</p>
 
 Each folder has its own either one or two main components that are responsible for wrapping others to create a final piece of UI. **These main components are named based on what they eventually produce**, e.g., conversationHeader.jsx will produce a header for the conversation pane.
 
