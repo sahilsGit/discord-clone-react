@@ -1,4 +1,4 @@
-# High Fidelity Discord Clone
+# High Fidelity Discord Clone | MERN
 
 This is a **humble effort** towards **reproducing the fun discord experience**. Sticking closely to its design philosophy, I have tried **replicating most of the core standard features** to the best of my abilities.
 
