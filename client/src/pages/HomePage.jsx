@@ -32,8 +32,8 @@ const HomePage = () => {
     <div>
       {user && access_token ? null : (
         <div className="bg-main10">
-          <div className="px-3 bg-rose-500 flex pt-4 sm:pt-7 justify-center items-center sm:px-6">
-            <div className="flex w-full justify-between items-center bg-rose-500 max-w-[1300px]">
+          <div className="px-3 bg-[#404EED] flex pt-4 sm:pt-7 justify-center items-center sm:px-6">
+            <div className="flex w-full justify-between items-center max-w-[1300px]">
               <a href="/">
                 <img
                   src="/logos/full_logo_white_RGB.svg"
@@ -41,25 +41,35 @@ const HomePage = () => {
                   className="h-5 sm:h-7"
                 />
               </a>
+              <nav className="flex hidden md:flex gap-x-12 w-full items-center justify-center">
+                <button
+                  className="font-medium"
+                  onClick={() =>
+                    document.getElementById("showcase").scrollIntoView()
+                  }
+                >
+                  Showcase
+                </button>
+                <button className="font-medium">GitHub</button>
+                <button className="font-medium">About</button>
+              </nav>
               <a
                 href="/login"
-                className="bg-white px-5 gap-x-1 py-1.5 sm:py-2 sm:px-7 text-center text-sm sm:text-md text-main10 rounded-full transition-all drop-shadow-subtle hover:drop-shadow-[0_12px_12px_rgba(0,0,0,0.25)] hover:text-indigo-500"
+                className="bg-white px-5 gap-x-1 py-1.5 sm:py-2 sm:px-7 text-center text-sm sm:text-md text-main10 rounded-full transition-all drop-shadow-subtle hover:drop-shadow-[0_12px_12px_rgba(0,0,0,0.25)] hover:text-indigo-600"
               >
                 Login
               </a>
             </div>
           </div>
-          <div className="px-4 flex gap-y-8 flex-col bg-rose-500 items-start sm:items-center sm:justify-center sm:px-6 py-[50px] sm:py-[110px] ">
+          <div className="px-4 flex gap-y-8 flex-col bg-[#404EED] items-start sm:items-center sm:justify-center sm:px-6 py-[110px] lg:py-[150px]">
             <h1 className="max-w-[1000px] leading-none text-xl4 text-start sm:text-center sm:text-xl8 border-box font-peace">
-              Welcome to Discord but not in a literal sense...
+              Not the Real Discord but...
             </h1>
-            <p className="text-md text-start sm:text-xl max-w-[770px] sm:text-center">
-              Just an individual trying best of their skills to emulate the fun
-              Discord experience. This is not a one-on-one clone though, you
-              will only find the standard stuff. This was made just as a fun
-              challenge, I hope Discord won't be mad if they ever find out.
+            <p className="text-md font-light text-start sm:text-xl pt-2 max-w-[770px] sm:text-center">
+              ...something like it. You won't find it all, just the standard
+              stuff. Was made as a fun challenge, I hope Discord won't mind if
+              they ever stumble upon.
             </p>
-
             {justBrowsing ? (
               <div className="flex flex-col gap-y-5 items-center justify-center">
                 <GetStarted onDisplayNameSubmit={handleDisplayNameSubmit} />
@@ -69,9 +79,9 @@ const HomePage = () => {
                 </p>
               </div>
             ) : (
-              <div className="flex sm:items-center sm:justify-center flex-col sm:flex-row w-full gap-y-5 sm:gap-x-10 p-0">
+              <div className="flex sm:items-center sm:justify-center flex-col sm:flex-row w-full gap-y-5 sm:gap-x-10 p-0 sm:mt-6">
                 <Button
-                  className="flex font-normal max-w-[180px] sm:max-w-[250px] py-6 px-10 text-md sm:text-xl  sm:px-12 px-4 sm:h-[55px] items-center justify-center gap-x-2 text-center  text-main07 bg-white rounded-full transition-all hover:drop-shadow-[0_10px_10px_rgba(0,0,0,0.25)] hover:text-indigo-500"
+                  className="flex font-normal max-w-[180px] sm:max-w-[250px] py-6 px-10 text-md sm:text-xl  sm:px-12 px-4 sm:h-[55px] items-center justify-center gap-x-2 text-center  text-main07 bg-white rounded-full transition-all hover:drop-shadow-[0_10px_10px_rgba(0,0,0,0.25)] hover:text-indigo-600"
                   onClick={() => {
                     setJustBrowsing(!justBrowsing);
                   }}
@@ -89,6 +99,28 @@ const HomePage = () => {
                 </Button>
               </div>
             )}
+          </div>
+          <div
+            id="showcase"
+            className="flex bg-white w-full items-center justify-center gap-x-[150px] h-[600px]"
+          >
+            <div className="overflow-hidden flex items-center justify-center h-[280px] w-[600px] rounded-lg bg-zinc-700">
+              <img
+                src="/public/illustrations/createServer.gif"
+                className="rounded-lg"
+                alt=""
+              />
+            </div>
+            <div>
+              <p className="w-[400px] text-black font-extrabold leading-tight text-4xl">
+                Create Servers & host community
+              </p>
+              <p className="pt-6 font-normal text-black text-lg">
+                Servers are like virtual communities built around <br />
+                shared interests. Imagine them as organized clubs or <br />
+                groups, each dedicated to a specific topic, or a hobby.
+              </p>
+            </div>
           </div>
         </div>
       )}
