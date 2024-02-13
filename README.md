@@ -3,7 +3,7 @@
 This is a **humble effort** towards **reproducing the fun discord experience**. Sticking closely to its design philosophy, I have tried **replicating most of the core standard features** to the best of my abilities.
 
 <p align="center">
-  <a href="https://discord-clone-react-yvdm.vercel.app/"><img src="./client/public/illustrations/main.png"/></a>
+  <a href="https://discord-clone-react-yvdm.vercel.app/"><img src="/assets/main.png"/></a>
 </p>
 
 ## What does it do?
@@ -74,6 +74,7 @@ However, **requiring a database call to verify the refresh_token before issuing 
 ### Context Management
 
 The application relies heavily on context, whether it be a typical Auth-Context or a custom Servers-Context. **Instead of letting a single Global context handle everything**, thereby introducing the **God-Object problem**, **various smaller sub-contexts are used**, each minding their own business.
+
 <p align="center">
   <img src="/assets/conHi.jpg" />
 </p>

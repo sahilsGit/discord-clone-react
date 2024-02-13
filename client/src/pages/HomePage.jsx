@@ -104,9 +104,9 @@ const HomePage = () => {
             id="showcase"
             className="flex bg-white w-full items-center justify-center gap-x-[150px] h-[600px]"
           >
-            <div className="overflow-hidden flex items-center justify-center h-[280px] w-[600px] rounded-lg bg-zinc-700">
+            <div className="overflow-hidden flex items-center justify-center h-[280px] w-[600px] rounded-lg bg-zinc-700 drop-shadow-xl">
               <img
-                src="/public/illustrations/createServer.gif"
+                src="/illustrations/createServer.gif"
                 className="rounded-lg"
                 alt=""
               />
