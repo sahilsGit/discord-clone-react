@@ -2,6 +2,10 @@
 
 This is a **humble effort** towards **reproducing the fun discord experience**. Sticking closely to its design philosophy, I have tried **replicating most of the core standard features** to the best of my abilities.
 
+<p align="center">
+  <a href="https://discord-clone-react-yvdm.vercel.app/"><img src="./client/public/illustrations/main.png"/></a>
+</p>
+
 ## What does it do?
 
 This clone (for now) **recreates just** the core functionality **that is expected from a chat platform, such as Discord**.
