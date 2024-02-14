@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../App.css";
 import useAuth from "@/hooks/useAuth";
 import GetStarted from "@/components/getStarted";
+import { ActionTooltip } from "@/components/actionTooltip";
 
 const HomePage = () => {
   const navigate = useNavigate(); // For programmatic navigation
@@ -50,8 +51,20 @@ const HomePage = () => {
                 >
                   Showcase
                 </button>
-                <button className="font-medium">GitHub</button>
-                <button className="font-medium">About</button>
+                <a
+                  className="font-medium cursor-pointer"
+                  href="https://github.com/sahilsGit/discordCloneReact"
+                >
+                  GitHub
+                </a>
+                <ActionTooltip
+                  label={"This's here just for aesthetics for now"}
+                  side={"bottom"}
+                >
+                  <button disabled className="font-medium">
+                    About
+                  </button>
+                </ActionTooltip>
               </nav>
               <a
                 href="/login"
