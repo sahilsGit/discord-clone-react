@@ -29,7 +29,7 @@ export const io = new Server(httpServer, {
   },
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 httpServer.listen(port, "0.0.0.0", () => {
   console.log("Server is listening!");
