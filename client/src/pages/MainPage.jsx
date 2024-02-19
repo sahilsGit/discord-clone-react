@@ -167,15 +167,15 @@ const MainPage = ({ type }) => {
 
     (async () => {
       await processBatch();
-    })(); // Call the batch processor as an immediately invoked function, calling processBatch wrapped inside an async function is so that I can await it, and can do other things afterwards, if required.
+    })(); // Call the batch processor as an immediately invoked function, calling processBatch wrapped inside an async function so that I can await it, and can do other things afterwards, if required.
 
     /*
      *
      * Explanation of Dependencies:
      *
-     * Empty Dependency: Since all the navigation is reactive in nature, this
-     * means data is fetched before user is navigated, so we won't need to
-     * re-fetch anything after initial render.
+     * type: Since all the navigation is reactive in nature (first data
+     * fetched & it's the new data that triggers the navigation) so we only need to
+     * re-run this effect when the type changes.
      *
      *
      */
