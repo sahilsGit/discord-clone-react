@@ -58,7 +58,7 @@ const HomePage = () => {
                   GitHub
                 </a>
                 <ActionTooltip
-                  label={"This's here just for aesthetics for now"}
+                  label={"For now, this is here just aesthetics."}
                   side={"bottom"}
                 >
                   <button disabled className="font-medium">
