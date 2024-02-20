@@ -12,7 +12,7 @@ const HomePage = () => {
   const navigate = useNavigate(); // For programmatic navigation
   const location = useLocation();
   const from = location.state?.from?.pathname || "/@me/conversations";
-  const [justBrowsing, setJustBrowsing] = useState(false); // When users browse discord without registering
+  const [isDiving, setIsDiving] = useState(false); // When users browse discord without registering
 
   // Fetch user and access token from custom auth hook
   const user = useAuth("user");
@@ -83,7 +83,7 @@ const HomePage = () => {
               stuff. Was made as a fun challenge, I hope Discord won't mind if
               they ever stumble upon.
             </p>
-            {justBrowsing ? (
+            {isDiving ? (
               <div className="flex flex-col gap-y-5 items-center justify-center">
                 <GetStarted onDisplayNameSubmit={handleDisplayNameSubmit} />
                 <p className="text-sm">
@@ -96,7 +96,7 @@ const HomePage = () => {
                 <Button
                   className="flex font-normal max-w-[180px] sm:max-w-[250px] py-6 px-10 text-md sm:text-xl  sm:px-12 px-4 sm:h-[55px] items-center justify-center gap-x-2 text-center  text-main07 bg-white rounded-full transition-all hover:drop-shadow-[0_10px_10px_rgba(0,0,0,0.25)] hover:text-indigo-600"
                   onClick={() => {
-                    setJustBrowsing(!justBrowsing);
+                    setIsDiving(!isDiving);
                   }}
                 >
                   <Upload className="h-4 w-4 sm:h-6 sm:w-6" />
@@ -115,17 +115,17 @@ const HomePage = () => {
           </div>
           <div
             id="showcase"
-            className="flex bg-white w-full items-center justify-center gap-x-[150px] h-[600px]"
+            className="hidden sm:flex bg-white w-full items-center justify-center gap-x-[150px] h-[600px]"
           >
-            <div className="overflow-hidden flex items-center justify-center h-[280px] w-[600px] rounded-lg bg-zinc-700 drop-shadow-xl">
+            <div className="hidden overflow-hidden xl:flex items-center justify-center h-[280px] w-[600px] rounded-lg bg-zinc-700 drop-shadow-xl">
               <img
                 src="/illustrations/createServer.gif"
                 className="rounded-lg"
                 alt=""
               />
             </div>
-            <div>
-              <p className="w-[400px] text-black font-extrabold leading-tight text-4xl">
+            <div className="hidden sm:block">
+              <p className="min-w-[200px] w-[400px] text-black font-extrabold leading-tight text-4xl">
                 Create Servers & host community
               </p>
               <p className="pt-6 font-normal text-black text-lg">
