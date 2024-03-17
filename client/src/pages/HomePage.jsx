@@ -1,4 +1,3 @@
-// HomePage.js
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -58,7 +57,7 @@ const HomePage = () => {
                   GitHub
                 </a>
                 <ActionTooltip
-                  label={"For now, this is here just aesthetics."}
+                  label={"For now, this is here just for aesthetics."}
                   side={"bottom"}
                 >
                   <button disabled className="font-medium">
