@@ -125,15 +125,16 @@ The project closely follows the standard structure that is typically used in mos
 root
 │
 ├── api
-│ ├── bin // Database connection
+│ ├── bin
 │ ├── controllers
 │ ├── middlewares
 │ ├── modals
 │ ├── public
 │ ├── routes
-│ ├── socket // WebSocket-related logic
-│ ├── utils // Utility functions and constants
+│ ├── socket
+│ ├── utils
 │
+
 
 ├── client
 │ ├── src
